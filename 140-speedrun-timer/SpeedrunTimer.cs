@@ -51,6 +51,8 @@ namespace SpeedrunTimerMod
 
 		public void Update()
 		{
+			UpdateInput();
+
 			if (nextAction != null && nextActionFrame == Time.frameCount)
 			{
 				nextAction();
@@ -63,7 +65,7 @@ namespace SpeedrunTimerMod
 			gameTime += (Time.timeScale != 0) ? (Time.deltaTime / Time.timeScale) : Time.deltaTime;
 		}
 
-		public void FixedUpdate()
+		void UpdateInput()
 		{
 			if (!Application.isLoadingLevel && Input.GetKeyUp(KeyCode.R))
 			{
