@@ -7,19 +7,20 @@ namespace SpeedrunTimerMod
 		static SpeedrunTimer instance;
 		public static SpeedrunTimer Instance => instance;
 
-		public static bool isGameTimePaused = true;
+		static bool isGameTimePaused = true;
 
-		public static double gameTime;
-		public static float realTime;
-		public static float speedrunStartRealTime = 0f;
-		public static float speedrunEndRealTime = 0f;
+		static double gameTime;
+		static float realTime;
+		static float speedrunStartRealTime = 0f;
+		static float speedrunEndRealTime = 0f;
 
-		public static int nextActionFrame = -1;
-		public static ActionDel nextAction;
+		static int nextActionFrame = -1;
+		static ActionDel nextAction;
 		public delegate void ActionDel();
 
 		static Updater updater;
 
+		static bool hideTimer = false;
 		static GUIStyle updateStyle;
 		static GUIStyle timerStyle;
 
@@ -69,6 +70,9 @@ namespace SpeedrunTimerMod
 				ResetTimer();
 				Application.LoadLevel("Level_Menu");
 			}
+
+			if (Input.GetKeyDown(KeyCode.H))
+				hideTimer = !hideTimer;
 		}
 
 		public static void DoActionAt(ActionDel action, int frame)
@@ -126,8 +130,11 @@ namespace SpeedrunTimerMod
 				GUI.Label(updatePos, updateText, updateStyle);
 			}
 
-			var timerPos = new Rect(4, 0, Screen.width, 100);
-			GUI.Label(timerPos, Utils.FormatTime(gameTime), timerStyle);
+			if (!hideTimer)
+			{
+				var timerPos = new Rect(4, 0, Screen.width, 100);
+				GUI.Label(timerPos, Utils.FormatTime(gameTime), timerStyle);
+			}
 		}
 	}
 }
