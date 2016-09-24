@@ -7,7 +7,8 @@ namespace SpeedrunTimerMod
 		static SpeedrunTimer instance;
 		public static SpeedrunTimer Instance => instance;
 
-		static bool isGameTimePaused = true;
+		static bool isGameTimePaused;
+		public static bool IsGameTimePaused => isGameTimePaused;
 
 		static double gameTime;
 		static float realTime;
@@ -59,7 +60,7 @@ namespace SpeedrunTimerMod
 				nextAction = null;
 			}
 
-			if (speedrunEndRealTime != 0 || isGameTimePaused)
+			if (speedrunStartRealTime == 0 || speedrunEndRealTime != 0 || isGameTimePaused)
 				return;
 
 			gameTime += (Time.timeScale != 0) ? (Time.deltaTime / Time.timeScale) : Time.deltaTime;
@@ -120,7 +121,7 @@ namespace SpeedrunTimerMod
 			speedrunEndRealTime = 0;
 			gameTime = 0;
 			realTime = 0;
-			isGameTimePaused = true;
+			isGameTimePaused = false;
 		}
 
 		public void OnGUI()
