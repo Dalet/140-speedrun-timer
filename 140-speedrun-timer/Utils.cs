@@ -6,6 +6,8 @@ namespace SpeedrunTimerMod
 	{
 		public static string FormatTime(double totalSeconds)
 		{
+			totalSeconds = Math.Round(totalSeconds, 3, MidpointRounding.AwayFromZero);
+
 			var seconds = totalSeconds % 60;
 			var minutes = (int)(totalSeconds / 60);
 			var milliseconds = Math.Round((totalSeconds - (int)totalSeconds) * 1000);
