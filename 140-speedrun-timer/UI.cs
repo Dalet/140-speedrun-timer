@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
@@ -9,6 +10,8 @@ namespace SpeedrunTimerMod
 		Utils.Label updateLabel;
 		Utils.Label debugLabel;
 
+		const int BASE_UI_RESOLUTION = 720;
+
 		public void Awake()
 		{
 			if (string.IsNullOrEmpty(Updater.LatestVersion))
@@ -18,14 +21,14 @@ namespace SpeedrunTimerMod
 
 			var timerStyle = new GUIStyle
 			{
-				fontSize = 18,
+				fontSize = Scale(20),
 				fontStyle = FontStyle.Bold,
 			};
 
 			gameTimeLabel = new Utils.Label()
 			{
 				style = timerStyle,
-				position = new Rect(4, 0, Screen.width, Screen.height)
+				position = new Rect(Scale(4), 0, Screen.width, Screen.height)
 			};
 
 			realTimeLabel = new Utils.Label()
@@ -40,22 +43,22 @@ namespace SpeedrunTimerMod
 			{
 				style = new GUIStyle
 				{
-					fontSize = 18,
+					fontSize = Scale(18),
 					fontStyle = FontStyle.Bold
 				},
 			};
-			updateLabel.position = new Rect(4, Screen.height - updateLabel.style.fontSize - 4, Screen.width, Screen.height);
+			updateLabel.position = new Rect(Scale(4), Screen.height - updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height);
 
 			debugLabel = new Utils.Label()
 			{
 				enabled = false,
 				style = new GUIStyle
 				{
-					fontSize = 16,
+					fontSize = Scale(16),
 					fontStyle = FontStyle.Bold
 				}
 			};
-			debugLabel.position = new Rect(4, updateLabel.position.yMin - debugLabel.style.fontSize - 3,
+			debugLabel.position = new Rect(Scale(4), updateLabel.position.yMin - debugLabel.style.fontSize - Scale(3),
 					Screen.width, Screen.height);
 
 			timerStyle.normal.textColor = debugLabel.style.normal.textColor
@@ -71,7 +74,7 @@ namespace SpeedrunTimerMod
 			if (gameTimeLabel.enabled)
 				realTimeLabel.OnGUI(Utils.FormatTime(rt));
 
-			debugLabel.OnGUI($"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {System.Environment.Version} | Unity: {Application.unityVersion}");
+			debugLabel.OnGUI($"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion}");
 
 			if (Updater.NeedUpdate)
 				updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
@@ -90,6 +93,14 @@ namespace SpeedrunTimerMod
 
 			if (Input.GetKeyDown(KeyCode.F3))
 				debugLabel.enabled = !debugLabel.enabled;
+		}
+
+		public static int Scale(int pixels)
+		{
+			if (Screen.height <= BASE_UI_RESOLUTION)
+				return pixels;
+			else
+				return (int)Math.Round(pixels * (Screen.height / (float)BASE_UI_RESOLUTION));
 		}
 	}
 }
