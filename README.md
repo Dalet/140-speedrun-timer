@@ -1,5 +1,5 @@
 # Speedrun Timer Mod
-
+![screenshot](http://i.imgur.com/gsssoOt.png)
 # Installation
 * [Download](https://github.com/Dalet/140-speedrun-timer/releases/)
 * Open the game folder and extract the DLLs in `140_Data/Managed`
