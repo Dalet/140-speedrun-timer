@@ -2,7 +2,7 @@
 
 namespace SpeedrunTimerMod
 {
-	class SpeedrunTimerLoader : MonoBehaviour
+	sealed class SpeedrunTimerLoader : MonoBehaviour
 	{
 		static GameObject modObject;
 

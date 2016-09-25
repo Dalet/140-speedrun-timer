@@ -2,7 +2,7 @@
 
 namespace SpeedrunTimerMod
 {
-	sealed class UI : MonoBehaviour
+	internal sealed class UI : MonoBehaviour
 	{
 		Utils.Label gameTimeLabel;
 		Utils.Label realTimeLabel;
@@ -33,7 +33,7 @@ namespace SpeedrunTimerMod
 				enabled = false,
 				position = new Rect(gameTimeLabel.position.xMin, gameTimeLabel.position.yMin + timerStyle.fontSize,
 					gameTimeLabel.position.width, gameTimeLabel.position.height),
-				style = gameTimeLabel.style
+				style = timerStyle
 			};
 
 			updateLabel = new Utils.Label()

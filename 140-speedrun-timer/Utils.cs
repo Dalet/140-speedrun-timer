@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
-	static class Utils
+	internal static class Utils
 	{
 		public static string FormatTime(double totalSeconds, int decimals = 2)
 		{

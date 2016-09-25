@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using System.Diagnostics;
-using System;
+﻿using System;
 using System.Collections;
+using System.Diagnostics;
+using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
@@ -14,7 +14,6 @@ namespace SpeedrunTimerMod
 		public static bool IsRunning => instance?.sw_realTime.IsRunning ?? false;
 
 		public static double GameTime => instance?.gameTime ?? 0;
-
 		public static double RealTime => instance?.realTime ?? 0;
 
 		bool isGameTimePaused;

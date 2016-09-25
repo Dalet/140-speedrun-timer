@@ -2,7 +2,7 @@
 
 namespace SpeedrunTimerMod
 {
-	class Misc : MonoBehaviour
+	internal sealed class Misc : MonoBehaviour
 	{
 		float resetTimer;
 		float resetHits;

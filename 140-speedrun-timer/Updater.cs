@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
-	sealed class Updater : MonoBehaviour
+	internal sealed class Updater : MonoBehaviour
 	{
 		const string updateURL = "https://raw.githubusercontent.com/Dalet/140-speedrun-timer/master/latestVersion.txt";
 
