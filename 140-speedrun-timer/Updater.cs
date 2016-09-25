@@ -1,31 +1,34 @@
 ﻿using System;
-using System.Net;
+using System.Collections;
 using System.Reflection;
+using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
-	class Updater
+	sealed class Updater : MonoBehaviour
 	{
 		const string updateURL = "https://raw.githubusercontent.com/Dalet/140-speedrun-timer/master/latestVersion.txt";
 
-		public bool NeedUpdate { get; private set; }
-		public string LatestVersion { get; private set; }
+		public static bool NeedUpdate { get; private set; }
+		public static string LatestVersion { get; private set; }
 
-		public void GetLatestVersionAsync()
+		public void Start()
 		{
-			var client = new WebClient();
-			try
+			StartCoroutine(CheckUpdate());
+		}
+
+		public IEnumerator CheckUpdate()
+		{
+			var www = new WWW(updateURL);
+			yield return www;
+
+			if (string.IsNullOrEmpty(www.error))
 			{
-				var str = client.DownloadString(new Uri(updateURL));
-				str = str?.Trim();
+				var str = www.text.Trim();
 				var version = str != null ? new Version(str) : null;
 				NeedUpdate = version != null && version > Assembly.GetExecutingAssembly().GetName().Version;
 				LatestVersion = Utils.FormatVersion(version);
-			}
-			catch { }
-			finally
-			{
-				client.Dispose();
+				Destroy(this);
 			}
 		}
 	}
