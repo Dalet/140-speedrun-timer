@@ -35,6 +35,18 @@ namespace SpeedrunTimerMod
 			return sw.ElapsedTicks / (double)TimeSpan.TicksPerSecond;
 		}
 
+		public static void PlayerPrefsSetBool(string key, bool value)
+		{
+			PlayerPrefs.SetInt(key, value ? 1 : 0);
+		}
+
+		public static bool PlayerPrefsGetBool(string key, bool def = default(bool))
+		{
+			if (PlayerPrefs.HasKey(key))
+				return PlayerPrefs.GetInt(key, def ? 1 : 0) != 0;
+			return def;
+		}
+
 		internal class Label
 		{
 			public bool enabled = true;

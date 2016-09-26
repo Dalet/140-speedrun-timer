@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
@@ -9,6 +10,7 @@ namespace SpeedrunTimerMod
 		Utils.Label realTimeLabel;
 		Utils.Label updateLabel;
 		Utils.Label debugLabel;
+		Utils.Label titleLabel;
 
 		const int BASE_UI_RESOLUTION = 720;
 
@@ -61,14 +63,27 @@ namespace SpeedrunTimerMod
 			debugLabel.position = new Rect(Scale(4), updateLabel.position.yMin - debugLabel.style.fontSize - Scale(3),
 					Screen.width, Screen.height);
 
+			titleLabel = new Utils.Label()
+			{
+				style = gameTimeLabel.style,
+				position = gameTimeLabel.position,
+				text = $"Speedrun Timer v{ Utils.FormatVersion(Assembly.GetExecutingAssembly().GetName().Version)}"
+			};
+
 			timerStyle.normal.textColor = debugLabel.style.normal.textColor
 				= updateLabel.style.normal.textColor = color;
+
+			ReadSettings();
+			titleLabel.enabled = !gameTimeLabel.enabled;
 		}
 
 		public void OnGUI()
 		{
 			var rt = SpeedrunTimer.RealTime;
 			var gt = SpeedrunTimer.GameTime;
+
+			if (!gameTimeLabel.enabled && Time.realtimeSinceStartup < 10)
+				titleLabel.OnGUI();
 
 			gameTimeLabel.OnGUI(Utils.FormatTime(gt));
 			if (gameTimeLabel.enabled)
@@ -89,10 +104,26 @@ namespace SpeedrunTimerMod
 			}
 
 			if (Input.GetKeyDown(KeyCode.F2))
+			{
 				gameTimeLabel.enabled = !gameTimeLabel.enabled;
+				titleLabel.enabled = false;
+			}
 
 			if (Input.GetKeyDown(KeyCode.F3))
 				debugLabel.enabled = !debugLabel.enabled;
+		}
+
+		void ReadSettings()
+		{
+			gameTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowTimer", gameTimeLabel.enabled);
+			realTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowRealTime", realTimeLabel.enabled);
+		}
+
+		public void OnApplicationQuit()
+		{
+			Utils.PlayerPrefsSetBool("ShowTimer", gameTimeLabel.enabled);
+			Utils.PlayerPrefsSetBool("ShowRealTime", realTimeLabel.enabled);
+			PlayerPrefs.Save();
 		}
 
 		public static int Scale(int pixels)
