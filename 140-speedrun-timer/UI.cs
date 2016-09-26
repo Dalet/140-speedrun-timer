@@ -68,6 +68,9 @@ namespace SpeedrunTimerMod
 				style = gameTimeLabel.style,
 				position = gameTimeLabel.position,
 				text = $"Speedrun Timer v{ Utils.FormatVersion(Assembly.GetExecutingAssembly().GetName().Version)}"
+#if DEBUG
+					+ " (debug)"
+#endif
 			};
 
 			timerStyle.normal.textColor = debugLabel.style.normal.textColor
