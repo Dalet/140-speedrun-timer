@@ -1,14 +1,30 @@
 # Speedrun Timer Mod
 ![screenshot](http://i.imgur.com/gsssoOt.png)
+
 # Installation
 * [Download](https://github.com/Dalet/140-speedrun-timer/releases/)
 * Open the game folder and extract the DLLs in `140_Data/Managed`
 
-#Features
+# Features
 * Speedrun timer without loads
-* Quick reset (double tap the `R` key)
+* Quick reset
 
 # Keybinds
-* `R` double tap to reset
-* `F1` show the Real Time
-* `F2` hide the timers
+|   Key   |  Description |
+| ------- | ------------ |
+| `R`     | Double tap to reset |
+| `F1`    | Show the Real Time |
+| `F2`    | Hide the timers |
+
+### Cheats
+
+|   Key   |  Description |
+| ------- | ------------ |
+| `Shift` + `F12` | Enable cheats |
+| `1`-`9` | Teleport to the `n`<sup>th</sup> BeatLayerSwitch and activate it |
+| `Alt` + `1`-`3` | Load the `n`<sup>th</sup> level  |
+| `Delete` | Teleport to the current checkpoint |
+| `Page Up` | Teleport to the next checkpoint |
+| `Page Down` | Teleport to the previous checkpoint |
+|  `Home` | Teleport to the first checkpoint |
+|  `End`  | Teleport to the last checkpoint |

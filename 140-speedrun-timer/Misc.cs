@@ -31,17 +31,6 @@ namespace SpeedrunTimerMod
 					Application.LoadLevel("Level_Menu");
 				}
 			}
-
-#if DEBUG
-			if (Input.GetKeyUp(KeyCode.Alpha1))
-				Application.LoadLevel(1);
-
-			if (Input.GetKeyUp(KeyCode.Alpha2))
-				Application.LoadLevel(2);
-
-			if (Input.GetKeyUp(KeyCode.Alpha3))
-				Application.LoadLevel(3);
-#endif
 		}
 	}
 }

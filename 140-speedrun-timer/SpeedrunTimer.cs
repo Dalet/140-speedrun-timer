@@ -28,7 +28,6 @@ namespace SpeedrunTimerMod
 		{
 			instance = this;
 			gameObject.AddComponent<UI>();
-			gameObject.AddComponent<Misc>();
 		}
 
 		public void Update()

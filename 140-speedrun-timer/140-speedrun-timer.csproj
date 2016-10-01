@@ -52,6 +52,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Cheats.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="SpeedrunTimerLoader.cs" />
     <Compile Include="SpeedrunTimer.cs" />
