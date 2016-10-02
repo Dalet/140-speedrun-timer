@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Diagnostics;
 using UnityEngine;
 
@@ -22,7 +21,7 @@ namespace SpeedrunTimerMod
 		Stopwatch sw_gameTime = new Stopwatch();
 		Stopwatch sw_realTime = new Stopwatch();
 
-		Action endOfFrameAction;
+		Action lateUpdateAction;
 
 		public void Awake()
 		{
@@ -30,31 +29,24 @@ namespace SpeedrunTimerMod
 			gameObject.AddComponent<UI>();
 		}
 
-		public void Update()
+		public void LateUpdate()
 		{
+			if (lateUpdateAction != null)
+			{
+				lateUpdateAction();
+				lateUpdateAction = null;
+			}
+
 			realTime = sw_realTime.ElapsedSeconds();
 			gameTime = sw_gameTime.ElapsedSeconds();
-
-			if (endOfFrameAction != null)
-				StartCoroutine(WaitForEndOfFrame());
 		}
 
-		IEnumerator WaitForEndOfFrame()
+		void DoAfterUpdate(Action action)
 		{
-			if (endOfFrameAction == null)
-				yield return null;
-
-			yield return new WaitForEndOfFrame();
-			endOfFrameAction();
-			endOfFrameAction = null;
-		}
-
-		void DoAtEndOfFrame(Action action)
-		{
-			if (endOfFrameAction != null)
+			if (lateUpdateAction != null)
 				return;
 
-			endOfFrameAction = action;
+			lateUpdateAction = action;
 		}
 
 		public void StartTimer()
@@ -62,7 +54,7 @@ namespace SpeedrunTimerMod
 			if (IsRunning || realTime > 0 || Application.loadedLevelName != "Level_Menu")
 				return;
 
-			DoAtEndOfFrame(() =>
+			DoAfterUpdate(() =>
 			{
 				ResetTimer();
 				sw_gameTime.Start();
@@ -72,7 +64,7 @@ namespace SpeedrunTimerMod
 
 		public void StopTimer()
 		{
-			DoAtEndOfFrame(() =>
+			DoAfterUpdate(() =>
 			{
 				sw_gameTime.Stop();
 				sw_realTime.Stop();
@@ -91,7 +83,7 @@ namespace SpeedrunTimerMod
 			if (isGameTimePaused)
 				return;
 
-			DoAtEndOfFrame(() =>
+			DoAfterUpdate(() =>
 			{
 				sw_gameTime.Stop();
 				isGameTimePaused = true;
@@ -103,7 +95,7 @@ namespace SpeedrunTimerMod
 			if (!isGameTimePaused)
 				return;
 
-			DoAtEndOfFrame(() =>
+			DoAfterUpdate(() =>
 			{
 				sw_gameTime.Start();
 				isGameTimePaused = false;
