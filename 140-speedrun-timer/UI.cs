@@ -60,7 +60,7 @@ namespace SpeedrunTimerMod
 					fontStyle = FontStyle.Bold
 				}
 			};
-			debugLabel.position = new Rect(Scale(4), updateLabel.position.yMin - debugLabel.style.fontSize - Scale(3),
+			debugLabel.position = new Rect(Scale(4), updateLabel.position.yMin - debugLabel.style.fontSize * 2 - Scale(3),
 					Screen.width, Screen.height);
 
 			titleLabel = new Utils.Label()
@@ -92,7 +92,8 @@ namespace SpeedrunTimerMod
 			if (gameTimeLabel.enabled)
 				realTimeLabel.OnGUI(Utils.FormatTime(rt));
 
-			debugLabel.OnGUI($"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion}");
+			debugLabel.OnGUI($"Frame: {Time.renderedFrameCount} | IsRunning: {SpeedrunTimer.IsRunning} | IsGameTimePaused: {SpeedrunTimer.IsGameTimePaused}\n"
+				+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion}");
 
 			if (Updater.NeedUpdate)
 				updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
