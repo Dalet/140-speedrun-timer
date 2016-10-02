@@ -8,6 +8,7 @@
 # Features
 * Speedrun timer without loads
 * Quick reset
+* Cheats for practice
 
 # Keybinds
 |   Key   |  Description |
