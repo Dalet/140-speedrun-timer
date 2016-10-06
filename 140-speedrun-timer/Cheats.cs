@@ -69,18 +69,25 @@ namespace SpeedrunTimerMod
 					return;
 			}
 
-			if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+			var rigthAlt = Input.GetKey(KeyCode.RightAlt);
+			if (rigthAlt || Input.GetKey(KeyCode.LeftAlt))
 			{
 				// check 1 to 3 alpha keys
 				for (var key = KeyCode.Alpha1; key <= KeyCode.Alpha3; key++)
 				{
-					if (Input.GetKeyDown(key))
-						Application.LoadLevel(key - KeyCode.Alpha1 + 1);
+					if (!Input.GetKeyDown(key))
+						continue;
+
+					if (rigthAlt)
+						MirrorModeManager.mirrorModeActive = true;
+
+					Application.LoadLevel(key - KeyCode.Alpha1 + 1);
+					break;
 				}
 			}
 			else
 			{
-				// check 1 to 5 alpha keys
+				// check 1 to 9 alpha keys
 				for (var key = KeyCode.Alpha1; key <= KeyCode.Alpha9; key++)
 				{
 					int keyNum = key - KeyCode.Alpha1;

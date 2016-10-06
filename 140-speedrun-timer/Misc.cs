@@ -48,6 +48,8 @@ namespace SpeedrunTimerMod
 				{
 					resetHits = 0;
 					SpeedrunTimer.Instance.ResetTimer();
+					MirrorModeManager.mirrorModeActive = false;
+					MirrorModeManager.respawnFromMirror = false;
 					Application.LoadLevel("Level_Menu");
 				}
 			}
