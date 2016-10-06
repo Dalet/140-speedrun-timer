@@ -78,9 +78,8 @@ namespace SpeedrunTimerMod
 					if (!Input.GetKeyDown(key))
 						continue;
 
-					if (rigthAlt)
-						MirrorModeManager.mirrorModeActive = true;
-
+					MirrorModeManager.mirrorModeActive = rigthAlt;
+					MirrorModeManager.respawnFromMirror = false;
 					Application.LoadLevel(key - KeyCode.Alpha1 + 1);
 					break;
 				}
