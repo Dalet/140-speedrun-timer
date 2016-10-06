@@ -23,7 +23,7 @@
 | ------- | ------------ |
 | `Shift` + `F12` | Enable cheats |
 | `1`-`9` | Teleport to the `n`<sup>th</sup> BeatLayerSwitch and activate it |
-| `Alt` + `1`-`3` | Load the `n`<sup>th</sup> level  |
+| `Alt` + `1`-`3` | Load the `n`<sup>th</sup> level (`Right Alt` for Mirrored) |
 | `Delete` | Teleport to the current checkpoint |
 | `Page Up` | Teleport to the next checkpoint |
 | `Page Down` | Teleport to the previous checkpoint |
