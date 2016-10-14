@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <MergeMainAssembly>$(OutputPath)$(TargetFileName)</MergeMainAssembly>
+    <OutputAssembly>$(MergeMainAssembly)</OutputAssembly>
+  </PropertyGroup>
+  <Target Name="MergeAssemblies" Outputs="$(OutputAssembly)">
+    <ItemGroup>
+      <MergedAssemblies Include="$(OutputPath)\Mono.Cecil.dll" />
+    </ItemGroup>
+    <PropertyGroup>
+      <ILRepackPackage>$([System.IO.Directory]::GetDirectories("$(SolutionDir)\\packages\\", "ILRepack.*").GetValue(0))\tools\ILRepack.exe</ILRepackPackage>
+      <Merger Condition="('$(OS)' == 'Windows_NT')">"$(ILRepackPackage)"</Merger>
+      <Merger Condition="('$(OS)' != 'Windows_NT')">mono "$($ILRepackPackage)"</Merger>
+    </PropertyGroup>
+    <Exec Command="$(Merger) /out:&quot;$(OutputAssembly)&quot; $(MergeMainAssembly) @(MergedAssemblies->'&quot;%(FullPath)&quot;', ' ')" />
+    <Delete Files="@(MergedAssemblies)" />
+  </Target>
+
+  <PropertyGroup>
+    <MacAppPkgPath>$(OutputPath)$(TargetName).app\</MacAppPkgPath>
+  </PropertyGroup>
+  <Target Name="MacOS" Outputs="$(MacAppPkgPath)">
+    <CallTarget Targets="CheckMacpack" />
+    <RemoveDir Directories="$(MacAppPkgPath)" />
+    <Exec WorkingDirectory="$(OutputPath)" Command="macpack -o:. -i:&quot;$(ProjectDir)Resources\speedruntimer.icns&quot; -name:&quot;Speedrun Timer Installer&quot; -m:winforms -a:&quot;$(TargetFileName)&quot;" />
+    <Delete Files="$(MacAppPkgPath)Contents\Resources\$(TargetFileName)" />
+    <Message Text="Compile a MacOS executable with mkbundle and replace '$(MacAppPkgPath)Contents\MacOS\$(TargetName)' with it" Importance="high" />
+  </Target>
+
+  <Target Name="CheckMacpack">
+    <PropertyGroup>
+      <WhereBinName Condition="('$(OS)' == 'Windows_NT')">where</WhereBinName>
+      <WhereBinName Condition="('$(OS)' != 'Windows_NT')">which</WhereBinName>
+    </PropertyGroup>
+    <Exec Command="$(WhereBinName) macpack" ContinueOnError="true" >
+      <Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+    </Exec>
+    <Error Text="'macpack' could not be found. Add the Mono bin directory to your PATH variable." Condition="'$(ErrorCode)' > '0'" />
+  </Target>
+
+  <Target Name="AfterBuild">
+    <CallTarget Targets="MergeAssemblies" Condition="('$(ConfigurationName)' == 'Release')" />
+    <CallTarget Targets="MacOS" Condition="('$(ConfigurationName)' == 'MacOS')" />
+  </Target>
+</Project>

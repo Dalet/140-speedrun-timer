@@ -8,7 +8,6 @@ namespace SpeedrunTimerMod
 		public static bool Enabled { get; set; }
 
 		List<BeatLayerSwitch> beatSwitches;
-		BossGate bossGate;
 		Savepoint[] savepoints;
 		Utils.Label cheatWatermark;
 
@@ -34,7 +33,6 @@ namespace SpeedrunTimerMod
 			var levelsFolder = GameObject.Find("Levels");
 			if (levelsFolder)
 			{
-				bossGate = levelsFolder.GetComponent<BossGate>();
 				savepoints = levelsFolder.GetComponentsInChildren<Savepoint>();
 
 				var beatLayerSwitches = levelsFolder.GetComponentsInChildren<BeatLayerSwitch>();

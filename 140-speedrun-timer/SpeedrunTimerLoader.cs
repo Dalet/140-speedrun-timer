@@ -19,5 +19,10 @@ namespace SpeedrunTimerMod
 			DontDestroyOnLoad(modObject);
 			Destroy(this);
 		}
+
+		public static void Inject()
+		{
+			Globals.Instance().gameObject.AddComponent<SpeedrunTimerLoader>();
+		}
 	}
 }
