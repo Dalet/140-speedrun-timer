@@ -22,9 +22,12 @@ namespace SpeedrunTimerModInstaller
 			_readerParams = new ReaderParameters { AssemblyResolver = _resolver };
 		}
 
-		public void PatchGameDll(string sourceFile, string destination)
+		public void PatchGameDll(string destination = null)
 		{
-			var gameAsmDef = AssemblyDefinition.ReadAssembly(sourceFile, _readerParams);
+			if (destination == null)
+				destination = _gameDllPath;
+
+			var gameAsmDef = AssemblyDefinition.ReadAssembly(_gameDllPath, _readerParams);
 			var gameModule = gameAsmDef.MainModule;
 			var modAsmDef = AssemblyDefinition.ReadAssembly(_modDllPath, _readerParams);
 			var modModule = modAsmDef.MainModule;

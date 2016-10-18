@@ -76,7 +76,7 @@ namespace SpeedrunTimerModInstaller
 				File.Delete(_gameDllBackupPath);
 
 			var fileTmp = Path.Combine(AssembliesPath, Path.GetFileName(_gameDllPath) + ".tmp");
-			Patcher.PatchGameDll(_gameDllPath, fileTmp);
+			Patcher.PatchGameDll(fileTmp);
 			File.Replace(fileTmp, _gameDllPath, _gameDllBackupPath);
 		}
 
