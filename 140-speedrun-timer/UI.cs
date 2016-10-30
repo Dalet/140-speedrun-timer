@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ namespace SpeedrunTimerMod
 		Utils.Label updateLabel;
 		Utils.Label debugLabel;
 		Utils.Label titleLabel;
+		MyCharacterController player;
 
 		const int BASE_UI_RESOLUTION = 720;
 
@@ -60,7 +62,7 @@ namespace SpeedrunTimerMod
 					fontStyle = FontStyle.Bold
 				}
 			};
-			debugLabel.position = new Rect(Scale(4), updateLabel.position.yMin - debugLabel.style.fontSize * 4 - Scale(3),
+			debugLabel.position = new Rect(Scale(4), updateLabel.position.yMin - debugLabel.style.fontSize * 5 - Scale(3),
 					Screen.width, Screen.height);
 
 			titleLabel = new Utils.Label()
@@ -82,26 +84,48 @@ namespace SpeedrunTimerMod
 
 		public void OnGUI()
 		{
-			var rt = SpeedrunTimer.RealTime;
-			var gt = SpeedrunTimer.GameTime;
 
 			if (!gameTimeLabel.enabled && Time.realtimeSinceStartup < 10)
 				titleLabel.OnGUI();
 
-			gameTimeLabel.OnGUI(Utils.FormatTime(gt));
 			if (gameTimeLabel.enabled)
-				realTimeLabel.OnGUI(Utils.FormatTime(rt));
+			{
+				gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.GameTime));
+				realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.RealTime));
+			}
 
-			debugLabel.OnGUI($"Frame: {Time.renderedFrameCount} | Beat: {Misc.BeatDbgStr}"
-				+ $" | IsRunning: {SpeedrunTimer.IsRunning} | IsGameTimePaused: {SpeedrunTimer.IsGameTimePaused}\n"
-				+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion}");
+			if (debugLabel.enabled)
+			{
+				var pos = player.transform.position;
+				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
+				debugLabel.OnGUI(
+					$"Checkpoint: {currentCheckpoint + 1}/{Cheats.Savepoints.Length} | Beat: {Misc.BeatDbgStr} | Pos: ({PadPosition(pos.x)}, {PadPosition(pos.y)})\n"
+					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {SpeedrunTimer.IsRunning} | IsGameTimePaused: {SpeedrunTimer.IsGameTimePaused}\n"
+					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion}"
+				);
+			}
 
 			if (Updater.NeedUpdate)
 				updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
 		}
 
+		static string PadPosition(float p)
+		{
+			var str = p.ToString();
+			var padding = 7 - str.Count(c => char.IsDigit(c));
+			if (padding > 0)
+			{
+				if (str.IndexOf('.') < 0)
+					str += '.';
+				str = str.PadRight(str.Length + padding, '0');
+			}
+			return str;
+		}
+
 		public void Update()
 		{
+			player = Globals.player.GetComponent<MyCharacterController>();
+
 			if (Input.GetKeyDown(KeyCode.F1))
 			{
 				realTimeLabel.enabled = !realTimeLabel.enabled || !gameTimeLabel.enabled;
