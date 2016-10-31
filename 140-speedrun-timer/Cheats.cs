@@ -204,7 +204,7 @@ namespace SpeedrunTimerMod
 		public void OnGUI()
 		{
 			if (Enabled)
-				cheatWatermark.OnGUI("CHEATS ENABLED");
+				cheatWatermark.OnGUI();
 		}
 	}
 }
