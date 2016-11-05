@@ -15,7 +15,6 @@ namespace SpeedrunTimerModInstaller
 		{
 			InitializeComponent();
 
-			Icon = Properties.Resources.icon;
 			_installer = new Installer();
 			_steamFinder = new SteamFinder();
 			Text = Text + $" v{Assembly.GetExecutingAssembly().GetName().Version.ToString(3)}";

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -57,7 +56,6 @@ namespace SpeedrunTimerModInstaller
 			_modDllPath = Path.Combine(AssembliesPath, "speedrun-timer.dll");
 			Patcher = new Patcher(AssembliesPath, _gameDllPath, _modDllPath);
 
-			Console.WriteLine($"Path set to : \"{GamePath}\"");
 			return true;
 		}
 
