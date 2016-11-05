@@ -6,13 +6,15 @@ namespace SpeedrunTimerMod
 	class Cheats : MonoBehaviour
 	{
 		public static bool Enabled { get; set; }
+		public static Savepoint[] Savepoints { get; private set; } = new Savepoint[] { };
 
 		List<BeatLayerSwitch> beatSwitches;
-		Savepoint[] savepoints;
 		Utils.Label cheatWatermark;
 
 		public void Awake()
 		{
+			Savepoints = new Savepoint[] { };
+
 			cheatWatermark = new Utils.Label
 			{
 				position = new Rect(UI.Scale(500), UI.Scale(100), Screen.width, Screen.height),
@@ -33,7 +35,7 @@ namespace SpeedrunTimerMod
 			var levelsFolder = GameObject.Find("Levels");
 			if (levelsFolder)
 			{
-				savepoints = levelsFolder.GetComponentsInChildren<Savepoint>();
+				Savepoints = levelsFolder.GetComponentsInChildren<Savepoint>();
 
 				var beatLayerSwitches = levelsFolder.GetComponentsInChildren<BeatLayerSwitch>();
 				foreach (var layerSwitch in beatLayerSwitches)
@@ -106,38 +108,97 @@ namespace SpeedrunTimerMod
 
 			if (Input.GetKeyDown(KeyCode.Delete))
 			{
-				TeleportToCheckpoint();
+				TeleportToCurrentCheckpoint();
 			}
 			else if (Input.GetKeyDown(KeyCode.Home))
 			{
-				Globals.levelsManager.SetCurrentCheckpoint(0);
-				TeleportToCheckpoint();
+				Globals.levelsManager.SetCurrentCheckpoint(1);
+				TeleportToCurrentCheckpoint();
 			}
 			else if (Input.GetKeyDown(KeyCode.End))
 			{
-				Globals.levelsManager.SetCurrentCheckpoint(savepoints.Length - 1);
-				TeleportToCheckpoint();
+				Globals.levelsManager.SetCurrentCheckpoint(Savepoints.Length - 1);
+				TeleportToCurrentCheckpoint();
 			}
 			else if (Input.GetKeyDown(KeyCode.PageUp))
 			{
-				if (Globals.levelsManager.GetCurrentCheckPoint() < savepoints.Length - 1)
-					Globals.levelsManager.IncreaseCheckPoint();
-				TeleportToCheckpoint();
+				TeleportToNearestCheckpoint();
 			}
 			else if (Input.GetKeyDown(KeyCode.PageDown))
 			{
-				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
-				if (currentCheckpoint > 0)
-					Globals.levelsManager.SetCurrentCheckpoint(currentCheckpoint - 1);
-				TeleportToCheckpoint();
+				TeleportToNearestCheckpoint(false);
 			}
 		}
 
-		void TeleportToCheckpoint()
+		public static void TeleportToSavepoint(Savepoint savepoint)
 		{
-			var savePoint = Globals.levelsManager.GetSavepoint();
 			var player = Globals.player.GetComponent<MyCharacterController>();
-			player.PlacePlayerCharacter(savePoint.transform.position, savePoint.spawnPlayerOnGround);
+			player.StopForceMoveTo();
+			player.PlacePlayerCharacter(savepoint.transform.position, savepoint.spawnPlayerOnGround);
+		}
+
+		public static void TeleportToCurrentCheckpoint()
+		{
+			if (Savepoints.Length == 0)
+				return;
+
+			var savepoint = Globals.levelsManager.GetSavepoint();
+			TeleportToSavepoint(savepoint);
+		}
+
+		public static void TeleportToNearestCheckpoint(bool forward = true)
+		{
+			if (Savepoints.Length == 0)
+				return;
+
+			var savepoint = GetNearestCheckpoint(forward);
+			if (savepoint != null)
+				TeleportToSavepoint(savepoint);
+		}
+
+		static Savepoint GetNearestCheckpoint(bool forward = true)
+		{
+			if (Savepoints.Length == 0)
+				return null;
+
+			var levelManager = Globals.levelsManager;
+			var playerPos = Globals.player.GetComponent<MyCharacterController>().transform.position;
+			Savepoint savepoint = null;
+
+			// skip the first savepoint, it is the spawn point
+			for (int i = 1; i < Savepoints.Length; i++)
+			{
+				levelManager.SetCurrentCheckpoint(i);
+				savepoint = levelManager.GetSavepoint();
+
+				if (playerPos.x < savepoint.transform.position.x)
+				{
+					if (!forward)
+					{
+						if (i <= 1)
+							return null;
+
+						savepoint = GetSavepoint(i - 1);
+						if (i > 2 && savepoint.transform.position.x == playerPos.x)
+							savepoint = GetSavepoint(i - 2);
+					}
+					break;
+				}
+
+				if (!forward && i == Savepoints.Length - 1)
+					savepoint = GetSavepoint(i - 1);
+			}
+
+			return savepoint;
+		}
+
+		static Savepoint GetSavepoint(int id)
+		{
+			var originalCheckpt = Globals.levelsManager.GetCurrentCheckPoint();
+			Globals.levelsManager.SetCurrentCheckpoint(id);
+			var s = Globals.levelsManager.GetSavepoint();
+			Globals.levelsManager.SetCurrentCheckpoint(originalCheckpt);
+			return s;
 		}
 
 		public void OnGUI()
