@@ -15,6 +15,7 @@ from tkinter.ttk import Frame, Button, Label, Entry
 def data_path(path):
 	if hasattr(sys, '_MEIPASS'):
 		return os.path.join(sys._MEIPASS, path)
+	# below is for when the app isn't bundled into a single executable
 	if path.startswith("bin/"):
 		p = platform.system().lower()
 		if p == "windows":
