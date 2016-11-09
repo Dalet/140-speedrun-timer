@@ -1,5 +1,6 @@
 ﻿using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System;
 using System.Linq;
 
 namespace SpeedrunTimerModInstaller
@@ -47,6 +48,19 @@ namespace SpeedrunTimerModInstaller
 				path = _gameDllPath;
 			var gameAsmDef = AssemblyDefinition.ReadAssembly(path, _readerParams);
 			return gameAsmDef.MainModule.AssemblyReferences.Any(a => a.Name.ToLower().Contains("speedrun"));
+		}
+
+		public Version GetModDllVersion()
+		{
+			var gameAsmDef = AssemblyDefinition.ReadAssembly(_gameDllPath, _readerParams);
+			var modRef = gameAsmDef.MainModule.AssemblyReferences.First(a => a.Name.ToLower().Contains("speedrun"));
+			var modDllDef = AssemblyDefinition.ReadAssembly(_modDllPath, _readerParams);
+			var modDllVer = modDllDef.Name.Version;
+
+			if (modRef.Version == modDllVer)
+				return modDllVer;
+			else
+				return null;
 		}
 
 		static void Insert_Inject(ModuleDefinition gameModule, ModuleDefinition modModule)

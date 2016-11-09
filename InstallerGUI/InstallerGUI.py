@@ -39,6 +39,7 @@ class ExitCode(IntEnum):
 	ManualInstallationDetected = 5
 	AlreadyDone = 6
 	PermissionError = 7
+	Upgradable = 8
 
 class Form(Frame):
 
@@ -99,10 +100,14 @@ class Form(Frame):
 	def btnInstall_OnClick(self):
 		self.btnInstall['state'] = tkinter.DISABLED;
 
-		if self.btnInstall['text'] == "Install":
+		btnInstallText = self.btnInstall['text']
+
+		if btnInstallText == "Install":
 			self.install()
-		elif self.btnInstall['text'] == "Uninstall":
+		elif btnInstallText == "Uninstall":
 			self.uninstall()
+		elif btnInstallText == "Upgrade":
+			self.upgrade()
 
 		self.check_install()
 
@@ -122,6 +127,20 @@ class Form(Frame):
 			message = "Unexpected error " + str(exitCode)
 		messagebox.showerror(word + "ation error", message)
 
+	def upgrade(self):
+		exitCode = upgrade(self.gamePath.get())
+
+		if exitCode == ExitCode.Success:
+			messagebox.showinfo("Upgrade", "Upgrade success.")
+			return
+		elif exitCode == ExitCode.PermissionError:
+			message = "Permission denied.\nRestart the installer as administrator."
+		elif exitCode == ExitCode.InvalidPath:
+			message = "Invalid path"
+		else:
+			message = "Unexpected error " + str(exitCode)
+		messagebox.showerror("Upgrade error", message)
+
 	def uninstall(self):
 		return self.install(True);
 
@@ -140,6 +159,8 @@ class Form(Frame):
 			btnText = "Uninstall"
 		elif e == ExitCode.NotInstalled:
 			btnText = "Install"
+		elif e == ExitCode.Upgradable:
+			btnText = "Upgrade"
 		elif e == ExitCode.InvalidPath:
 			btnState = tkinter.DISABLED
 			messagebox.showwarning(msgTitle, "Invalid game folder")
@@ -173,6 +194,10 @@ def check_install(path):
 def install(path, uninstall=False):
 	arg = "--install" if not uninstall else "--uninstall"
 	output, e = commandLine(data_path("bin/speedrun-timer-installer.exe"), arg, path)
+	return e
+
+def upgrade(path):
+	output, e = commandLine(data_path("bin/speedrun-timer-installer.exe"), "--upgrade", path)
 	return e
 
 def commandLine(*args):

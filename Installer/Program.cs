@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 
 namespace SpeedrunTimerModInstaller
 {
@@ -13,7 +14,8 @@ namespace SpeedrunTimerModInstaller
 			NotInstalled,
 			ManualInstallationDetected,
 			AlreadyDone,
-			PermissionError
+			PermissionError,
+			Upgradable
 		}
 
 		static Installer _installer;
@@ -40,6 +42,9 @@ namespace SpeedrunTimerModInstaller
 							break;
 						case "--check-install":
 							exitCode = CheckInstall(GetNextArg(args, i));
+							break;
+						case "--upgrade":
+							exitCode = Upgrade(GetNextArg(args, i));
 							break;
 						default:
 							break;
@@ -88,7 +93,13 @@ namespace SpeedrunTimerModInstaller
 			}
 
 			if (_installer.IsUninstallable())
+			{
+				var installedVer = _installer.Patcher.GetModDllVersion();
+				var installerVer = Assembly.GetExecutingAssembly().GetName().Version;
+				if (installedVer != null && installerVer > installedVer)
+					return ExitCode.Upgradable;
 				return ExitCode.Success;
+			}
 			else if (_installer.Patcher.IsGameDllPatched())
 				return ExitCode.ManualInstallationDetected;
 			else
@@ -139,6 +150,23 @@ namespace SpeedrunTimerModInstaller
 					return ExitCode.ManualInstallationDetected;
 				_installer.UnInstall();
 			}
+
+			return ExitCode.Success;
+		}
+
+		static ExitCode Upgrade(string path)
+		{
+			if (!Init(path))
+			{
+				Console.Error.WriteLine("Invalid install path");
+				return ExitCode.InvalidPath;
+			}
+
+			if (CheckInstall(path) != ExitCode.Upgradable)
+				return ExitCode.Error;
+
+			_installer.UnInstall();
+			_installer.Install();
 
 			return ExitCode.Success;
 		}
