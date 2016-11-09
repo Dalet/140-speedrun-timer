@@ -41,9 +41,11 @@ namespace SpeedrunTimerModInstaller
 			gameAsmDef.Write(destination);
 		}
 
-		public bool IsGameDllPatched()
+		public bool IsGameDllPatched(string path = null)
 		{
-			var gameAsmDef = AssemblyDefinition.ReadAssembly(_gameDllPath, _readerParams);
+			if (path == null)
+				path = _gameDllPath;
+			var gameAsmDef = AssemblyDefinition.ReadAssembly(path, _readerParams);
 			return gameAsmDef.MainModule.AssemblyReferences.Any(a => a.Name.ToLower().Contains("speedrun"));
 		}
 

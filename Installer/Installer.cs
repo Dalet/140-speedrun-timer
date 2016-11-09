@@ -97,7 +97,7 @@ namespace SpeedrunTimerModInstaller
 			if (!isGamePathValid())
 				return false;
 
-			if (File.Exists(_gameDllBackupPath))
+			if (File.Exists(_gameDllBackupPath) && !Patcher.IsGameDllPatched(_gameDllBackupPath))
 				return true;
 			return false;
 		}
