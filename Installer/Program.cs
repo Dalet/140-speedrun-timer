@@ -125,20 +125,20 @@ namespace SpeedrunTimerModInstaller
 				return ExitCode.InvalidPath;
 			}
 
-			var isInstalled = _installer.IsUninstallable();
-
-			if ((install && isInstalled)
-				|| (!install && !isInstalled))
-			{
-				if (!install && _installer.Patcher.IsGameDllPatched())
-					return ExitCode.ManualInstallationDetected;
-				return ExitCode.AlreadyDone;
-			}
+			var unInstallable = _installer.IsUninstallable();
 
 			if (install)
+			{
+				if (unInstallable)
+					return ExitCode.AlreadyDone;
 				_installer.Install();
+			}
 			else
+			{
+				if (!unInstallable && _installer.Patcher.IsGameDllPatched())
+					return ExitCode.ManualInstallationDetected;
 				_installer.UnInstall();
+			}
 
 			return ExitCode.Success;
 		}
