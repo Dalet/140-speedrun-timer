@@ -139,13 +139,11 @@ class Form(Frame):
 		if e == ExitCode.Success:
 			btnText = "Uninstall"
 		elif e == ExitCode.NotInstalled:
-			btnState = tkinter.NORMAL
 			btnText = "Install"
 		elif e == ExitCode.InvalidPath:
 			btnState = tkinter.DISABLED
 			messagebox.showwarning(msgTitle, "Invalid game folder")
 		elif e == ExitCode.ManualInstallationDetected:
-			btnText = "Install"
 			messagebox.showwarning(msgTitle, "A manual installation of the mod was detected.\n" \
 			+ "This installer requires the game files to be clean. Verify the game files in Steam before trying again.")
 		elif e == ExitCode.PermissionError:
