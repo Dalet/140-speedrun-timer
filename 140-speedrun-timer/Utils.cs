@@ -47,6 +47,35 @@ namespace SpeedrunTimerMod
 			return def;
 		}
 
+		// https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+		public static Color HslToRgba(float h, float s, float l, float a)
+		{
+			float r, g, b;
+
+			if (s == 0.0f)
+				r = g = b = l;
+			else
+			{
+				var q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
+				var p = 2.0f * l - q;
+				r = HueToRgb(p, q, h + 1.0f / 3.0f);
+				g = HueToRgb(p, q, h);
+				b = HueToRgb(p, q, h - 1.0f / 3.0f);
+			}
+
+			return new Color(r, g, b, a);
+		}
+
+		static float HueToRgb(float p, float q, float t)
+		{
+			if (t < 0.0f) t += 1.0f;
+			if (t > 1.0f) t -= 1.0f;
+			if (t < 1.0f / 6.0f) return p + (q - p) * 6.0f * t;
+			if (t < 1.0f / 2.0f) return q;
+			if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
+			return p;
+		}
+
 		internal class Label
 		{
 			public bool enabled = true;
