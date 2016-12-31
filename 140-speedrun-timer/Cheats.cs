@@ -9,15 +9,15 @@ namespace SpeedrunTimerMod
 		public static Savepoint[] Savepoints { get; private set; } = new Savepoint[] { };
 		public static bool RainbowPlayerEnabled { get; set; }
 
-		List<BeatLayerSwitch> beatSwitches;
-		Utils.Label cheatWatermark;
-		float playerHue = 0;
+		List<BeatLayerSwitch> _beatSwitches;
+		Utils.Label _cheatWatermark;
+		float _playerHue;
 
 		public void Awake()
 		{
 			Savepoints = new Savepoint[] { };
 
-			cheatWatermark = new Utils.Label
+			_cheatWatermark = new Utils.Label
 			{
 				position = new Rect(UI.Scale(500), UI.Scale(100), Screen.width, Screen.height),
 				text = "CHEATS ENABLED",
@@ -27,12 +27,12 @@ namespace SpeedrunTimerMod
 					fontStyle = FontStyle.Bold
 				}
 			};
-			cheatWatermark.style.normal.textColor = Color.magenta;
+			_cheatWatermark.style.normal.textColor = Color.magenta;
 		}
 
 		public void Start()
 		{
-			beatSwitches = new List<BeatLayerSwitch>();
+			_beatSwitches = new List<BeatLayerSwitch>();
 
 			var levelsFolder = GameObject.Find("Levels");
 			if (levelsFolder)
@@ -42,18 +42,18 @@ namespace SpeedrunTimerMod
 				var beatLayerSwitches = levelsFolder.GetComponentsInChildren<BeatLayerSwitch>();
 				foreach (var layerSwitch in beatLayerSwitches)
 				{
-					Debug.Log($"[{beatSwitches.Count}] globalBeatLayer={layerSwitch.globalBeatLayer},"
+					Debug.Log($"[{_beatSwitches.Count}] globalBeatLayer={layerSwitch.globalBeatLayer},"
 						+ $"activateAllPreviousLayers={layerSwitch.activateAllPreviousLayers},"
 						+ $"deActivateAllPreivousLayers={layerSwitch.deActivateAllPreviousLayers}");
-					beatSwitches.Add(layerSwitch);
+					_beatSwitches.Add(layerSwitch);
 				}
 
-				beatSwitches.Sort((s1, s2) => s1.globalBeatLayer < s2.globalBeatLayer ? -1 : 1);
+				_beatSwitches.Sort((s1, s2) => s1.globalBeatLayer < s2.globalBeatLayer ? -1 : 1);
 
 				// last switch of level 1 is out of bounds
 				// hub switch will bug out if used with cheats
 				if (Application.loadedLevel <= 1)
-					beatSwitches.RemoveAt(beatSwitches.Count - 1);
+					_beatSwitches.RemoveAt(_beatSwitches.Count - 1);
 			}
 		}
 
@@ -82,29 +82,20 @@ namespace SpeedrunTimerMod
 					if (!Input.GetKeyDown(key))
 						continue;
 
-					MirrorModeManager.mirrorModeActive = rightAlt;
-					MirrorModeManager.respawnFromMirror = false;
-					Application.LoadLevel(key - KeyCode.Alpha1 + 1);
+					LoadLevel(key - KeyCode.Alpha1 + 1, rightAlt);
 					break;
 				}
 			}
-			else
+			else if (!player.IsForceMoveActive() && !player.IsLogicPause())
 			{
 				// check 1 to 9 alpha keys
 				for (var key = KeyCode.Alpha1; key <= KeyCode.Alpha9; key++)
 				{
 					int keyNum = key - KeyCode.Alpha1;
-					if (keyNum >= beatSwitches.Count || !Input.GetKeyDown(key))
+					if (keyNum >= _beatSwitches.Count || !Input.GetKeyDown(key))
 						continue;
 
-					if (player.IsForceMoveActive() || player.IsLogicPause())
-						break;
-
-					var beatSwitch = beatSwitches[keyNum];
-					player.SetVelocity(Vector2.zero);
-					player.PlacePlayerCharacter(beatSwitch.transform.position, true);
-					if (beatSwitch.globalBeatLayer >= Globals.beatMaster.GetCurrentBeatLayer())
-						beatSwitch.CheatUse();
+					TeleportToBeatLayerSwitch(_beatSwitches[keyNum]);
 					break;
 				}
 			}
@@ -143,22 +134,40 @@ namespace SpeedrunTimerMod
 					if (RainbowPlayerEnabled)
 						RainbowPlayerEnabled = false;
 					else
-						TogglePlayerColor(player);
+						TogglePlayerColor();
 				}
 			}
+
+			RainbowPlayerUpdate();
 		}
 
-		public void FixedUpdate()
+		void RainbowPlayerUpdate()
 		{
 			if (!RainbowPlayerEnabled)
 				return;
 
 			var player = Globals.player.GetComponent<MyCharacterController>();
-			var c = Utils.HslToRgba(playerHue, 1, 0.5f, 1);
+			var c = Utils.HslToRgba(_playerHue, 1, 0.5f, 1);
 			player.visualPlayer.SetColor(c, 1f);
-			playerHue += 0.01f;
-			if (playerHue > 1)
-				playerHue = 0;
+			_playerHue += 0.5f * Time.deltaTime;
+			if (_playerHue > 1)
+				_playerHue = 0;
+		}
+
+		public static void LoadLevel(int level, bool mirrored)
+		{
+			MirrorModeManager.mirrorModeActive = mirrored;
+			MirrorModeManager.respawnFromMirror = false;
+			Application.LoadLevel(level);
+		}
+
+		public static void TeleportToBeatLayerSwitch(BeatLayerSwitch beatSwitch)
+		{
+			var player = Globals.player.GetComponent<MyCharacterController>();
+			player.SetVelocity(Vector2.zero);
+			player.PlacePlayerCharacter(beatSwitch.transform.position, true);
+			if (beatSwitch.globalBeatLayer >= Globals.beatMaster.GetCurrentBeatLayer())
+				beatSwitch.CheatUse();
 		}
 
 		public static void TeleportToSavepoint(Savepoint savepoint)
@@ -232,8 +241,9 @@ namespace SpeedrunTimerMod
 			return s;
 		}
 
-		static void TogglePlayerColor(MyCharacterController player)
+		public static void TogglePlayerColor()
 		{
+			var player = Globals.player.GetComponent<MyCharacterController>();
 			var color = player.visualPlayer.GetColor() == Color.black
 				? Color.white
 				: Color.black;
@@ -243,7 +253,7 @@ namespace SpeedrunTimerMod
 		public void OnGUI()
 		{
 			if (Enabled)
-				cheatWatermark.OnGUI();
+				_cheatWatermark.OnGUI();
 		}
 	}
 }

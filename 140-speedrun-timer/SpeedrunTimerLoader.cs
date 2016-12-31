@@ -4,7 +4,7 @@ namespace SpeedrunTimerMod
 {
 	sealed class SpeedrunTimerLoader : MonoBehaviour
 	{
-		static GameObject modObject;
+		static GameObject _modObject;
 
 		public void Awake()
 		{
@@ -12,11 +12,11 @@ namespace SpeedrunTimerMod
 			modLevelObject.AddComponent<Misc>();
 			modLevelObject.AddComponent<Cheats>();
 
-			if (modObject != null)
+			if (_modObject != null)
 				return;
-			modObject = new GameObject();
-			modObject.AddComponent<SpeedrunTimer>();
-			DontDestroyOnLoad(modObject);
+			_modObject = new GameObject();
+			_modObject.AddComponent<SpeedrunTimer>();
+			DontDestroyOnLoad(_modObject);
 			Destroy(this);
 		}
 

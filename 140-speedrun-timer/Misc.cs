@@ -4,8 +4,8 @@ namespace SpeedrunTimerMod
 {
 	internal sealed class Misc : MonoBehaviour
 	{
-		float resetTimer;
-		float resetHits;
+		float _resetTimer;
+		float _resetHits;
 
 		static int _beatIndex = -1;
 		public static int BeatIndex
@@ -32,21 +32,21 @@ namespace SpeedrunTimerMod
 			if (Application.isLoadingLevel)
 				return;
 
-			if (resetHits == 1)
-				resetTimer += Time.deltaTime;
+			if (_resetHits == 1)
+				_resetTimer += Time.deltaTime;
 
-			if (resetTimer > 0.5f)
-				resetHits = 0;
+			if (_resetTimer > 0.5f)
+				_resetHits = 0;
 
 			if (Input.GetKeyDown(KeyCode.R))
 			{
-				if (resetHits == 0)
-					resetTimer = 0;
+				if (_resetHits == 0)
+					_resetTimer = 0;
 
-				resetHits++;
-				if (resetHits > 1 && resetTimer < 0.5f)
+				_resetHits++;
+				if (_resetHits > 1 && _resetTimer < 0.5f)
 				{
-					resetHits = 0;
+					_resetHits = 0;
 					SpeedrunTimer.Instance.ResetTimer();
 					MirrorModeManager.mirrorModeActive = false;
 					MirrorModeManager.respawnFromMirror = false;

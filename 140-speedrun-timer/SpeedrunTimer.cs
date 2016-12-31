@@ -9,19 +9,19 @@ namespace SpeedrunTimerMod
 		static SpeedrunTimer instance;
 		public static SpeedrunTimer Instance => instance;
 
-		public static bool IsGameTimePaused => instance?.isGameTimePaused ?? false;
-		public static bool IsRunning => instance?.sw_realTime.IsRunning ?? false;
+		public static bool IsGameTimePaused => instance?._isGameTimePaused ?? false;
+		public static bool IsRunning => instance?._sw_realTime.IsRunning ?? false;
 
-		public static double GameTime => instance?.gameTime ?? 0;
-		public static double RealTime => instance?.realTime ?? 0;
+		public static double GameTime => instance?._gameTime ?? 0;
+		public static double RealTime => instance?._realTime ?? 0;
 
-		bool isGameTimePaused;
-		double gameTime;
-		double realTime;
-		Stopwatch sw_gameTime = new Stopwatch();
-		Stopwatch sw_realTime = new Stopwatch();
+		bool _isGameTimePaused;
+		double _gameTime;
+		double _realTime;
+		Stopwatch _sw_gameTime = new Stopwatch();
+		Stopwatch _sw_realTime = new Stopwatch();
 
-		Action lateUpdateAction;
+		Action _lateUpdateAction;
 
 		public void Awake()
 		{
@@ -31,34 +31,34 @@ namespace SpeedrunTimerMod
 
 		public void LateUpdate()
 		{
-			if (lateUpdateAction != null)
+			if (_lateUpdateAction != null)
 			{
-				lateUpdateAction();
-				lateUpdateAction = null;
+				_lateUpdateAction();
+				_lateUpdateAction = null;
 			}
 
-			realTime = sw_realTime.ElapsedSeconds();
-			gameTime = sw_gameTime.ElapsedSeconds();
+			_realTime = _sw_realTime.ElapsedSeconds();
+			_gameTime = _sw_gameTime.ElapsedSeconds();
 		}
 
 		void DoAfterUpdate(Action action)
 		{
-			if (lateUpdateAction != null)
+			if (_lateUpdateAction != null)
 				return;
 
-			lateUpdateAction = action;
+			_lateUpdateAction = action;
 		}
 
 		public void StartTimer()
 		{
-			if (IsRunning || realTime > 0 || Application.loadedLevelName != "Level_Menu")
+			if (IsRunning || _realTime > 0 || Application.loadedLevelName != "Level_Menu")
 				return;
 
 			DoAfterUpdate(() =>
 			{
 				ResetTimer();
-				sw_gameTime.Start();
-				sw_realTime.Start();
+				_sw_gameTime.Start();
+				_sw_realTime.Start();
 			});
 		}
 
@@ -66,39 +66,39 @@ namespace SpeedrunTimerMod
 		{
 			DoAfterUpdate(() =>
 			{
-				sw_gameTime.Stop();
-				sw_realTime.Stop();
+				_sw_gameTime.Stop();
+				_sw_realTime.Stop();
 			});
 		}
 
 		public void ResetTimer()
 		{
-			sw_gameTime.Reset();
-			sw_realTime.Reset();
-			isGameTimePaused = false;
+			_sw_gameTime.Reset();
+			_sw_realTime.Reset();
+			_isGameTimePaused = false;
 		}
 
 		public void StartLoad()
 		{
-			if (isGameTimePaused)
+			if (_isGameTimePaused)
 				return;
 
 			DoAfterUpdate(() =>
 			{
-				sw_gameTime.Stop();
-				isGameTimePaused = true;
+				_sw_gameTime.Stop();
+				_isGameTimePaused = true;
 			});
 		}
 
 		public void EndLoad()
 		{
-			if (!isGameTimePaused)
+			if (!_isGameTimePaused)
 				return;
 
 			DoAfterUpdate(() =>
 			{
-				sw_gameTime.Start();
-				isGameTimePaused = false;
+				_sw_gameTime.Start();
+				_isGameTimePaused = false;
 			});
 		}
 	}

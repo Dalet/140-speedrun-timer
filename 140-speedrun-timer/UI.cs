@@ -7,12 +7,12 @@ namespace SpeedrunTimerMod
 {
 	internal sealed class UI : MonoBehaviour
 	{
-		Utils.Label gameTimeLabel;
-		Utils.Label realTimeLabel;
-		Utils.Label updateLabel;
-		Utils.Label debugLabel;
-		Utils.Label titleLabel;
-		MyCharacterController player;
+		Utils.Label _gameTimeLabel;
+		Utils.Label _realTimeLabel;
+		Utils.Label _updateLabel;
+		Utils.Label _debugLabel;
+		Utils.Label _titleLabel;
+		MyCharacterController _player;
 
 		const int BASE_UI_RESOLUTION = 720;
 
@@ -29,21 +29,21 @@ namespace SpeedrunTimerMod
 				fontStyle = FontStyle.Bold,
 			};
 
-			gameTimeLabel = new Utils.Label()
+			_gameTimeLabel = new Utils.Label()
 			{
 				style = timerStyle,
 				position = new Rect(Scale(4), 0, Screen.width, Screen.height)
 			};
 
-			realTimeLabel = new Utils.Label()
+			_realTimeLabel = new Utils.Label()
 			{
 				enabled = false,
-				position = new Rect(gameTimeLabel.position.xMin, gameTimeLabel.position.yMin + timerStyle.fontSize,
-					gameTimeLabel.position.width, gameTimeLabel.position.height),
+				position = new Rect(_gameTimeLabel.position.xMin, _gameTimeLabel.position.yMin + timerStyle.fontSize,
+					_gameTimeLabel.position.width, _gameTimeLabel.position.height),
 				style = timerStyle
 			};
 
-			updateLabel = new Utils.Label()
+			_updateLabel = new Utils.Label()
 			{
 				style = new GUIStyle
 				{
@@ -51,9 +51,9 @@ namespace SpeedrunTimerMod
 					fontStyle = FontStyle.Bold
 				},
 			};
-			updateLabel.position = new Rect(Scale(4), Screen.height - updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height);
+			_updateLabel.position = new Rect(Scale(4), Screen.height - _updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height);
 
-			debugLabel = new Utils.Label()
+			_debugLabel = new Utils.Label()
 			{
 				enabled = false,
 				style = new GUIStyle
@@ -62,43 +62,43 @@ namespace SpeedrunTimerMod
 					fontStyle = FontStyle.Bold
 				}
 			};
-			debugLabel.position = new Rect(Scale(4), updateLabel.position.yMin - debugLabel.style.fontSize * 5 - Scale(3),
+			_debugLabel.position = new Rect(Scale(4), _updateLabel.position.yMin - _debugLabel.style.fontSize * 5 - Scale(3),
 					Screen.width, Screen.height);
 
-			titleLabel = new Utils.Label()
+			_titleLabel = new Utils.Label()
 			{
-				style = gameTimeLabel.style,
-				position = gameTimeLabel.position,
+				style = _gameTimeLabel.style,
+				position = _gameTimeLabel.position,
 				text = $"Speedrun Timer v{ Utils.FormatVersion(Assembly.GetExecutingAssembly().GetName().Version)}"
 #if DEBUG
 					+ " (debug)"
 #endif
 			};
 
-			timerStyle.normal.textColor = debugLabel.style.normal.textColor
-				= updateLabel.style.normal.textColor = color;
+			timerStyle.normal.textColor = _debugLabel.style.normal.textColor
+				= _updateLabel.style.normal.textColor = color;
 
 			ReadSettings();
-			titleLabel.enabled = !gameTimeLabel.enabled;
+			_titleLabel.enabled = !_gameTimeLabel.enabled;
 		}
 
 		public void OnGUI()
 		{
 
-			if (!gameTimeLabel.enabled && Time.realtimeSinceStartup < 10)
-				titleLabel.OnGUI();
+			if (!_gameTimeLabel.enabled && Time.realtimeSinceStartup < 10)
+				_titleLabel.OnGUI();
 
-			if (gameTimeLabel.enabled)
+			if (_gameTimeLabel.enabled)
 			{
-				gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.GameTime));
-				realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.RealTime));
+				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.GameTime));
+				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.RealTime));
 			}
 
-			if (debugLabel.enabled)
+			if (_debugLabel.enabled)
 			{
-				var pos = player.transform.position;
+				var pos = _player.transform.position;
 				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
-				debugLabel.OnGUI(
+				_debugLabel.OnGUI(
 					$"Checkpoint: {currentCheckpoint + 1}/{Cheats.Savepoints.Length} | Beat: {Misc.BeatDbgStr} | Pos: ({PadPosition(pos.x)}, {PadPosition(pos.y)})\n"
 					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {SpeedrunTimer.IsRunning} | IsGameTimePaused: {SpeedrunTimer.IsGameTimePaused}\n"
 					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion}"
@@ -106,7 +106,7 @@ namespace SpeedrunTimerMod
 			}
 
 			if (Updater.NeedUpdate)
-				updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
+				_updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
 		}
 
 		static string PadPosition(float p)
@@ -124,34 +124,34 @@ namespace SpeedrunTimerMod
 
 		public void Update()
 		{
-			player = Globals.player.GetComponent<MyCharacterController>();
+			_player = Globals.player.GetComponent<MyCharacterController>();
 
 			if (Input.GetKeyDown(KeyCode.F1))
 			{
-				realTimeLabel.enabled = !realTimeLabel.enabled || !gameTimeLabel.enabled;
-				gameTimeLabel.enabled = true;
+				_realTimeLabel.enabled = !_realTimeLabel.enabled || !_gameTimeLabel.enabled;
+				_gameTimeLabel.enabled = true;
 			}
 
 			if (Input.GetKeyDown(KeyCode.F2))
 			{
-				gameTimeLabel.enabled = !gameTimeLabel.enabled;
-				titleLabel.enabled = false;
+				_gameTimeLabel.enabled = !_gameTimeLabel.enabled;
+				_titleLabel.enabled = false;
 			}
 
 			if (Input.GetKeyDown(KeyCode.F3))
-				debugLabel.enabled = !debugLabel.enabled;
+				_debugLabel.enabled = !_debugLabel.enabled;
 		}
 
 		void ReadSettings()
 		{
-			gameTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowTimer", gameTimeLabel.enabled);
-			realTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowRealTime", realTimeLabel.enabled);
+			_gameTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowTimer", _gameTimeLabel.enabled);
+			_realTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowRealTime", _realTimeLabel.enabled);
 		}
 
 		public void OnApplicationQuit()
 		{
-			Utils.PlayerPrefsSetBool("ShowTimer", gameTimeLabel.enabled);
-			Utils.PlayerPrefsSetBool("ShowRealTime", realTimeLabel.enabled);
+			Utils.PlayerPrefsSetBool("ShowTimer", _gameTimeLabel.enabled);
+			Utils.PlayerPrefsSetBool("ShowRealTime", _realTimeLabel.enabled);
 			PlayerPrefs.Save();
 		}
 
