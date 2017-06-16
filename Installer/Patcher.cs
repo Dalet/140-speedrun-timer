@@ -53,7 +53,10 @@ namespace SpeedrunTimerModInstaller
 		public Version GetModDllVersion()
 		{
 			var gameAsmDef = AssemblyDefinition.ReadAssembly(_gameDllPath, _readerParams);
-			var modRef = gameAsmDef.MainModule.AssemblyReferences.First(a => a.Name.ToLower().Contains("speedrun"));
+			var modRef = gameAsmDef.MainModule.AssemblyReferences.FirstOrDefault(a => a.Name.ToLower().Contains("speedrun"));
+			if (modRef == null)
+				return null;
+
 			var modDllDef = AssemblyDefinition.ReadAssembly(_modDllPath, _readerParams);
 			var modDllVer = modDllDef.Name.Version;
 
