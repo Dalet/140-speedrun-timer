@@ -16,6 +16,7 @@ namespace SpeedrunTimerMod
 		public static double RealTime => instance?._realTime ?? 0;
 
 		bool _isGameTimePaused;
+		bool _visualFreeze;
 		double _gameTime;
 		double _realTime;
 		Stopwatch _sw_gameTime = new Stopwatch();
@@ -27,6 +28,9 @@ namespace SpeedrunTimerMod
 		{
 			instance = this;
 			gameObject.AddComponent<UI>();
+
+			if (Application.loadedLevel == 5) // level 4
+				Unfreeze();
 		}
 
 		public void LateUpdate()
@@ -37,6 +41,14 @@ namespace SpeedrunTimerMod
 				_lateUpdateAction = null;
 			}
 
+			if (!_visualFreeze)
+			{
+				UpdateVisibleTime();
+			}
+		}
+
+		void UpdateVisibleTime()
+		{
 			_realTime = _sw_realTime.ElapsedSeconds();
 			_gameTime = _sw_gameTime.ElapsedSeconds();
 		}
@@ -100,6 +112,20 @@ namespace SpeedrunTimerMod
 				_sw_gameTime.Start();
 				_isGameTimePaused = false;
 			});
+		}
+
+		public void Freeze()
+		{
+			_visualFreeze = true;
+			DoAfterUpdate(() =>
+			{
+				UpdateVisibleTime();
+			});
+		}
+
+		public void Unfreeze()
+		{
+			_visualFreeze = false;
 		}
 	}
 }

@@ -11,5 +11,25 @@ namespace SpeedrunTimerMod
 				SpeedrunTimer.Instance?.EndLoad();
 			}
 		}
+
+		public static void OnLevel3BossEnd()
+		{
+			SpeedrunTimer.Instance.Freeze();
+		}
+
+		public static void OnLevel4BossEnd()
+		{
+			SpeedrunTimer.Instance.StopTimer();
+		}
+
+		public static void OnMenuKeyUsed()
+		{
+			SpeedrunTimer.Instance.StartLoad();
+		}
+
+		public static void OnResumeAfterDeath()
+		{
+			SpeedrunTimer.Instance.StartTimer();
+		}
 	}
 }
