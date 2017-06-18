@@ -42,9 +42,6 @@ namespace SpeedrunTimerMod
 				var beatLayerSwitches = levelsFolder.GetComponentsInChildren<BeatLayerSwitch>();
 				foreach (var layerSwitch in beatLayerSwitches)
 				{
-					Debug.Log($"[{_beatSwitches.Count}] globalBeatLayer={layerSwitch.globalBeatLayer},"
-						+ $"activateAllPreviousLayers={layerSwitch.activateAllPreviousLayers},"
-						+ $"deActivateAllPreivousLayers={layerSwitch.deActivateAllPreviousLayers}");
 					_beatSwitches.Add(layerSwitch);
 				}
 
@@ -70,25 +67,22 @@ namespace SpeedrunTimerMod
 				else
 					return;
 			}
-
 			var player = Globals.player.GetComponent<MyCharacterController>();
 
 			var rightAlt = Input.GetKey(KeyCode.RightAlt);
 			if (rightAlt || Input.GetKey(KeyCode.LeftAlt))
 			{
-				// check 1 to 3 alpha keys
-				for (var key = KeyCode.Alpha1; key <= KeyCode.Alpha3; key++)
+				for (var key = KeyCode.Alpha1; key <= KeyCode.Alpha4; key++)
 				{
 					if (!Input.GetKeyDown(key))
 						continue;
 
-					LoadLevel(key - KeyCode.Alpha1 + 1, rightAlt);
+					LoadLevel(key - KeyCode.Alpha0, rightAlt);
 					break;
 				}
 			}
 			else if (!player.IsForceMoveActive() && !player.IsLogicPause())
 			{
-				// check 1 to 9 alpha keys
 				for (var key = KeyCode.Alpha1; key <= KeyCode.Alpha9; key++)
 				{
 					int keyNum = key - KeyCode.Alpha1;
@@ -156,8 +150,13 @@ namespace SpeedrunTimerMod
 
 		public static void LoadLevel(int level, bool mirrored)
 		{
+			// levels are offset by 1 in the 2017 update
+			if (!SpeedrunTimerLoader.IsLegacyVersion)
+				level++;
+
 			MirrorModeManager.mirrorModeActive = mirrored;
 			MirrorModeManager.respawnFromMirror = false;
+
 			Application.LoadLevel(level);
 		}
 

@@ -15,12 +15,15 @@ namespace SpeedrunTimerMod
 		public static double GameTime => instance?._gameTime ?? 0;
 		public static double RealTime => instance?._realTime ?? 0;
 
+		public bool Level3Completed { get; set; }
+		public bool Level4Completed { get; set; }
+
 		bool _isGameTimePaused;
-		bool _visualFreeze;
 		double _gameTime;
 		double _realTime;
 		Stopwatch _sw_gameTime = new Stopwatch();
 		Stopwatch _sw_realTime = new Stopwatch();
+		bool _visualFreeze;
 
 		Action _lateUpdateAction;
 
@@ -28,9 +31,6 @@ namespace SpeedrunTimerMod
 		{
 			instance = this;
 			gameObject.AddComponent<UI>();
-
-			if (Application.loadedLevel == 5) // level 4
-				Unfreeze();
 		}
 
 		public void LateUpdate()
@@ -61,6 +61,34 @@ namespace SpeedrunTimerMod
 			_lateUpdateAction = action;
 		}
 
+		public void CompleteLevel3()
+		{
+			Level3Completed = true;
+			LevelCompleted();
+		}
+
+		public void CompleteLevel4()
+		{
+			Level4Completed = true;
+			LevelCompleted();
+		}
+
+		void LevelCompleted()
+		{
+			if (SpeedrunTimerLoader.IsLegacyVersion)
+			{
+				StopTimer();
+			}
+			else if (Level3Completed && Level4Completed)
+			{
+				StopTimer();
+			}
+			else
+			{
+				Freeze();
+			}
+		}
+
 		public void StartTimer()
 		{
 			if (IsRunning || _realTime > 0 || Application.loadedLevelName != "Level_Menu")
@@ -78,6 +106,7 @@ namespace SpeedrunTimerMod
 		{
 			DoAfterUpdate(() =>
 			{
+				_visualFreeze = false;
 				_sw_gameTime.Stop();
 				_sw_realTime.Stop();
 			});
@@ -88,6 +117,8 @@ namespace SpeedrunTimerMod
 			_sw_gameTime.Reset();
 			_sw_realTime.Reset();
 			_isGameTimePaused = false;
+			_visualFreeze = false;
+			Level3Completed = Level4Completed = false;
 		}
 
 		public void StartLoad()
@@ -116,9 +147,9 @@ namespace SpeedrunTimerMod
 
 		public void Freeze()
 		{
-			_visualFreeze = true;
 			DoAfterUpdate(() =>
 			{
+				_visualFreeze = true;
 				UpdateVisibleTime();
 			});
 		}
