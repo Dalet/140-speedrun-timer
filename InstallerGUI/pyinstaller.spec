@@ -21,10 +21,10 @@ elif p == "darwin":
 elif p == "linux":
 	if sys.maxsize > 2**32:
 		platform_name = "linux_x64"
-		executableName += ".linux_x64"
+		executableName += "_linux.x64"
 	else:
 		platform_name = "linux_x86"
-		executableName += ".linux_x86"
+		executableName += "_linux.x86"
 
 
 # copy windows binaries
