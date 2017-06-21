@@ -29,17 +29,8 @@ namespace SpeedrunTimerMod
 
 		public static void OnResumeAfterDeath()
 		{
-			SpeedrunTimer.Instance.StartTimer();
-		}
-
-		public void Awake()
-		{
-			if (SpeedrunTimerLoader.IsLegacyVersion)
-				return;
-
-			// timer is frozen at the end of level 3 incase it is the legacy category
-			if (Application.loadedLevel == 4 || Application.loadedLevel == 5) // 5 == level 4
-				SpeedrunTimer.Instance.Unfreeze();
+			if (Application.loadedLevelName == "Level_Menu")
+				SpeedrunTimer.Instance.StartTimer();
 		}
 	}
 }

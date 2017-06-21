@@ -15,9 +15,6 @@ namespace SpeedrunTimerMod
 		public static double GameTime => instance?._gameTime ?? 0;
 		public static double RealTime => instance?._realTime ?? 0;
 
-		public bool Level3Completed { get; set; }
-		public bool Level4Completed { get; set; }
-
 		bool _isGameTimePaused;
 		double _gameTime;
 		double _realTime;
@@ -25,20 +22,31 @@ namespace SpeedrunTimerMod
 		Stopwatch _sw_realTime = new Stopwatch();
 		bool _visualFreeze;
 
-		Action _lateUpdateAction;
+		event Action LateUpdateActions;
 
-		public void Awake()
+		void Awake()
 		{
 			instance = this;
 			gameObject.AddComponent<UI>();
 		}
 
-		public void LateUpdate()
+		void OnLevelWasLoaded(int index)
 		{
-			if (_lateUpdateAction != null)
+			// unfreeze the timer on level loads
+			if (Application.loadedLevelName != "Level_Menu")
+				Unfreeze();
+
+			// end of the 'Level 3 -> Menu' load
+			if (Application.loadedLevelName == "Level_Menu")
+				EndLoad();
+		}
+
+		void LateUpdate()
+		{
+			if (LateUpdateActions != null)
 			{
-				_lateUpdateAction();
-				_lateUpdateAction = null;
+				LateUpdateActions();
+				LateUpdateActions = null;
 			}
 
 			if (!_visualFreeze)
@@ -55,38 +63,23 @@ namespace SpeedrunTimerMod
 
 		void DoAfterUpdate(Action action)
 		{
-			if (_lateUpdateAction != null)
-				return;
-
-			_lateUpdateAction = action;
+			LateUpdateActions += action;
 		}
 
 		public void CompleteLevel3()
 		{
-			Level3Completed = true;
 			LevelCompleted();
+			StartLoad();
 		}
 
 		public void CompleteLevel4()
 		{
-			Level4Completed = true;
 			LevelCompleted();
 		}
 
 		void LevelCompleted()
 		{
-			if (SpeedrunTimerLoader.IsLegacyVersion)
-			{
-				StopTimer();
-			}
-			else if (Level3Completed && Level4Completed)
-			{
-				StopTimer();
-			}
-			else
-			{
-				Freeze();
-			}
+			Freeze();
 		}
 
 		public void StartTimer()
@@ -118,12 +111,11 @@ namespace SpeedrunTimerMod
 			_sw_realTime.Reset();
 			_isGameTimePaused = false;
 			_visualFreeze = false;
-			Level3Completed = Level4Completed = false;
 		}
 
 		public void StartLoad()
 		{
-			if (_isGameTimePaused)
+			if (!IsRunning || _isGameTimePaused)
 				return;
 
 			DoAfterUpdate(() =>
@@ -135,7 +127,7 @@ namespace SpeedrunTimerMod
 
 		public void EndLoad()
 		{
-			if (!_isGameTimePaused)
+			if (!IsRunning || !_isGameTimePaused)
 				return;
 
 			DoAfterUpdate(() =>
