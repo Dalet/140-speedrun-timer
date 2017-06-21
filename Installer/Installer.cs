@@ -22,6 +22,7 @@ namespace SpeedrunTimerModInstaller
 
 		public bool SetGamePath(string path) => SetGamePath(path, true);
 
+		// TODO: rewrite without side effects
 		bool SetGamePath(string path, bool recursive)
 		{
 			if (!string.IsNullOrEmpty(path) && Utils.IsUnix() && path.StartsWith("~/"))
