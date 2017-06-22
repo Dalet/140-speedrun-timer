@@ -54,6 +54,7 @@ namespace SpeedrunTimerModInstaller
 			Insert_OnLevel3BossEnd();
 			Insert_OnMenuKeyUsed();
 			Insert_OnPlayerFixedUpdate();
+			Patch_NoCheatAchievements();
 
 			if (!IsLegacyVersion)
 				Insert_OnLevel4BossEnd();
@@ -169,6 +170,18 @@ namespace SpeedrunTimerModInstaller
 			var targetInstruction = ilProc.Body.Instructions.First();
 
 			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
+		}
+
+		void Patch_NoCheatAchievements()
+		{
+			var injectedMethodDef = GetMethodDef(ModModule, "Cheats", "get_Enabled");
+			var injectedMethodRef = GameModule.Import(injectedMethodDef);
+
+			var targetMethod = GetMethodDef(GameModule, "ProgressAndAchivements", "GrantAchievement");
+			var ilProc = targetMethod.Body.GetILProcessor();
+
+			ilProc.InsertBefore(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Call, injectedMethodRef));
+			ilProc.InsertAfter(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Brtrue, ilProc.Body.Instructions.Last()));
 		}
 
 
