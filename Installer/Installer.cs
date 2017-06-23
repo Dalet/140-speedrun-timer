@@ -33,7 +33,7 @@ namespace SpeedrunTimerModInstaller
 			}
 
 			string assembliesPath;
-			if (!isGamePathValid(path) || (assembliesPath = FindAssembliesPath(path)) == null)
+			if (!IsGamePathValid(path) || (assembliesPath = FindAssembliesPath(path)) == null)
 			{
 				GamePath = null;
 				AssembliesPath = null;
@@ -95,7 +95,7 @@ namespace SpeedrunTimerModInstaller
 
 		public bool IsUninstallable()
 		{
-			if (!isGamePathValid())
+			if (!IsGamePathValid())
 				return false;
 
 			if (Patcher.IsGameDllPatched() && File.Exists(_gameDllBackupPath) && !Patcher.IsGameDllPatched(_gameDllBackupPath))
@@ -103,7 +103,7 @@ namespace SpeedrunTimerModInstaller
 			return false;
 		}
 
-		bool isGamePathValid(string path = null)
+		bool IsGamePathValid(string path = null)
 		{
 			if (path == null)
 				path = GamePath;

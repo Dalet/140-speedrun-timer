@@ -21,8 +21,8 @@ namespace SpeedrunTimerModInstaller
 		Lazy<AssemblyDefinition> _gameAsmDef;
 		Lazy<AssemblyDefinition> _modAsmDef;
 
-		ModuleDefinition GameModule => GameAsmDef.MainModule;
-		ModuleDefinition ModModule => ModAsmDef.MainModule;
+		ModuleDefinition GameModule => GameAsmDef?.MainModule;
+		ModuleDefinition ModModule => ModAsmDef?.MainModule;
 
 		public Patcher(string assembliesPath, string gameDllPath, string modDllPath)
 		{
@@ -33,13 +33,41 @@ namespace SpeedrunTimerModInstaller
 			_resolver.AddSearchDirectory(assembliesPath);
 			_readerParams = new ReaderParameters { AssemblyResolver = _resolver };
 
-			_gameAsmDef = new Lazy<AssemblyDefinition>(() => AssemblyDefinition.ReadAssembly(_gameDllPath, _readerParams));
-			_modAsmDef = new Lazy<AssemblyDefinition>(() => AssemblyDefinition.ReadAssembly(_modDllPath, _readerParams));
+			_gameAsmDef = new Lazy<AssemblyDefinition>(() =>
+			{
+				try
+				{
+					return AssemblyDefinition.ReadAssembly(_gameDllPath, _readerParams);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					throw;
+				}
+				catch
+				{
+					return null;
+				}
+			});
+			_modAsmDef = new Lazy<AssemblyDefinition>(() =>
+			{
+				try
+				{
+					return AssemblyDefinition.ReadAssembly(_modDllPath, _readerParams);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					throw;
+				}
+				catch
+				{
+					return null;
+				}
+			});
 
-			_isLegacyVersion = new Lazy<bool>(isLegacyVersion);
+			_isLegacyVersion = new Lazy<bool>(CheckLegacyVersion);
 		}
 
-		bool isLegacyVersion()
+		bool CheckLegacyVersion()
 		{
 			return !GameModule.GetTypes().Any(n => n.Name == "GravityBoss");
 		}
@@ -73,11 +101,11 @@ namespace SpeedrunTimerModInstaller
 
 		public Version GetModDllVersion()
 		{
-			var modRef = GameModule.AssemblyReferences.FirstOrDefault(a => a.Name.ToLower().Contains("speedrun"));
+			var modRef = GameModule?.AssemblyReferences.FirstOrDefault(a => a.Name.ToLower().Contains("speedrun"));
 			if (modRef == null)
 				return null;
 
-			var modDllVer = ModAsmDef.Name.Version;
+			var modDllVer = ModAsmDef?.Name.Version;
 
 			if (modRef.Version == modDllVer)
 				return modDllVer;
@@ -183,7 +211,6 @@ namespace SpeedrunTimerModInstaller
 			ilProc.InsertBefore(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Call, injectedMethodRef));
 			ilProc.InsertAfter(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Brtrue, ilProc.Body.Instructions.Last()));
 		}
-
 
 		static MethodDefinition GetMethodDef(ModuleDefinition module, string typeName, string methodName)
 		{
