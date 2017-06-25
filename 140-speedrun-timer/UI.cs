@@ -90,17 +90,26 @@ namespace SpeedrunTimerMod
 
 			if (_gameTimeLabel.enabled)
 			{
-				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.GameTime));
-				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.RealTime));
+				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitSync?.IsConnected ?? false;
+				var gtSuffix = livesplitConnected ? "•" : "";
+				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime) + gtSuffix);
+				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime));
 			}
 
 			if (_debugLabel.enabled)
 			{
 				var pos = _player.transform.position;
 				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
+
+				var isRunning = SpeedrunTimer.Instance.IsRunning;
+				var gtPaused = SpeedrunTimer.Instance.IsGameTimePaused;
+				var livesplitSyncEnabled = SpeedrunTimer.Instance.LiveSplitSyncEnabled;
+				var liveplitSyncConnecting = SpeedrunTimer.Instance.LiveSplitSync?.IsConnecting ?? false;
+
+
 				_debugLabel.OnGUI(
 					$"Checkpoint: {currentCheckpoint + 1}/{Cheats.Savepoints.Length} | Beat: {Misc.BeatDbgStr} | Pos: ({PadPosition(pos.x)}, {PadPosition(pos.y)})\n"
-					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {SpeedrunTimer.IsRunning} | IsGameTimePaused: {SpeedrunTimer.IsGameTimePaused}\n"
+					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {isRunning} | IsGameTimePaused: {gtPaused} | LiveSplitSyncEnabled: {livesplitSyncEnabled}, TryingToConnect: {liveplitSyncConnecting}\n"
 					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion} | Legacy: {SpeedrunTimerLoader.IsLegacyVersion}"
 				);
 			}

@@ -51,7 +51,9 @@
     </Compile>
     <Compile Include="Cheats.cs" />
     <Compile Include="Hooks.cs" />
+    <Compile Include="LiveSplitSync.cs" />
     <Compile Include="Misc.cs" />
+    <Compile Include="NamedPipeClient.cs" />
     <Compile Include="SpeedrunTimerLoader.cs" />
     <Compile Include="SpeedrunTimer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

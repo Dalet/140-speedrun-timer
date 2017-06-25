@@ -30,11 +30,6 @@ namespace SpeedrunTimerMod
 			return $"{ver.Major}.{ver.Minor}{Build}";
 		}
 
-		public static double ElapsedSeconds(this Stopwatch sw)
-		{
-			return sw.ElapsedTicks / (double)TimeSpan.TicksPerSecond;
-		}
-
 		public static void PlayerPrefsSetBool(string key, bool value)
 		{
 			PlayerPrefs.SetInt(key, value ? 1 : 0);

@@ -9,11 +9,35 @@ namespace SpeedrunTimerMod
 		static SpeedrunTimer instance;
 		public static SpeedrunTimer Instance => instance;
 
-		public static bool IsGameTimePaused => instance?._isGameTimePaused ?? false;
-		public static bool IsRunning => instance?._sw_realTime.IsRunning ?? false;
+		public bool IsGameTimePaused => _isGameTimePaused;
+		public bool IsRunning => _sw_realTime.IsRunning;
 
-		public static double GameTime => instance?._gameTime ?? 0;
-		public static double RealTime => instance?._realTime ?? 0;
+		public double GameTime => _gameTime;
+		public double RealTime => _realTime;
+
+		bool _livesplitSyncEnabled;
+		public bool LiveSplitSyncEnabled
+		{
+			get { return _livesplitSyncEnabled; }
+			set
+			{
+				if (_livesplitSyncEnabled == value)
+					return;
+
+				_livesplitSyncEnabled = value;
+				if (_livesplitSyncEnabled)
+				{
+					LiveSplitSync.ConnectAsync();
+				}
+				else if (LiveSplitSync != null)
+				{
+					LiveSplitSync.Disconnect();
+				}
+				Utils.PlayerPrefsSetBool("LiveSplitServerSync", _livesplitSyncEnabled);
+			}
+		}
+
+		public LiveSplitSync LiveSplitSync { get; private set; }
 
 		bool _isGameTimePaused;
 		double _gameTime;
@@ -28,6 +52,20 @@ namespace SpeedrunTimerMod
 		{
 			instance = this;
 			gameObject.AddComponent<UI>();
+			LiveSplitSync = new LiveSplitSync();
+			LiveSplitSync.Connected += LiveSplitSync_OnConnected;
+			LiveSplitSyncEnabled = Utils.PlayerPrefsGetBool("LiveSplitServerSync", false);
+		}
+
+		void LiveSplitSync_OnConnected(object sender, EventArgs e)
+		{
+			if (!IsRunning)
+				LiveSplitSync.Reset();
+		}
+
+		void OnDestroy()
+		{
+			LiveSplitSync?.Dispose();
 		}
 
 		void OnLevelWasLoaded(int index)
@@ -57,8 +95,12 @@ namespace SpeedrunTimerMod
 
 		void UpdateVisibleTime()
 		{
-			_realTime = _sw_realTime.ElapsedSeconds();
-			_gameTime = _sw_gameTime.ElapsedSeconds();
+			var gameTimeTs = _sw_gameTime.Elapsed;
+			_realTime = _sw_realTime.Elapsed.TotalSeconds;
+			_gameTime = gameTimeTs.TotalSeconds;
+
+			if (LiveSplitSyncEnabled)
+				LiveSplitSync.UpdateTime(gameTimeTs, _visualFreeze); // force the update if frozen
 		}
 
 		void DoAfterUpdate(Action action)
@@ -80,6 +122,13 @@ namespace SpeedrunTimerMod
 		void LevelCompleted()
 		{
 			Freeze();
+			if (LiveSplitSyncEnabled)
+			{
+				DoAfterUpdate(() =>
+				{
+					LiveSplitSync.Split();
+				});
+			}
 		}
 
 		public void StartTimer()
@@ -92,6 +141,9 @@ namespace SpeedrunTimerMod
 				ResetTimer();
 				_sw_gameTime.Start();
 				_sw_realTime.Start();
+
+				if (LiveSplitSyncEnabled)
+					LiveSplitSync.Start();
 			});
 		}
 
@@ -111,6 +163,9 @@ namespace SpeedrunTimerMod
 			_sw_realTime.Reset();
 			_isGameTimePaused = false;
 			_visualFreeze = false;
+
+			if (LiveSplitSyncEnabled)
+				LiveSplitSync.Reset();
 		}
 
 		public void StartLoad()
