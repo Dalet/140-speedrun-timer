@@ -18,7 +18,10 @@ namespace SpeedrunTimerMod
 
 		public LiveSplitSync()
 		{
-			_pipeClient = new NamedPipeClient(PIPE_NAME);
+			_pipeClient = new NamedPipeClient(PIPE_NAME)
+			{
+				AutoReconnect = true
+			};
 			_pipeClient.Connected += _pipe_Connected;
 			_lastTimeUpdate = Stopwatch.StartNew();
 		}
@@ -27,6 +30,18 @@ namespace SpeedrunTimerMod
 		{
 			_pipeClient.Disconnect();
 			_pipeClient.Dispose();
+		}
+
+		public void GracefulDispose()
+		{
+			_pipeClient.Disconnected += DisposeAfterGracefulDisconnect;
+			GracefulDisconnect();
+		}
+
+		void DisposeAfterGracefulDisconnect(object sender, EventArgs e)
+		{
+			_pipeClient.Disconnected -= DisposeAfterGracefulDisconnect;
+			Dispose();
 		}
 
 		void _pipe_Connected(object sender, EventArgs e)
@@ -44,6 +59,13 @@ namespace SpeedrunTimerMod
 			_pipeClient.ConnectAsync();
 		}
 
+		public void GracefulDisconnect()
+		{
+			if (!IsConnected)
+				return;
+			_pipeClient.WriteAsync(Commands.UnPauseGameTime, (success) => _pipeClient.Disconnect());
+		}
+
 		public void Disconnect()
 		{
 			_pipeClient.Disconnect();
@@ -57,7 +79,7 @@ namespace SpeedrunTimerMod
 			if (!command.EndsWith("\n"))
 				command += "\n";
 
-			_pipeClient.SendMessage(command);
+			_pipeClient.WriteAsync(command);
 		}
 
 		public void Start()

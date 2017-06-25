@@ -31,7 +31,7 @@ namespace SpeedrunTimerMod
 				}
 				else if (LiveSplitSync != null)
 				{
-					LiveSplitSync.Disconnect();
+					LiveSplitSync.GracefulDisconnect();
 				}
 				Utils.PlayerPrefsSetBool("LiveSplitServerSync", _livesplitSyncEnabled);
 			}
@@ -65,7 +65,7 @@ namespace SpeedrunTimerMod
 
 		void OnDestroy()
 		{
-			LiveSplitSync?.Dispose();
+			LiveSplitSync?.GracefulDispose();
 		}
 
 		void OnLevelWasLoaded(int index)

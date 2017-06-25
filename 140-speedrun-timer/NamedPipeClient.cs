@@ -12,6 +12,8 @@ namespace SpeedrunTimerMod
 
 		public bool IsConnecting => _connectionThread?.IsAlive ?? false;
 		public bool IsConnected => _pipe?.IsConnected ?? false;
+		public bool IsWritingAsyncActive => (_writeThread?.ThreadState ?? ThreadState.Unstarted) == ThreadState.Running;
+		public bool AutoReconnect { get; set; }
 
 		string _server;
 		string _pipeName;
@@ -35,6 +37,7 @@ namespace SpeedrunTimerMod
 			_pipe?.Close();
 			_pipe?.Dispose();
 			_pipe = null;
+			Disconnected?.Invoke(this, EventArgs.Empty);
 		}
 
 		public void Dispose()
@@ -63,6 +66,7 @@ namespace SpeedrunTimerMod
 			{
 				AutoFlush = true
 			};
+
 			Connected?.Invoke(this, EventArgs.Empty);
 			return true;
 		}
@@ -87,33 +91,38 @@ namespace SpeedrunTimerMod
 			_connectionThread.Start();
 		}
 
-		public void SendMessage(string msg)
+		public void WriteAsync(string msg, Action<bool> callback = null)
 		{
-			WriteAsync(msg);
-		}
-
-		void WriteAsync(string msg)
-		{
-			var threadState = _writeThread?.ThreadState ?? ThreadState.Unstarted;
-			if (threadState == ThreadState.Running && !_writeThread.Join(5))
+			if (IsWritingAsyncActive && !_writeThread.Join(5))
 				return;
 
 			_writeThread = new Thread(() =>
 			{
-				try
-				{
-					_streamWriter.Write(msg);
-					_pipe.WaitForPipeDrain();
-				}
-				catch (IOException)
-				{
-					_pipe.Dispose();
-					_pipe = null;
-					Disconnected?.Invoke(this, EventArgs.Empty);
+				var success = Write(msg);
+				if (!success && AutoReconnect)
 					ConnectAsync();
-				}
+
+				callback?.Invoke(success);
 			});
 			_writeThread.Start();
+		}
+
+		public bool Write(string msg)
+		{
+			var success = false;
+			try
+			{
+				_streamWriter.Write(msg);
+				_pipe.WaitForPipeDrain();
+				success = true;
+			}
+			catch (IOException)
+			{
+				_pipe.Dispose();
+				_pipe = null;
+				Disconnected?.Invoke(this, EventArgs.Empty);
+			}
+			return success;
 		}
 	}
 }
