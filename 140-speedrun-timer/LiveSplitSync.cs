@@ -61,9 +61,7 @@ namespace SpeedrunTimerMod
 
 		public void GracefulDisconnect()
 		{
-			if (!IsConnected)
-				return;
-			_pipeClient.WriteAsync(Commands.UnPauseGameTime, (success) => _pipeClient.Disconnect());
+			SendCommand(Commands.UnPauseGameTime, success => _pipeClient.Disconnect());
 		}
 
 		public void Disconnect()
@@ -71,7 +69,7 @@ namespace SpeedrunTimerMod
 			_pipeClient.Disconnect();
 		}
 
-		public void SendCommand(string command)
+		public void SendCommand(string command, Action<bool> callback = null)
 		{
 			if (!IsConnected)
 				return;
@@ -79,7 +77,7 @@ namespace SpeedrunTimerMod
 			if (!command.EndsWith("\n"))
 				command += "\n";
 
-			_pipeClient.WriteAsync(command);
+			_pipeClient.WriteAsync(command, null);
 		}
 
 		public void Start()
@@ -104,9 +102,11 @@ namespace SpeedrunTimerMod
 			SendCommand(Commands.Reset);
 		}
 
-		public void Split()
+		public void Split(TimeSpan gameTime)
 		{
-			SendCommand(Commands.Split);
+			var cmd = Commands.SetGameTime + " " + Utils.FormatTime(gameTime.TotalSeconds, 3) + "\n"
+				+ Commands.Split;
+			SendCommand(cmd);
 		}
 
 		static class Commands

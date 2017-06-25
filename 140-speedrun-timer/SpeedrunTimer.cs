@@ -29,7 +29,7 @@ namespace SpeedrunTimerMod
 				{
 					LiveSplitSync.ConnectAsync();
 				}
-				else if (LiveSplitSync != null)
+				else 
 				{
 					LiveSplitSync.GracefulDisconnect();
 				}
@@ -122,13 +122,18 @@ namespace SpeedrunTimerMod
 		void LevelCompleted()
 		{
 			Freeze();
-			if (LiveSplitSyncEnabled)
+			Split();
+		}
+
+		public void Split()
+		{
+			if (!LiveSplitSyncEnabled)
+				return;
+
+			DoAfterUpdate(() =>
 			{
-				DoAfterUpdate(() =>
-				{
-					LiveSplitSync.Split();
-				});
-			}
+				LiveSplitSync.Split(_sw_gameTime.Elapsed);
+			});
 		}
 
 		public void StartTimer()
