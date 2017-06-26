@@ -199,6 +199,10 @@ namespace SpeedrunTimerMod
 		public void Unfreeze()
 		{
 			_visualFreeze = false;
+			DoAfterUpdate(() =>
+			{
+				UpdateVisibleTime();
+			});
 		}
 	}
 }
