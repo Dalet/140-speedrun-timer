@@ -42,10 +42,8 @@ namespace SpeedrunTimerMod
 		{
 			Debug.Log("OnMenuKeyUsed");
 
-			if (Application.loadedLevelName != "Level_Menu")
-				SpeedrunTimer.Instance.Unfreeze();
-
 			SpeedrunTimer.Instance.StartLoad();
+			SpeedrunTimer.Instance.Unfreeze();
 		}
 
 		public static void OnKeyUsed()
