@@ -42,7 +42,7 @@ namespace SpeedrunTimerModInstaller
 				Patcher = null;
 
 				// look for a .app in the directory if we didn't find anything
-				if (recursive && Utils.IsUnix() && Directory.Exists(path))
+				if (recursive && Directory.Exists(path))
 				{
 					var dir = Directory.EnumerateDirectories(path)
 						.FirstOrDefault(d => Path.GetFileName(d.TrimEnd(Path.DirectorySeparatorChar)).EndsWith(".app"));
@@ -127,8 +127,16 @@ namespace SpeedrunTimerModInstaller
 		{
 			if (Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar))?.EndsWith(".app") ?? false)
 			{
-				var assembliesPath = Path.Combine(path, "Contents", "Data", "Managed");
-				var gameDllPath = Path.Combine(assembliesPath, "Assembly-CSharp.dll");
+				string assembliesPath;
+				string gameDllPath;
+
+				assembliesPath = Path.Combine(path, "Contents", "Resources", "Data", "Managed");
+				gameDllPath = Path.Combine(assembliesPath, "Assembly-CSharp.dll");
+				if (Directory.Exists(assembliesPath) && File.Exists(gameDllPath))
+					return assembliesPath;
+
+				assembliesPath = Path.Combine(path, "Contents", "Data", "Managed");
+				gameDllPath = Path.Combine(assembliesPath, "Assembly-CSharp.dll");
 				if (Directory.Exists(assembliesPath) && File.Exists(gameDllPath))
 					return assembliesPath;
 			}
