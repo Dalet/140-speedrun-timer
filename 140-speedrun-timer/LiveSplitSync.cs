@@ -77,7 +77,7 @@ namespace SpeedrunTimerMod
 			if (!command.EndsWith("\n"))
 				command += "\n";
 
-			_pipeClient.WriteAsync(command, null);
+			_pipeClient.WriteAsync(command, callback);
 		}
 
 		public void Start()
@@ -102,14 +102,17 @@ namespace SpeedrunTimerMod
 			SendCommand(Commands.Reset);
 		}
 
-		public void Split(TimeSpan gameTime)
+		public void Split(TimeSpan gameTime) => Split(gameTime.TotalSeconds);
+
+		public void Split(double seconds)
 		{
-			var cmd = Commands.SetGameTime + " " + Utils.FormatTime(gameTime.TotalSeconds, 3) + "\n"
+			UnityEngine.Debug.Log("Split at: " + Utils.FormatTime(seconds, 3));
+			var cmd = Commands.SetGameTime + " " + Utils.FormatTime(seconds, 3) + "\n"
 				+ Commands.Split;
 			SendCommand(cmd);
 		}
 
-		static class Commands
+		public static class Commands
 		{
 			public const string AlwaysPauseGameTime = "alwayspausegametime";
 			public const string GetBestPossibleTime = "getbestpossibletime";

@@ -25,7 +25,7 @@ namespace SpeedrunTimerMod
 					return;
 
 				_livesplitSyncEnabled = value;
-				if (_livesplitSyncEnabled)
+				if (_livesplitSyncEnabled && !LiveSplitSync.IsConnected)
 				{
 					LiveSplitSync.ConnectAsync();
 				}
@@ -61,6 +61,8 @@ namespace SpeedrunTimerMod
 		{
 			if (!IsRunning)
 				LiveSplitSync.Reset();
+			else
+				LiveSplitSync.SendCommand(LiveSplitSync.Commands.AlwaysPauseGameTime);
 		}
 
 		void OnDestroy()
@@ -70,10 +72,6 @@ namespace SpeedrunTimerMod
 
 		void OnLevelWasLoaded(int index)
 		{
-			// unfreeze the timer on level loads
-			if (Application.loadedLevelName != "Level_Menu")
-				Unfreeze();
-
 			// end of the 'Level 3 -> Menu' load
 			if (Application.loadedLevelName == "Level_Menu")
 				EndLoad();
@@ -99,7 +97,7 @@ namespace SpeedrunTimerMod
 			_realTime = _sw_realTime.Elapsed.TotalSeconds;
 			_gameTime = gameTimeTs.TotalSeconds;
 
-			if (LiveSplitSyncEnabled)
+			if (LiveSplitSyncEnabled && IsRunning)
 				LiveSplitSync.UpdateTime(gameTimeTs, _visualFreeze); // force the update if frozen
 		}
 
@@ -108,21 +106,13 @@ namespace SpeedrunTimerMod
 			LateUpdateActions += action;
 		}
 
-		public void CompleteLevel3()
-		{
-			LevelCompleted();
-			StartLoad();
-		}
-
-		public void CompleteLevel4()
-		{
-			LevelCompleted();
-		}
-
-		void LevelCompleted()
+		public void CompleteLevel(int level)
 		{
 			Freeze();
 			Split();
+
+			if (level == 3)
+				StartLoad();
 		}
 
 		public void Split()
@@ -132,7 +122,7 @@ namespace SpeedrunTimerMod
 
 			DoAfterUpdate(() =>
 			{
-				LiveSplitSync.Split(_sw_gameTime.Elapsed);
+				LiveSplitSync.Split(GameTime);
 			});
 		}
 

@@ -79,10 +79,12 @@ namespace SpeedrunTimerModInstaller
 
 			Insert_Inject();
 			Insert_OnResumeAfterDeath();
-			Insert_OnLevel3BossEnd();
-			Insert_OnMenuKeyUsed();
+			//Insert_OnLevel3BossEnd();
+			//Insert_OnMenuKeyUsed();
+			Insert_OnKeyUsed();
 			Insert_OnPlayerFixedUpdate();
 			Patch_NoCheatAchievements();
+			Patch_InvincibilityCheat();
 
 			if (!IsLegacyVersion)
 				Insert_OnLevel4BossEnd();
@@ -176,6 +178,19 @@ namespace SpeedrunTimerModInstaller
 			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
 		}
 
+		void Insert_OnKeyUsed()
+		{
+			var injectedMethodDef = GetMethodDef(ModModule, "Hooks", "OnKeyUsed");
+			var injectedMethodRef = GameModule.Import(injectedMethodDef);
+
+			var targetClass = IsLegacyVersion ? "Key" : "GateKey";
+			var targetMethod = GetMethodDef(GameModule, targetClass, "ColorSphereOpened");
+			var ilProc = targetMethod.Body.GetILProcessor();
+			var targetInstruction = ilProc.Body.Instructions.First();
+
+			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
+		}
+
 		void Insert_OnLevel3BossEnd()
 		{
 			var injectedMethodDef = GetMethodDef(ModModule, "Hooks", "OnLevel3BossEnd");
@@ -206,6 +221,18 @@ namespace SpeedrunTimerModInstaller
 			var injectedMethodRef = GameModule.Import(injectedMethodDef);
 
 			var targetMethod = GetMethodDef(GameModule, "ProgressAndAchivements", "GrantAchievement");
+			var ilProc = targetMethod.Body.GetILProcessor();
+
+			ilProc.InsertBefore(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Call, injectedMethodRef));
+			ilProc.InsertAfter(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Brtrue, ilProc.Body.Instructions.Last()));
+		}
+
+		void Patch_InvincibilityCheat()
+		{
+			var injectedMethodDef = GetMethodDef(ModModule, "Cheats", "get_InvincibilityEnabled");
+			var injectedMethodRef = GameModule.Import(injectedMethodDef);
+
+			var targetMethod = GetMethodDef(GameModule, "MyCharacterController", "Kill");
 			var ilProc = targetMethod.Body.GetILProcessor();
 
 			ilProc.InsertBefore(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Call, injectedMethodRef));

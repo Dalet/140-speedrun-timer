@@ -6,8 +6,8 @@ namespace SpeedrunTimerMod
 	class Cheats : MonoBehaviour
 	{
 		public static bool Enabled { get; set; }
+		public static bool InvincibilityEnabled { get; private set; }
 		public static Savepoint[] Savepoints { get; private set; } = new Savepoint[] { };
-		public static bool RainbowPlayerEnabled { get; set; }
 
 		List<BeatLayerSwitch> _beatSwitches;
 		Utils.Label _cheatWatermark;
@@ -16,6 +16,11 @@ namespace SpeedrunTimerMod
 		public void Awake()
 		{
 			Savepoints = new Savepoint[] { };
+
+			if (Application.loadedLevelName == "Level_Menu")
+			{
+				InvincibilityEnabled = false;
+			}
 
 			_cheatWatermark = new Utils.Label
 			{
@@ -119,17 +124,12 @@ namespace SpeedrunTimerMod
 
 			if (Input.GetKeyDown(KeyCode.Backspace))
 			{
-				if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
-				{
-					RainbowPlayerEnabled = !RainbowPlayerEnabled;
-				}
-				else
-				{
-					if (RainbowPlayerEnabled)
-						RainbowPlayerEnabled = false;
-					else
-						TogglePlayerColor();
-				}
+				TogglePlayerColor();
+			}
+
+			if (Input.GetKeyUp(KeyCode.I) && Application.loadedLevelName != "Level_Menu")
+			{
+				InvincibilityEnabled = !InvincibilityEnabled;
 			}
 
 			RainbowPlayerUpdate();
@@ -137,7 +137,7 @@ namespace SpeedrunTimerMod
 
 		void RainbowPlayerUpdate()
 		{
-			if (!RainbowPlayerEnabled)
+			if (!InvincibilityEnabled)
 				return;
 
 			var player = Globals.player.GetComponent<MyCharacterController>();

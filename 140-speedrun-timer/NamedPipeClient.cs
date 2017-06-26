@@ -33,8 +33,12 @@ namespace SpeedrunTimerMod
 		public void Disconnect()
 		{
 			_cancelThreads = true;
-			_writeThread?.Join();
-			_pipe?.Close();
+			if (_connectionThread != null && Thread.CurrentThread.ManagedThreadId != _connectionThread.ManagedThreadId)
+				_connectionThread.Join();
+			if (_writeThread != null && Thread.CurrentThread.ManagedThreadId != _writeThread.ManagedThreadId)
+				_writeThread.Join();
+
+			_streamWriter?.Dispose();
 			_pipe?.Dispose();
 			_pipe = null;
 			Disconnected?.Invoke(this, EventArgs.Empty);
@@ -51,7 +55,7 @@ namespace SpeedrunTimerMod
 				throw new InvalidOperationException("Already connected.");
 
 			_cancelThreads = false;
-			_pipe = new NamedPipeClientStream(_server, _pipeName, PipeDirection.Out, PipeOptions.Asynchronous | PipeOptions.WriteThrough);
+			_pipe = new NamedPipeClientStream(_server, _pipeName, PipeDirection.Out);
 
 			try
 			{
@@ -93,18 +97,27 @@ namespace SpeedrunTimerMod
 
 		public void WriteAsync(string msg, Action<bool> callback = null)
 		{
-			if (IsWritingAsyncActive && !_writeThread.Join(5))
+			if (IsWritingAsyncActive && !_writeThread.Join(10))
 				return;
 
+			//if (!msg.StartsWith("setgametime"))
+			//	UnityEngine.Debug.Log($"Sending '{msg}' to LiveSplit pipe");
+			var success = false;
 			_writeThread = new Thread(() =>
 			{
-				var success = Write(msg);
-				if (!success && AutoReconnect)
+				success = Write(msg);
+				if (!success && !_cancelThreads && AutoReconnect)
 					ConnectAsync();
 
 				callback?.Invoke(success);
 			});
 			_writeThread.Start();
+			
+			if (callback != null)
+			{
+				_writeThread.Join();
+				callback(success);
+			}
 		}
 
 		public bool Write(string msg)
@@ -118,6 +131,7 @@ namespace SpeedrunTimerMod
 			}
 			catch (IOException)
 			{
+				_streamWriter.Dispose();
 				_pipe.Dispose();
 				_pipe = null;
 				Disconnected?.Invoke(this, EventArgs.Empty);
