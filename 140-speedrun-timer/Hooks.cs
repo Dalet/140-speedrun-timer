@@ -1,64 +1,22 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
 	class Hooks : MonoBehaviour
 	{
-		public static void OnPlayerFixedUpdate(bool logicPaused, bool controlPaused, Vector3 moveDirection)
+		static FieldInfo isInChargeStateField;
+		TunnelBossEndSequence _level2Tunnel;
+
+		void OnLevelWasLoaded(int level)
 		{
-			if (!logicPaused && controlPaused && moveDirection.y == 0f)
+			if (!SpeedrunTimerLoader.IsLegacyVersion)
 			{
-				SpeedrunTimer.Instance?.EndLoad();
+				if (isInChargeStateField == null)
+					isInChargeStateField = typeof(ColorSphere).GetField("public_isInChargeState");
+				isInChargeStateField.SetValue(null, false);
 			}
 		}
-
-		public static void OnLevel1BossEnd()
-		{
-			Debug.Log("OnLevel1BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(1);
-		}
-
-		public static void OnLevel2BossEnd()
-		{
-			Debug.Log("OnLevel2BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(2);
-		}
-
-		public static void OnLevel3BossEnd()
-		{
-			Debug.Log("OnLevel3BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(3);
-		}
-
-		public static void OnLevel4BossEnd()
-		{
-			Debug.Log("OnLevel4BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(4);
-		}
-
-		public static void OnMenuKeyUsed() // triggered slightly before OnKeyUsed
-		{
-			Debug.Log("OnMenuKeyUsed");
-
-			SpeedrunTimer.Instance.StartLoad();
-			SpeedrunTimer.Instance.Unfreeze();
-		}
-
-		public static void OnKeyUsed()
-		{
-			Debug.Log("OnKeyUsed");
-			SpeedrunTimer.Instance.Split();
-		}
-
-		public static void OnResumeAfterDeath()
-		{
-			if (Application.loadedLevelName == "Level_Menu")
-				SpeedrunTimer.Instance.StartTimer();
-		}
-
-		TunnelBossEndSequence _level2Tunnel;
 
 		void Start()
 		{
@@ -118,6 +76,58 @@ namespace SpeedrunTimerMod
 					OnLevel2BossEnd();
 				}
 			}
+		}
+
+		public static void OnPlayerFixedUpdate(bool logicPaused, bool controlPaused, Vector3 moveDirection)
+		{
+			if (!logicPaused && controlPaused && moveDirection.y == 0f)
+			{
+				SpeedrunTimer.Instance?.EndLoad();
+			}
+		}
+
+		public static void OnLevel1BossEnd()
+		{
+			Debug.Log("OnLevel1BossEnd");
+			SpeedrunTimer.Instance.CompleteLevel(1);
+		}
+
+		public static void OnLevel2BossEnd()
+		{
+			Debug.Log("OnLevel2BossEnd");
+			SpeedrunTimer.Instance.CompleteLevel(2);
+		}
+
+		public static void OnLevel3BossEnd()
+		{
+			Debug.Log("OnLevel3BossEnd");
+			SpeedrunTimer.Instance.CompleteLevel(3);
+		}
+
+		public static void OnLevel4BossEnd()
+		{
+			Debug.Log("OnLevel4BossEnd");
+			SpeedrunTimer.Instance.CompleteLevel(4);
+		}
+
+		public static void OnMenuKeyUsed() // triggered slightly before OnKeyUsed
+		{
+			Debug.Log("OnMenuKeyUsed");
+
+			SpeedrunTimer.Instance.StartLoad();
+			SpeedrunTimer.Instance.Unfreeze();
+		}
+
+		public static void OnKeyUsed()
+		{
+			Debug.Log("OnKeyUsed");
+			SpeedrunTimer.Instance.Split();
+		}
+
+		public static void OnResumeAfterDeath()
+		{
+			if (Application.loadedLevelName == "Level_Menu")
+				SpeedrunTimer.Instance.StartTimer();
 		}
 	}
 }
