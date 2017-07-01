@@ -10,7 +10,7 @@ namespace SpeedrunTimerModInstaller
 		public string SteamPath { get; private set; }
 		public string[] Libraries { get; private set; }
 
-		public string FindGameFolder(string folderName)
+		public IEnumerable<string> FindGameFolders(string folderName)
 		{
 			folderName = folderName.ToLowerInvariant();
 
@@ -19,11 +19,10 @@ namespace SpeedrunTimerModInstaller
 				foreach (var folder in Directory.EnumerateDirectories(library))
 				{
 					if (Path.GetFileName(folder).ToLowerInvariant() == folderName)
-						return folder;
+						yield return folder;
+					break;
 				}
 			}
-
-			return null;
 		}
 
 		public bool FindSteam()
