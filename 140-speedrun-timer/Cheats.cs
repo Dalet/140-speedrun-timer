@@ -24,12 +24,13 @@ namespace SpeedrunTimerMod
 
 			_cheatWatermark = new Utils.Label
 			{
-				position = new Rect(UI.Scale(500), UI.Scale(100), Screen.width, Screen.height),
+				position = new Rect(0, UI.Scale(100), Screen.width, Screen.height - UI.Scale(100)),
 				text = "CHEATS ENABLED",
 				style = new GUIStyle
 				{
 					fontSize = UI.Scale(30),
-					fontStyle = FontStyle.Bold
+					fontStyle = FontStyle.Bold,
+					alignment = (TextAnchor)TextAlignment.Center
 				}
 			};
 			_cheatWatermark.style.normal.textColor = Color.magenta;
