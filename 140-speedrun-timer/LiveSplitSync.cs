@@ -13,6 +13,8 @@ namespace SpeedrunTimerMod
 		public bool IsConnected => _pipeClient.IsConnected;
 		public bool IsConnecting => _pipeClient.IsConnecting;
 
+		public bool AlwaysPauseGameTime { get; set; }
+
 		NamedPipeClient _pipeClient;
 		Stopwatch _lastTimeUpdate;
 
@@ -34,24 +36,15 @@ namespace SpeedrunTimerMod
 
 		public void GracefulDispose()
 		{
-			_pipeClient.Disconnected += DisposeAfterGracefulDisconnect;
 			GracefulDisconnect();
-		}
-
-		void DisposeAfterGracefulDisconnect(object sender, EventArgs e)
-		{
-			_pipeClient.Disconnected -= DisposeAfterGracefulDisconnect;
 			Dispose();
 		}
 
 		void _pipe_Connected(object sender, EventArgs e)
 		{
+			if (AlwaysPauseGameTime)
+				SendCommand(LiveSplitCommands.AlwaysPauseGameTime);
 			Connected?.Invoke(this, EventArgs.Empty);
-		}
-
-		public bool Connect(int timeout = Timeout.Infinite)
-		{
-			return _pipeClient.Connect(timeout);
 		}
 
 		public void ConnectAsync()
@@ -61,7 +54,8 @@ namespace SpeedrunTimerMod
 
 		public void GracefulDisconnect()
 		{
-			SendCommand(Commands.UnPauseGameTime, success => _pipeClient.Disconnect());
+			WaitSendCommand(LiveSplitCommands.UnPauseGameTime);
+			Disconnect();
 		}
 
 		public void Disconnect()
@@ -69,7 +63,7 @@ namespace SpeedrunTimerMod
 			_pipeClient.Disconnect();
 		}
 
-		public void SendCommand(string command, Action<bool> callback = null)
+		public void WaitSendCommand(string command, int millisecondsTimeout = Timeout.Infinite)
 		{
 			if (!IsConnected)
 				return;
@@ -77,12 +71,16 @@ namespace SpeedrunTimerMod
 			if (!command.EndsWith("\n"))
 				command += "\n";
 
-			_pipeClient.WriteAsync(command, callback);
+			_pipeClient.WaitWrite(command, millisecondsTimeout);
 		}
+
+		public void SendCommand(string command) => WaitSendCommand(command, 0);
 
 		public void Start()
 		{
-			var cmd = Commands.StartTimer + "\n" + Commands.AlwaysPauseGameTime;
+			var cmd = LiveSplitCommands.StartTimer;
+			if (AlwaysPauseGameTime)
+				cmd += "\n" + LiveSplitCommands.AlwaysPauseGameTime;
 			SendCommand(cmd);
 		}
 
@@ -91,7 +89,7 @@ namespace SpeedrunTimerMod
 			if (!IsConnected || (!force && _lastTimeUpdate.ElapsedMilliseconds < 15))
 				return;
 
-			var cmd = Commands.SetGameTime + " " + Utils.FormatTime(timespan.TotalSeconds, 3);
+			var cmd = LiveSplitCommands.SetGameTime + " " + Utils.FormatTime(timespan.TotalSeconds, 3);
 			SendCommand(cmd);
 			_lastTimeUpdate.Reset();
 			_lastTimeUpdate.Start();
@@ -99,50 +97,51 @@ namespace SpeedrunTimerMod
 
 		public void Reset()
 		{
-			SendCommand(Commands.Reset);
+			SendCommand(LiveSplitCommands.Reset);
 		}
 
 		public void Split(TimeSpan gameTime) => Split(gameTime.TotalSeconds);
 
 		public void Split(double seconds)
 		{
-			UnityEngine.Debug.Log("Split at: " + Utils.FormatTime(seconds, 3));
-			var cmd = Commands.SetGameTime + " " + Utils.FormatTime(seconds, 3) + "\n"
-				+ Commands.Split;
+			var timeStr = Utils.FormatTime(seconds, 3);
+			UnityEngine.Debug.Log("Split at: " + timeStr);
+			var cmd = LiveSplitCommands.SetGameTime + " " + timeStr + "\n" + LiveSplitCommands.Split;
 			SendCommand(cmd);
 		}
 
-		public static class Commands
-		{
-			public const string AlwaysPauseGameTime = "alwayspausegametime";
-			public const string GetBestPossibleTime = "getbestpossibletime";
-			public const string GetComparisonSplitTime = "getcomparisonsplittime";
-			public const string GetCurrentSplitName = "getcurrentsplitname";
-			public const string GetCurrentTime = "getcurrenttime";
-			public const string GetCurrentTimerPhase = "getcurrenttimerphase";
-			public const string GetDelta = "getdelta";
-			public const string GetFinalTime = "getfinaltime";
-			public const string GetLastSplitTime = "getlastsplittime";
-			public const string GetPredictedTime = "getpredictedtime";
-			public const string GetPreviousSplitName = "getprevioussplitname";
-			public const string GetSplitIndex = "getsplitindex";
-			public const string Pause = "pause";
-			public const string PauseGameTime = "pausegametime";
-			public const string Reset = "reset";
-			public const string Resume = "resume";
-			public const string SetComparison = "setcomparison";
-			public const string SetCurrentSplitName = "setcurrentsplitname";
-			public const string SetGameTime = "setgametime";
-			public const string SetLoadingTimes = "setloadingtimes";
-			public const string SetSplitName = "setsplitname";
-			public const string SkipSplit = "skipsplit";
-			public const string Split = "split";
-			public const string StartOrSplit = "startorsplit";
-			public const string StartTimer = "starttimer";
-			public const string SwitchToGameTime = "switchto gametime";
-			public const string SwitchToRealTime = "switchto realtime";
-			public const string UnPauseGameTime = "unpausegametime";
-			public const string UnSplit = "unsplit";
-		}
+	}
+
+	public static class LiveSplitCommands
+	{
+		public const string AlwaysPauseGameTime = "alwayspausegametime";
+		public const string GetBestPossibleTime = "getbestpossibletime";
+		public const string GetComparisonSplitTime = "getcomparisonsplittime";
+		public const string GetCurrentSplitName = "getcurrentsplitname";
+		public const string GetCurrentTime = "getcurrenttime";
+		public const string GetCurrentTimerPhase = "getcurrenttimerphase";
+		public const string GetDelta = "getdelta";
+		public const string GetFinalTime = "getfinaltime";
+		public const string GetLastSplitTime = "getlastsplittime";
+		public const string GetPredictedTime = "getpredictedtime";
+		public const string GetPreviousSplitName = "getprevioussplitname";
+		public const string GetSplitIndex = "getsplitindex";
+		public const string Pause = "pause";
+		public const string PauseGameTime = "pausegametime";
+		public const string Reset = "reset";
+		public const string Resume = "resume";
+		public const string SetComparison = "setcomparison";
+		public const string SetCurrentSplitName = "setcurrentsplitname";
+		public const string SetGameTime = "setgametime";
+		public const string SetLoadingTimes = "setloadingtimes";
+		public const string SetSplitName = "setsplitname";
+		public const string SkipSplit = "skipsplit";
+		public const string Split = "split";
+		public const string StartOrSplit = "startorsplit";
+		public const string StartTimer = "starttimer";
+		public const string SwitchToGameTime = "switchto gametime";
+		public const string SwitchToRealTime = "switchto realtime";
+		public const string UnPauseGameTime = "unpausegametime";
+		public const string UnSplit = "unsplit";
 	}
 }

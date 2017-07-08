@@ -25,11 +25,11 @@ namespace SpeedrunTimerMod
 					return;
 
 				_livesplitSyncEnabled = value;
-				if (_livesplitSyncEnabled && !LiveSplitSync.IsConnected)
+				if (_livesplitSyncEnabled)
 				{
 					LiveSplitSync.ConnectAsync();
 				}
-				else 
+				else
 				{
 					LiveSplitSync.GracefulDisconnect();
 				}
@@ -52,7 +52,10 @@ namespace SpeedrunTimerMod
 		{
 			instance = this;
 			gameObject.AddComponent<UI>();
-			LiveSplitSync = new LiveSplitSync();
+			LiveSplitSync = new LiveSplitSync()
+			{
+				AlwaysPauseGameTime = true
+			};
 			LiveSplitSync.Connected += LiveSplitSync_OnConnected;
 			LiveSplitSyncEnabled = Utils.PlayerPrefsGetBool("LiveSplitServerSync", false);
 		}
@@ -61,8 +64,6 @@ namespace SpeedrunTimerMod
 		{
 			if (!IsRunning)
 				LiveSplitSync.Reset();
-			else
-				LiveSplitSync.SendCommand(LiveSplitSync.Commands.AlwaysPauseGameTime);
 		}
 
 		void OnDestroy()

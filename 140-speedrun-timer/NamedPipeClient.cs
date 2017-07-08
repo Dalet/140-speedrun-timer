@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipes;
+using System.Text;
 using System.Threading;
 
 namespace SpeedrunTimerMod
@@ -12,33 +15,39 @@ namespace SpeedrunTimerMod
 
 		public bool IsConnecting => _connectionThread?.IsAlive ?? false;
 		public bool IsConnected => _pipe?.IsConnected ?? false;
-		public bool IsWritingAsyncActive => (_writeThread?.ThreadState ?? ThreadState.Unstarted) == ThreadState.Running;
 		public bool AutoReconnect { get; set; }
 
 		string _server;
 		string _pipeName;
 		NamedPipeClientStream _pipe;
+		StreamWriter _streamWriter;
+
+		Queue _messageQueue;
 
 		Thread _connectionThread;
 		Thread _writeThread;
-		bool _cancelThreads;
-		StreamWriter _streamWriter;
+
+		bool _connectionThreadCancelled;
+		ManualResetEvent _newMessagesEvent;
+		ManualResetEvent _cancelEvent;
 
 		public NamedPipeClient(string pipeName, string server = ".")
 		{
 			_pipeName = pipeName;
 			_server = server;
+			_messageQueue = new Queue();
+			_newMessagesEvent = new ManualResetEvent(false);
+			_cancelEvent = new ManualResetEvent(false);
 		}
 
 		public void Disconnect()
 		{
-			_cancelThreads = true;
-			if (_connectionThread != null && Thread.CurrentThread.ManagedThreadId != _connectionThread.ManagedThreadId)
-				_connectionThread.Join();
-			if (_writeThread != null && Thread.CurrentThread.ManagedThreadId != _writeThread.ManagedThreadId)
-				_writeThread.Join();
-
-			_streamWriter?.Dispose();
+			CancelThreads();
+			try
+			{
+				_streamWriter?.Dispose();
+			} catch { }
+			_pipe?.Close();
 			_pipe?.Dispose();
 			_pipe = null;
 			Disconnected?.Invoke(this, EventArgs.Empty);
@@ -47,14 +56,29 @@ namespace SpeedrunTimerMod
 		public void Dispose()
 		{
 			Disconnect();
+			_newMessagesEvent.Close();
+			_cancelEvent.Close();
 		}
 
-		public bool Connect(int timeout = Timeout.Infinite)
+		public void ResetThreadCancellation()
+		{
+			_connectionThreadCancelled = false;
+			_cancelEvent.Reset();
+		}
+
+		public void CancelThreads()
+		{
+			_connectionThreadCancelled = true;
+			_cancelEvent.Set();
+			_connectionThread?.Join();
+			_writeThread?.Join();
+		}
+
+		bool Connect(int timeout = Timeout.Infinite)
 		{
 			if (IsConnected)
 				throw new InvalidOperationException("Already connected.");
 
-			_cancelThreads = false;
 			_pipe = new NamedPipeClientStream(_server, _pipeName, PipeDirection.Out);
 
 			try
@@ -66,10 +90,14 @@ namespace SpeedrunTimerMod
 			if (!_pipe.IsConnected)
 				return false;
 
+			// prepare write thread
 			_streamWriter = new StreamWriter(_pipe)
 			{
 				AutoFlush = true
 			};
+
+			_writeThread = new Thread(WriteThread);
+			_writeThread.Start();
 
 			Connected?.Invoke(this, EventArgs.Empty);
 			return true;
@@ -77,63 +105,121 @@ namespace SpeedrunTimerMod
 
 		public void ConnectAsync()
 		{
-			if (IsConnected)
-				throw new InvalidOperationException("Already connected.");
-			if (IsConnecting)
-				throw new InvalidOperationException("Already connecting.");
+			if (IsConnected || IsConnecting)
+				return;
 
-			_cancelThreads = false;
+			CancelThreads();
+			ResetThreadCancellation();
 			_connectionThread = new Thread(() =>
 			{
-				while (!_cancelThreads && !IsConnected)
+				while (!_connectionThreadCancelled && !IsConnected)
 				{
-					if (Connect())
+					if (Connect(10))
 						break;
-					Thread.Sleep(250);
+					if (!_connectionThreadCancelled)
+						Thread.Sleep(250);
 				}
 			});
 			_connectionThread.Start();
 		}
 
-		public void WriteAsync(string msg, Action<bool> callback = null)
+		public void WaitWrite(string msg, int millisecondsTimeout = Timeout.Infinite)
 		{
-			if (IsWritingAsyncActive && !_writeThread.Join(10))
-				return;
+			var msgWrittenEvent = millisecondsTimeout != 0
+				? new ManualResetEvent(false)
+				: null;
+			var pair = new KeyValuePair<ManualResetEvent, string>(msgWrittenEvent, msg);
 
-			//if (!msg.StartsWith("setgametime"))
-			//	UnityEngine.Debug.Log($"Sending '{msg}' to LiveSplit pipe");
-			var success = false;
-			_writeThread = new Thread(() =>
+			lock (_messageQueue.SyncRoot)
 			{
-				success = Write(msg);
-				if (!success && !_cancelThreads && AutoReconnect)
-					ConnectAsync();
+				_messageQueue.Enqueue(pair);
+				_newMessagesEvent.Set();
+			}
 
-				callback?.Invoke(success);
-			});
-			_writeThread.Start();
-			
-			if (callback != null)
+			if (msgWrittenEvent != null)
 			{
-				_writeThread.Join();
-				callback(success);
+				WaitHandle.WaitAny(new WaitHandle[]
+				{
+					msgWrittenEvent,
+					_cancelEvent
+				}, millisecondsTimeout);
+				msgWrittenEvent.Close();
 			}
 		}
 
-		public bool Write(string msg)
+		public void Write(string msg)
+		{
+			WaitWrite(msg, 0);
+		}
+
+		void WriteThread()
+		{
+			var events = new WaitHandle[]
+			{
+				_newMessagesEvent,
+				_cancelEvent
+			};
+
+			while (!_connectionThreadCancelled && IsConnected)
+			{
+				WaitHandle.WaitAny(events);
+				WriteQueue();
+			}
+		}
+
+		bool WriteQueue()
+		{
+			var sb = new StringBuilder();
+			IList<ManualResetEvent> messageWrittenEvents;
+			lock (_messageQueue.SyncRoot)
+			{
+				_newMessagesEvent.Reset();
+				messageWrittenEvents = new List<ManualResetEvent>(_messageQueue.Count);
+				while (_messageQueue.Count > 0)
+				{
+					var pair = (KeyValuePair<ManualResetEvent, string>)_messageQueue.Dequeue();
+					messageWrittenEvents.Add(pair.Key);
+					sb.Append(pair.Value);
+				}
+			}
+
+			var success = TryWrite(sb.ToString());
+
+			foreach (var messageWrittenEvent in messageWrittenEvents)
+				messageWrittenEvent?.Set();
+
+			return success;
+		}
+
+		void ClearMessageQueue()
+		{
+			lock (_messageQueue.SyncRoot)
+			{
+				while (_messageQueue.Count > 0)
+				{
+					var pair = (KeyValuePair<ManualResetEvent, string>)_messageQueue.Dequeue();
+					var resetEvent = pair.Key;
+					resetEvent.Set();
+					resetEvent.Close();
+				}
+			}
+		}
+
+		bool TryWrite(string message)
 		{
 			var success = false;
 			try
 			{
-				_streamWriter.Write(msg);
+				_streamWriter.Write(message);
 				_pipe.WaitForPipeDrain();
 				success = true;
 			}
 			catch (IOException)
 			{
-				_streamWriter.Dispose();
 				_pipe.Dispose();
 				_pipe = null;
+				if (!_connectionThreadCancelled && AutoReconnect)
+					ConnectAsync();
 				Disconnected?.Invoke(this, EventArgs.Empty);
 			}
 			return success;
