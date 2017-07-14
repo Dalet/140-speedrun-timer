@@ -34,7 +34,7 @@ namespace SpeedrunTimerMod
 		IEnumerator CheckVersion(string url)
 		{
 			Version lastVersion = null;
-			yield return GetVersion(UPDATE_URL, v => lastVersion = v);
+			yield return GetVersion(url, v => lastVersion = v);
 			if (lastVersion == null)
 				yield break;
 
