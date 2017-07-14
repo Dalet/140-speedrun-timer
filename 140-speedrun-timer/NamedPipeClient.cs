@@ -5,7 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
-using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace SpeedrunTimerMod
 {
@@ -14,9 +14,12 @@ namespace SpeedrunTimerMod
 		public event EventHandler Connected;
 		public event EventHandler Disconnected;
 
-		public bool IsConnecting => _connectionThread?.IsAlive ?? false;
-		public bool IsConnected => _pipe?.IsConnected ?? false;
 		public bool AutoReconnect { get; set; }
+		public bool AutoCheckConnection { get; set; }
+		public string PingMessage { get; set; } = "\n";
+
+		public bool IsConnecting => !IsConnected && (_connectionThread?.IsAlive ?? false);
+		public bool IsConnected => _pipe?.IsConnected ?? false;
 
 		string _server;
 		string _pipeName;
@@ -93,25 +96,41 @@ namespace SpeedrunTimerMod
 				return;
 
 			ResetThreadCancellation();
-			_connectionThread = new Thread(() =>
-			{
-				try
-				{
-					while (!_cancellationRequested && !IsConnected)
-					{
-						if (Connect(10))
-							break;
-						if (!_cancellationRequested)
-							Thread.Sleep(250);
-					}
-				}
-				catch (Exception e)
-				{
-					Debug.Log("NamedPipeClient: Uncaught exception in connection thread:\n" + e.ToString());
-					throw;
-				}
-			});
+			_connectionThread = new Thread(ConnectionThread);
 			_connectionThread.Start();
+		}
+
+		void ConnectionThread()
+		{
+			try
+			{
+				while (!_cancellationRequested && !IsConnected)
+				{
+					if (Connect(10))
+						break;
+					_cancelEvent.WaitOne(250);
+				}
+
+				// keep checking the connection
+				while (!_cancellationRequested && AutoCheckConnection && IsConnected)
+				{
+					_cancelEvent.WaitOne(150);
+					CheckConnection();
+				}
+			}
+			catch (Exception e)
+			{
+				Debug.Log("NamedPipeClient: Uncaught exception in connection thread:\n" + e.ToString());
+				throw;
+			}
+		}
+
+		public void CheckConnection()
+		{
+			if (!IsConnected)
+				return;
+
+			AsyncWrite(PingMessage);
 		}
 
 		bool Connect(int timeout = Timeout.Infinite)
@@ -143,7 +162,7 @@ namespace SpeedrunTimerMod
 			return true;
 		}
 
-		public void WaitWrite(string msg, int millisecondsTimeout = Timeout.Infinite)
+		public void WaitAsyncWrite(string msg, int millisecondsTimeout = Timeout.Infinite)
 		{
 			var msgWrittenEvent = millisecondsTimeout != 0
 				? new ManualResetEvent(false)
@@ -167,9 +186,9 @@ namespace SpeedrunTimerMod
 			}
 		}
 
-		public void Write(string msg)
+		public void AsyncWrite(string msg)
 		{
-			WaitWrite(msg, 0);
+			WaitAsyncWrite(msg, 0);
 		}
 
 		void WriteThread()

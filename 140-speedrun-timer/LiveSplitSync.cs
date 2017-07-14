@@ -22,7 +22,8 @@ namespace SpeedrunTimerMod
 		{
 			_pipeClient = new NamedPipeClient(PIPE_NAME)
 			{
-				AutoReconnect = true
+				AutoReconnect = true,
+				AutoCheckConnection = true
 			};
 			_pipeClient.Connected += _pipe_Connected;
 			_lastTimeUpdate = Stopwatch.StartNew();
@@ -70,7 +71,7 @@ namespace SpeedrunTimerMod
 			if (!command.EndsWith("\n"))
 				command += "\n";
 
-			_pipeClient.WaitWrite(command, millisecondsTimeout);
+			_pipeClient.WaitAsyncWrite(command, millisecondsTimeout);
 		}
 
 		public void SendCommand(string command) => WaitSendCommand(command, 0);
@@ -108,7 +109,6 @@ namespace SpeedrunTimerMod
 			var cmd = LiveSplitCommands.SetGameTime + " " + timeStr + "\n" + LiveSplitCommands.Split;
 			SendCommand(cmd);
 		}
-
 	}
 
 	public static class LiveSplitCommands
