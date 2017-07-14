@@ -25,50 +25,53 @@ namespace SpeedrunTimerMod
 
 			var timerStyle = new GUIStyle
 			{
-				fontSize = Scale(20),
-				fontStyle = FontStyle.Bold,
+				fontStyle = FontStyle.Bold
 			};
+			var timerFontSize = 20;
 
 			_gameTimeLabel = new Utils.Label()
 			{
 				style = timerStyle,
-				position = new Rect(Scale(4), 0, Screen.width, Screen.height)
+				fontSize = timerFontSize,
+				positionDelegate = () => new Rect(Scale(4), 0, Screen.width, Screen.height)
 			};
 
 			_realTimeLabel = new Utils.Label()
 			{
 				enabled = false,
-				position = new Rect(_gameTimeLabel.position.xMin, _gameTimeLabel.position.yMin + timerStyle.fontSize,
-					_gameTimeLabel.position.width, _gameTimeLabel.position.height),
-				style = timerStyle
+				positionDelegate = () => new Rect(_gameTimeLabel.Position.xMin, _gameTimeLabel.Position.yMin + timerStyle.fontSize,
+					_gameTimeLabel.Position.width, _gameTimeLabel.Position.height),
+				style = timerStyle,
+				fontSize = timerFontSize
 			};
 
 			_updateLabel = new Utils.Label()
 			{
+				positionDelegate = () => new Rect(Scale(4), Screen.height - _updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height),
+				fontSize = 18,
 				style = new GUIStyle
 				{
-					fontSize = Scale(18),
 					fontStyle = FontStyle.Bold
 				},
 			};
-			_updateLabel.position = new Rect(Scale(4), Screen.height - _updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height);
 
 			_debugLabel = new Utils.Label()
 			{
 				enabled = false,
+				positionDelegate = () => new Rect(Scale(4), _updateLabel.Position.yMin - _debugLabel.style.fontSize * 5 - Scale(3),
+					Screen.width, Screen.height),
+				fontSize = 16,
 				style = new GUIStyle
 				{
-					fontSize = Scale(16),
 					fontStyle = FontStyle.Bold
 				}
 			};
-			_debugLabel.position = new Rect(Scale(4), _updateLabel.position.yMin - _debugLabel.style.fontSize * 5 - Scale(3),
-					Screen.width, Screen.height);
 
 			_titleLabel = new Utils.Label()
 			{
 				style = _gameTimeLabel.style,
-				position = _gameTimeLabel.position,
+				fontSize = _gameTimeLabel.fontSize,
+				positionDelegate = _gameTimeLabel.positionDelegate,
 				text = $"Speedrun Timer v{ Utils.FormatVersion(Assembly.GetExecutingAssembly().GetName().Version)}"
 #if DEBUG
 					+ " (debug)"
@@ -165,10 +168,7 @@ namespace SpeedrunTimerMod
 
 		public static int Scale(int pixels)
 		{
-			if (Screen.height <= BASE_UI_RESOLUTION)
-				return pixels;
-			else
-				return (int)Math.Round(pixels * (Screen.height / (float)BASE_UI_RESOLUTION));
+			return (int)Math.Round(pixels * (Screen.height / (float)BASE_UI_RESOLUTION));
 		}
 	}
 }

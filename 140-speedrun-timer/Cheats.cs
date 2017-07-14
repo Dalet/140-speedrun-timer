@@ -24,11 +24,11 @@ namespace SpeedrunTimerMod
 
 			_cheatWatermark = new Utils.Label
 			{
-				position = new Rect(0, UI.Scale(100), Screen.width, Screen.height - UI.Scale(100)),
+				positionDelegate = () => new Rect(0, UI.Scale(100), Screen.width, Screen.height - UI.Scale(100)),
 				text = "CHEATS ENABLED",
+				fontSize = 30,
 				style = new GUIStyle
 				{
-					fontSize = UI.Scale(30),
 					fontStyle = FontStyle.Bold,
 					alignment = (TextAnchor)TextAlignment.Center
 				}
@@ -252,8 +252,10 @@ namespace SpeedrunTimerMod
 
 		public void OnGUI()
 		{
-			if (Enabled)
-				_cheatWatermark.OnGUI();
+			if (!Enabled)
+				return;
+
+			_cheatWatermark.OnGUI();
 		}
 	}
 }

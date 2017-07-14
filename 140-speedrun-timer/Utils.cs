@@ -73,8 +73,11 @@ namespace SpeedrunTimerMod
 
 		internal class Label
 		{
+			public Rect Position => positionDelegate();
+
 			public bool enabled = true;
-			public Rect position;
+			public int fontSize;
+			public Func<Rect> positionDelegate;
 			public GUIStyle style;
 			public string text;
 
@@ -83,8 +86,12 @@ namespace SpeedrunTimerMod
 				if (newText != null)
 					text = newText;
 
+				style.fontSize = UI.Scale(fontSize);
+
 				if (enabled)
-					GUI.Label(position, text, style);
+				{
+					GUI.Label(Position, text, style);
+				}
 			}
 		}
 	}
