@@ -7,9 +7,9 @@ namespace SpeedrunTimerMod
 {
 	internal sealed class Updater : MonoBehaviour
 	{
-		const string repoUrl = "https://raw.githubusercontent.com/Dalet/140-speedrun-timer/";
-		const string updateUrl = repoUrl + "master/latestVersion.txt";
-		const string updateUrlUnstable = repoUrl + "develop/latestVersion.txt";
+		const string REPO_URL = "https://raw.githubusercontent.com/Dalet/140-speedrun-timer/";
+		const string UPDATE_URL = REPO_URL + "master/latestVersion.txt";
+		const string UPDATE_URL_UNSTABLE = REPO_URL + "develop/latestVersion.txt";
 
 		public static bool NeedUpdate { get; private set; }
 		public static string LatestVersion { get; private set; }
@@ -24,17 +24,17 @@ namespace SpeedrunTimerMod
 
 		IEnumerator CheckUpdate()
 		{
-			yield return CheckVersion(updateUrl);
+			yield return CheckVersion(UPDATE_URL);
 #if PRE_RELEASE
 			if (!NeedUpdate)
-				yield return CheckVersion(updateUrlUnstable);
+				yield return CheckVersion(UPDATE_URL_UNSTABLE);
 #endif
 		}
 
 		IEnumerator CheckVersion(string url)
 		{
 			Version lastVersion = null;
-			yield return GetVersion(updateUrl, v => lastVersion = v);
+			yield return GetVersion(UPDATE_URL, v => lastVersion = v);
 			if (lastVersion == null)
 				yield break;
 
