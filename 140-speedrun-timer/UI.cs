@@ -18,9 +18,6 @@ namespace SpeedrunTimerMod
 
 		public void Awake()
 		{
-			if (string.IsNullOrEmpty(Updater.LatestVersion))
-				gameObject.AddComponent<Updater>();
-
 			var color = new Color(235 / 255f, 235 / 255f, 235 / 255f);
 
 			var timerStyle = new GUIStyle
@@ -75,6 +72,8 @@ namespace SpeedrunTimerMod
 				text = $"Speedrun Timer v{ Utils.FormatVersion(Assembly.GetExecutingAssembly().GetName().Version)}"
 #if DEBUG
 					+ " (debug)"
+#elif PRE_RELEASE
+					+ " (pre-release)"
 #endif
 			};
 
