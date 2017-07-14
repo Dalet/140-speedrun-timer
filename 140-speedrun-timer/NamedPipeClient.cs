@@ -5,6 +5,7 @@ using System.IO;
 using System.IO.Pipes;
 using System.Text;
 using System.Threading;
+using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
@@ -27,7 +28,7 @@ namespace SpeedrunTimerMod
 		Thread _connectionThread;
 		Thread _writeThread;
 
-		bool _connectionThreadCancelled;
+		bool _cancellationRequested;
 		ManualResetEvent _newMessagesEvent;
 		ManualResetEvent _cancelEvent;
 
@@ -40,19 +41,6 @@ namespace SpeedrunTimerMod
 			_cancelEvent = new ManualResetEvent(false);
 		}
 
-		public void Disconnect()
-		{
-			CancelThreads();
-			try
-			{
-				_streamWriter?.Dispose();
-			} catch { }
-			_pipe?.Close();
-			_pipe?.Dispose();
-			_pipe = null;
-			Disconnected?.Invoke(this, EventArgs.Empty);
-		}
-
 		public void Dispose()
 		{
 			Disconnect();
@@ -60,18 +48,70 @@ namespace SpeedrunTimerMod
 			_cancelEvent.Close();
 		}
 
+		public void Disconnect()
+		{
+			StopThreads();
+			ClearMessageQueue();
+
+			if (_pipe == null)
+				return;
+
+			_pipe?.Close();
+			_pipe?.Dispose();
+			_pipe = null;
+			Disconnected?.Invoke(this, EventArgs.Empty);
+		}
+
+		void OnUnexpectedDisconnection()
+		{
+			Disconnect();
+			if (AutoReconnect)
+				ConnectAsync();
+		}
+
 		public void ResetThreadCancellation()
 		{
-			_connectionThreadCancelled = false;
+			_cancellationRequested = false;
 			_cancelEvent.Reset();
 		}
 
-		public void CancelThreads()
+		public void StopThreads()
 		{
-			_connectionThreadCancelled = true;
+			_cancellationRequested = true;
 			_cancelEvent.Set();
-			_connectionThread?.Join();
-			_writeThread?.Join();
+
+			var currentThreadId = Thread.CurrentThread.ManagedThreadId;
+			if (currentThreadId != _connectionThread?.ManagedThreadId)
+				_connectionThread?.Join();
+			if (currentThreadId != _writeThread?.ManagedThreadId)
+				_writeThread?.Join();
+		}
+
+		public void ConnectAsync()
+		{
+			if (IsConnected || IsConnecting)
+				return;
+
+			ResetThreadCancellation();
+			_connectionThread = new Thread(() =>
+			{
+				try
+				{
+					while (!_cancellationRequested && !IsConnected)
+					{
+						if (Connect(10))
+							break;
+						if (!_cancellationRequested)
+							Thread.Sleep(250);
+					}
+				}
+				catch (Exception e)
+				{
+					Debug.Log("NamedPipeClient: Uncaught exception in connection thread:\n" + e.ToString());
+					throw;
+				}
+			});
+			_connectionThread.Start();
 		}
 
 		bool Connect(int timeout = Timeout.Infinite)
@@ -101,26 +141,6 @@ namespace SpeedrunTimerMod
 
 			Connected?.Invoke(this, EventArgs.Empty);
 			return true;
-		}
-
-		public void ConnectAsync()
-		{
-			if (IsConnected || IsConnecting)
-				return;
-
-			CancelThreads();
-			ResetThreadCancellation();
-			_connectionThread = new Thread(() =>
-			{
-				while (!_connectionThreadCancelled && !IsConnected)
-				{
-					if (Connect(10))
-						break;
-					if (!_connectionThreadCancelled)
-						Thread.Sleep(250);
-				}
-			});
-			_connectionThread.Start();
 		}
 
 		public void WaitWrite(string msg, int millisecondsTimeout = Timeout.Infinite)
@@ -154,16 +174,25 @@ namespace SpeedrunTimerMod
 
 		void WriteThread()
 		{
-			var events = new WaitHandle[]
+			try
 			{
-				_newMessagesEvent,
-				_cancelEvent
-			};
+				var events = new WaitHandle[]
+				{
+					_newMessagesEvent,
+					_cancelEvent
+				};
 
-			while (!_connectionThreadCancelled && IsConnected)
+				while (!_cancellationRequested && IsConnected)
+				{
+					WaitHandle.WaitAny(events);
+					WriteQueue();
+				}
+			}
+			catch (Exception e)
 			{
-				WaitHandle.WaitAny(events);
-				WriteQueue();
+				Debug.Log("NamedPipeClient: Uncaught exception in write thread:\n" + e.ToString());
+				OnUnexpectedDisconnection();
+				throw;
 			}
 		}
 
@@ -186,7 +215,10 @@ namespace SpeedrunTimerMod
 			var success = TryWrite(sb.ToString());
 
 			foreach (var messageWrittenEvent in messageWrittenEvents)
-				messageWrittenEvent?.Set();
+			{
+				if (messageWrittenEvent != null && !messageWrittenEvent.SafeWaitHandle.IsClosed)
+					messageWrittenEvent.Set();
+			}
 
 			return success;
 		}
@@ -199,8 +231,8 @@ namespace SpeedrunTimerMod
 				{
 					var pair = (KeyValuePair<ManualResetEvent, string>)_messageQueue.Dequeue();
 					var resetEvent = pair.Key;
-					resetEvent.Set();
-					resetEvent.Close();
+					if (resetEvent != null && !resetEvent.SafeWaitHandle.IsClosed)
+						resetEvent.Set();
 				}
 			}
 		}
@@ -214,14 +246,19 @@ namespace SpeedrunTimerMod
 				_pipe.WaitForPipeDrain();
 				success = true;
 			}
-			catch (IOException)
+			catch (IOException e)
 			{
-				_pipe.Dispose();
-				_pipe = null;
-				if (!_connectionThreadCancelled && AutoReconnect)
-					ConnectAsync();
-				Disconnected?.Invoke(this, EventArgs.Empty);
+				var str = !_pipe.IsConnected ? "Disconnected!" : "";
+				Debug.Log($"NamedPipeClient.TryWrite: Write failed! {str} IOException:\n" + e.ToString());
+				if (!_cancellationRequested)
+					OnUnexpectedDisconnection();
 			}
+			catch (Exception)
+			{
+				Debug.Log($"NamedPipeClient.TryWrite: Write failed! Unexpected exception");
+				throw;
+			}
+
 			return success;
 		}
 	}

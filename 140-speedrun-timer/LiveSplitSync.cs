@@ -30,7 +30,6 @@ namespace SpeedrunTimerMod
 
 		public void Dispose()
 		{
-			_pipeClient.Disconnect();
 			_pipeClient.Dispose();
 		}
 
