@@ -14,6 +14,8 @@ namespace SpeedrunTimerModInstaller
 		string _gameDllPath;
 		string _gameDllBackupPath;
 		string _modDllPath;
+		string _systemCoreDllPath;
+		string _systemCoreDllBackupPath;
 
 		public Installer(string path = null)
 		{
@@ -40,7 +42,7 @@ namespace SpeedrunTimerModInstaller
 				Patcher = null;
 
 				// look for a .app in the directory if we didn't find anything
-				if (recursive && Utils.IsUnix() && Directory.Exists(path))
+				if (recursive && Directory.Exists(path))
 				{
 					var dir = Directory.EnumerateDirectories(path)
 						.FirstOrDefault(d => Path.GetFileName(d.TrimEnd(Path.DirectorySeparatorChar)).EndsWith(".app"));
@@ -55,6 +57,8 @@ namespace SpeedrunTimerModInstaller
 			_gameDllPath = Path.Combine(AssembliesPath, "Assembly-CSharp.dll");
 			_gameDllBackupPath = Path.ChangeExtension(_gameDllPath, Path.GetExtension(_gameDllPath) + ".bak");
 			_modDllPath = Path.Combine(AssembliesPath, "speedrun-timer.dll");
+			_systemCoreDllPath = Path.Combine(AssembliesPath, "System.Core.dll");
+			_systemCoreDllBackupPath = Path.ChangeExtension(_systemCoreDllPath, Path.GetExtension(_systemCoreDllPath) + ".bak");
 			Patcher = new Patcher(AssembliesPath, _gameDllPath, _modDllPath);
 
 			return true;
@@ -62,6 +66,12 @@ namespace SpeedrunTimerModInstaller
 
 		public void UnInstall()
 		{
+			if (File.Exists(_systemCoreDllBackupPath))
+			{
+				File.Delete(_systemCoreDllPath);
+				File.Move(_systemCoreDllBackupPath, _systemCoreDllPath);
+			}
+
 			File.Delete(_gameDllPath);
 			File.Move(_gameDllBackupPath, _gameDllPath);
 			File.Delete(_modDllPath);
@@ -69,7 +79,7 @@ namespace SpeedrunTimerModInstaller
 
 		public void Install()
 		{
-			ExtractModDll(_modDllPath);
+			ExtractResource("speedrun-timer.dll", _modDllPath);
 
 			if (File.Exists(_gameDllBackupPath))
 				File.Delete(_gameDllBackupPath);
@@ -77,14 +87,17 @@ namespace SpeedrunTimerModInstaller
 			var fileTmp = Path.Combine(AssembliesPath, Path.GetFileName(_gameDllPath) + ".tmp");
 			Patcher.PatchGameDll(fileTmp);
 			File.Replace(fileTmp, _gameDllPath, _gameDllBackupPath);
+
+			var tmpModSystemCore = Path.ChangeExtension(_systemCoreDllPath, Path.GetExtension(_systemCoreDllPath) + ".tmp");
+			ExtractResource("System.Core.dll", tmpModSystemCore);
+			File.Replace(tmpModSystemCore, _systemCoreDllPath, _systemCoreDllBackupPath);
 		}
 
-		static void ExtractModDll(string path)
+		static void ExtractResource(string resourceName, string path)
 		{
 			var nameSpace = typeof(Program).Namespace;
 			var resFolder = "Resources";
-			var fileName = "speedrun-timer.dll";
-			var manifestResName = $"{nameSpace}.{resFolder}.{fileName}";
+			var manifestResName = $"{nameSpace}.{resFolder}.{resourceName}";
 
 			using (var dllStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(manifestResName))
 			using (var fileStream = File.Create(path))
@@ -114,8 +127,16 @@ namespace SpeedrunTimerModInstaller
 		{
 			if (Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar))?.EndsWith(".app") ?? false)
 			{
-				var assembliesPath = Path.Combine(path, "Contents", "Data", "Managed");
-				var gameDllPath = Path.Combine(assembliesPath, "Assembly-CSharp.dll");
+				string assembliesPath;
+				string gameDllPath;
+
+				assembliesPath = Path.Combine(path, "Contents", "Resources", "Data", "Managed");
+				gameDllPath = Path.Combine(assembliesPath, "Assembly-CSharp.dll");
+				if (Directory.Exists(assembliesPath) && File.Exists(gameDllPath))
+					return assembliesPath;
+
+				assembliesPath = Path.Combine(path, "Contents", "Data", "Managed");
+				gameDllPath = Path.Combine(assembliesPath, "Assembly-CSharp.dll");
 				if (Directory.Exists(assembliesPath) && File.Exists(gameDllPath))
 					return assembliesPath;
 			}

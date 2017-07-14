@@ -17,6 +17,7 @@
 |   Key   |  Description |
 | ------- | ------------ |
 | `R`     | Double tap to reset |
+| `L`     | Toggle LiveSplit synchronization |
 | `F1`    | Show the Real Time |
 | `F2`    | Hide the timers |
 
@@ -33,4 +34,4 @@
 |  `Home` | Teleport to the first checkpoint |
 |  `End`  | Teleport to the last checkpoint |
 | `Backspace` | Flip the player color |
-| `Alt` + `Backspace` | Toggle ![KappaPride](https://static-cdn.jtvnw.net/emoticons/v1/55338/1.0) player
+| `I`         | Toggle invincibility |

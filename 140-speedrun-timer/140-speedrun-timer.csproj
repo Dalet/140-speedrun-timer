@@ -26,8 +26,17 @@
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <OutputPath>..\..\..\..\..\Jeux\SteamLibrary\steamapps\common\140\140_Data\Managed\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <OutputPath>..\..\..\..\Games\SteamLibrary\steamapps\common\140\140_Data\Managed\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Pre-release|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;PRE_RELEASE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -36,13 +45,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\Jeux\SteamLibrary\steamapps\common\140\140_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\140\140_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\Jeux\SteamLibrary\steamapps\common\140\140_Data\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\140\140_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -51,7 +60,9 @@
     </Compile>
     <Compile Include="Cheats.cs" />
     <Compile Include="Hooks.cs" />
+    <Compile Include="LiveSplitSync.cs" />
     <Compile Include="Misc.cs" />
+    <Compile Include="NamedPipeClient.cs" />
     <Compile Include="SpeedrunTimerLoader.cs" />
     <Compile Include="SpeedrunTimer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -53,6 +53,11 @@ namespace SpeedrunTimerMod
 					Application.LoadLevel("Level_Menu");
 				}
 			}
+
+			if (Input.GetKeyUp(KeyCode.L))
+			{
+				SpeedrunTimer.Instance.LiveSplitSyncEnabled = !SpeedrunTimer.Instance.LiveSplitSyncEnabled;
+			}
 		}
 
 		void OnBeat(int index)

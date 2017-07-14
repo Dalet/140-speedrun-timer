@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.12
+VisualStudioVersion = 15.0.26430.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "140-speedrun-timer", "140-speedrun-timer\140-speedrun-timer.csproj", "{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}"
 EndProject
@@ -15,24 +15,24 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		MacOS|Any CPU = MacOS|Any CPU
+		Pre-release|Any CPU = Pre-release|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.MacOS|Any CPU.ActiveCfg = Release|Any CPU
-		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.MacOS|Any CPU.Build.0 = Release|Any CPU
+		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.Pre-release|Any CPU.ActiveCfg = Pre-release|Any CPU
+		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.Pre-release|Any CPU.Build.0 = Pre-release|Any CPU
 		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{262AB257-86E9-49FB-9E38-5B8B9D9A5A21}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.MacOS|Any CPU.ActiveCfg = MacOS|Any CPU
-		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.MacOS|Any CPU.Build.0 = MacOS|Any CPU
+		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.Pre-release|Any CPU.ActiveCfg = Release|Any CPU
+		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.Pre-release|Any CPU.Build.0 = Release|Any CPU
 		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9543B31A-5CDF-4B1B-8E3D-4120F6CE5700}.Release|Any CPU.Build.0 = Release|Any CPU
 		{094B54C9-3BC5-4008-8A4C-1EB4D06029C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{094B54C9-3BC5-4008-8A4C-1EB4D06029C9}.MacOS|Any CPU.ActiveCfg = Release|Any CPU
+		{094B54C9-3BC5-4008-8A4C-1EB4D06029C9}.Pre-release|Any CPU.ActiveCfg = Release|Any CPU
 		{094B54C9-3BC5-4008-8A4C-1EB4D06029C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution

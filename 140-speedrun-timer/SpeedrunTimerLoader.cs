@@ -26,8 +26,8 @@ namespace SpeedrunTimerMod
 				return;
 			_modObject = new GameObject();
 			_modObject.AddComponent<SpeedrunTimer>();
+			_modObject.AddComponent<Updater>();
 			DontDestroyOnLoad(_modObject);
-			Destroy(this);
 		}
 
 		public static void Inject()

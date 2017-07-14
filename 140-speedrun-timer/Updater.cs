@@ -7,29 +7,59 @@ namespace SpeedrunTimerMod
 {
 	internal sealed class Updater : MonoBehaviour
 	{
-		const string updateURL = "https://raw.githubusercontent.com/Dalet/140-speedrun-timer/master/latestVersion.txt";
+		const string repoUrl = "https://raw.githubusercontent.com/Dalet/140-speedrun-timer/";
+		const string updateUrl = repoUrl + "master/latestVersion.txt";
+		const string updateUrlUnstable = repoUrl + "develop/latestVersion.txt";
 
 		public static bool NeedUpdate { get; private set; }
 		public static string LatestVersion { get; private set; }
 
 		public void Start()
 		{
+			if (LatestVersion != null)
+				return;
+
 			StartCoroutine(CheckUpdate());
 		}
 
-		public IEnumerator CheckUpdate()
+		IEnumerator CheckUpdate()
 		{
-			var www = new WWW(updateURL);
+			yield return CheckVersion(updateUrl);
+#if PRE_RELEASE
+			if (!NeedUpdate)
+				yield return CheckVersion(updateUrlUnstable);
+#endif
+		}
+
+		IEnumerator CheckVersion(string url)
+		{
+			Version lastVersion = null;
+			yield return GetVersion(updateUrl, v => lastVersion = v);
+			if (lastVersion == null)
+				yield break;
+
+			var currentVersion = Assembly.GetExecutingAssembly().GetName().Version;
+			LatestVersion = Utils.FormatVersion(lastVersion);
+			NeedUpdate = lastVersion > currentVersion;
+		}
+
+		static IEnumerator GetVersion(string url, Action<Version> callback)
+		{
+			var www = new WWW(url);
 			yield return www;
 
-			if (string.IsNullOrEmpty(www.error))
+			Version ver = null;
+			if (!string.IsNullOrEmpty(www.error))
 			{
-				var str = www.text.Trim();
-				var version = str != null ? new Version(str) : null;
-				NeedUpdate = version != null && version > Assembly.GetExecutingAssembly().GetName().Version;
-				LatestVersion = Utils.FormatVersion(version);
-				Destroy(this);
+				callback(ver);
+				yield break;
 			}
+
+			var str = www.text.Trim();
+			if (!string.IsNullOrEmpty(str))
+				ver = new Version(str);
+
+			callback(ver);
 		}
 	}
 }

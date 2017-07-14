@@ -18,60 +18,62 @@ namespace SpeedrunTimerMod
 
 		public void Awake()
 		{
-			if (string.IsNullOrEmpty(Updater.LatestVersion))
-				gameObject.AddComponent<Updater>();
-
 			var color = new Color(235 / 255f, 235 / 255f, 235 / 255f);
 
 			var timerStyle = new GUIStyle
 			{
-				fontSize = Scale(20),
-				fontStyle = FontStyle.Bold,
+				fontStyle = FontStyle.Bold
 			};
+			var timerFontSize = 20;
 
 			_gameTimeLabel = new Utils.Label()
 			{
 				style = timerStyle,
-				position = new Rect(Scale(4), 0, Screen.width, Screen.height)
+				fontSize = timerFontSize,
+				positionDelegate = () => new Rect(Scale(4), 0, Screen.width, Screen.height)
 			};
 
 			_realTimeLabel = new Utils.Label()
 			{
 				enabled = false,
-				position = new Rect(_gameTimeLabel.position.xMin, _gameTimeLabel.position.yMin + timerStyle.fontSize,
-					_gameTimeLabel.position.width, _gameTimeLabel.position.height),
-				style = timerStyle
+				positionDelegate = () => new Rect(_gameTimeLabel.Position.xMin, _gameTimeLabel.Position.yMin + timerStyle.fontSize,
+					_gameTimeLabel.Position.width, _gameTimeLabel.Position.height),
+				style = timerStyle,
+				fontSize = timerFontSize
 			};
 
 			_updateLabel = new Utils.Label()
 			{
+				positionDelegate = () => new Rect(Scale(4), Screen.height - _updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height),
+				fontSize = 18,
 				style = new GUIStyle
 				{
-					fontSize = Scale(18),
 					fontStyle = FontStyle.Bold
 				},
 			};
-			_updateLabel.position = new Rect(Scale(4), Screen.height - _updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height);
 
 			_debugLabel = new Utils.Label()
 			{
 				enabled = false,
+				positionDelegate = () => new Rect(Scale(4), _updateLabel.Position.yMin - _debugLabel.style.fontSize * 5 - Scale(3),
+					Screen.width, Screen.height),
+				fontSize = 16,
 				style = new GUIStyle
 				{
-					fontSize = Scale(16),
 					fontStyle = FontStyle.Bold
 				}
 			};
-			_debugLabel.position = new Rect(Scale(4), _updateLabel.position.yMin - _debugLabel.style.fontSize * 5 - Scale(3),
-					Screen.width, Screen.height);
 
 			_titleLabel = new Utils.Label()
 			{
 				style = _gameTimeLabel.style,
-				position = _gameTimeLabel.position,
+				fontSize = _gameTimeLabel.fontSize,
+				positionDelegate = _gameTimeLabel.positionDelegate,
 				text = $"Speedrun Timer v{ Utils.FormatVersion(Assembly.GetExecutingAssembly().GetName().Version)}"
 #if DEBUG
 					+ " (debug)"
+#elif PRE_RELEASE
+					+ " (pre-release)"
 #endif
 			};
 
@@ -90,17 +92,25 @@ namespace SpeedrunTimerMod
 
 			if (_gameTimeLabel.enabled)
 			{
-				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.GameTime));
-				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.RealTime));
+				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitSync?.IsConnected ?? false;
+				var gtSuffix = livesplitConnected ? "•" : "";
+				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime) + gtSuffix);
+				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime));
 			}
 
 			if (_debugLabel.enabled)
 			{
 				var pos = _player.transform.position;
 				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
+
+				var isRunning = SpeedrunTimer.Instance.IsRunning;
+				var gtPaused = SpeedrunTimer.Instance.IsGameTimePaused;
+				var livesplitSyncEnabled = SpeedrunTimer.Instance.LiveSplitSyncEnabled;
+				var liveplitSyncConnecting = SpeedrunTimer.Instance.LiveSplitSync?.IsConnecting ?? false;
+
 				_debugLabel.OnGUI(
 					$"Checkpoint: {currentCheckpoint + 1}/{Cheats.Savepoints.Length} | Beat: {Misc.BeatDbgStr} | Pos: ({PadPosition(pos.x)}, {PadPosition(pos.y)})\n"
-					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {SpeedrunTimer.IsRunning} | IsGameTimePaused: {SpeedrunTimer.IsGameTimePaused}\n"
+					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {isRunning} | IsGameTimePaused: {gtPaused} | LiveSplitSyncEnabled: {livesplitSyncEnabled}, TryingToConnect: {liveplitSyncConnecting}\n"
 					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion} | Legacy: {SpeedrunTimerLoader.IsLegacyVersion}"
 				);
 			}
@@ -157,10 +167,7 @@ namespace SpeedrunTimerMod
 
 		public static int Scale(int pixels)
 		{
-			if (Screen.height <= BASE_UI_RESOLUTION)
-				return pixels;
-			else
-				return (int)Math.Round(pixels * (Screen.height / (float)BASE_UI_RESOLUTION));
+			return (int)Math.Round(pixels * (Screen.height / (float)BASE_UI_RESOLUTION));
 		}
 	}
 }

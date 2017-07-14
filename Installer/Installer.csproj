@@ -134,6 +134,9 @@
       <Link>Resources\speedrun-timer.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\System.Core.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="Installer.targets" />
 </Project>
