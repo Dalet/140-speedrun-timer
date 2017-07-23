@@ -10,7 +10,7 @@ namespace SpeedrunTimerMod
 
 		void OnLevelWasLoaded(int level)
 		{
-			if (!SpeedrunTimerLoader.IsLegacyVersion)
+			if (!ModLoader.IsLegacyVersion)
 			{
 				if (isInChargeStateField == null)
 					isInChargeStateField = typeof(ColorSphere).GetField("public_isInChargeState");
@@ -57,7 +57,7 @@ namespace SpeedrunTimerMod
 				if (bossObj != null)
 				{
 					var component = bossObj.GetComponent<BossSphereArena>();
-					component.pattern.part3DoneEvent += OnLevel3BossEnd;	
+					component.pattern.part3DoneEvent += OnLevel3BossEnd;
 				}
 				else
 					Debug.Log("Couldn't find BossArenaTransform object");

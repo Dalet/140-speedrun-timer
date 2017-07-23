@@ -29,7 +29,6 @@ namespace SpeedrunTimerMod
 					LiveSplitSync.ConnectAsync();
 				else
 					LiveSplitSync.GracefulDisconnect();
-				Utils.PlayerPrefsSetBool("LiveSplitServerSync", _livesplitSyncEnabled);
 			}
 		}
 
@@ -47,13 +46,11 @@ namespace SpeedrunTimerMod
 		void Awake()
 		{
 			instance = this;
-			gameObject.AddComponent<UI>();
 			LiveSplitSync = new LiveSplitSync()
 			{
 				AlwaysPauseGameTime = true
 			};
 			LiveSplitSync.Connected += LiveSplitSync_OnConnected;
-			LiveSplitSyncEnabled = Utils.PlayerPrefsGetBool("LiveSplitServerSync", true);
 		}
 
 		void LiveSplitSync_OnConnected(object sender, EventArgs e)

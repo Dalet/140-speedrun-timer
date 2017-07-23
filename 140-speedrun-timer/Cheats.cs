@@ -152,7 +152,7 @@ namespace SpeedrunTimerMod
 		public static void LoadLevel(int level, bool mirrored)
 		{
 			// levels are offset by 1 in the 2017 update
-			if (!SpeedrunTimerLoader.IsLegacyVersion)
+			if (!ModLoader.IsLegacyVersion)
 				level++;
 
 			MirrorModeManager.mirrorModeActive = mirrored;

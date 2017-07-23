@@ -118,7 +118,7 @@ namespace SpeedrunTimerModInstaller
 		void Insert_Inject()
 		{
 			// SpeedrunTimerLoader.Inject()
-			var injectedMethod = GetMethodDef(ModModule, "SpeedrunTimerLoader", "Inject");
+			var injectedMethod = GetMethodDef(ModModule, "ModLoader", "Inject");
 			var injectedMethodRef = GameModule.Import(injectedMethod);
 
 			var targetMethod = GetMethodDef(GameModule, "Globals", "Awake");

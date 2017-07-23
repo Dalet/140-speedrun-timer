@@ -63,7 +63,8 @@
     <Compile Include="LiveSplitSync.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="NamedPipeClient.cs" />
-    <Compile Include="SpeedrunTimerLoader.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="ModLoader.cs" />
     <Compile Include="SpeedrunTimer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UI.cs" />
