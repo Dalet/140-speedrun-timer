@@ -3,9 +3,9 @@
 
 # Installation
 [Download page](https://github.com/Dalet/140-speedrun-timer/releases/)
-* **Installer** (recommended)
+* **Installer**
   * Select the game folder (if not auto-detected) and click install
-* **Manual installation**
+* **Manual installation** (removed since v0.6)
   * Open the game folder and extract the DLLs in `140_Data/Managed`
 
 # Features
