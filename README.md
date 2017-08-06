@@ -3,14 +3,15 @@
 
 # Installation
 [Download page](https://github.com/Dalet/140-speedrun-timer/releases/)
-* **Installer** (recommended)
- * Select the game folder (if not auto-detected) and click install
-* **Manual installation**
- * Open the game folder and extract the DLLs in `140_Data/Managed`
+* **Installer**
+  * Select the game folder (if not auto-detected) and click install
+* **Manual installation** (removed since v0.6)
+  * Open the game folder and extract the DLLs in `140_Data/Managed`
 
 # Features
 * Speedrun timer with or without loads
 * Quick reset
+* [LiveSplit](http://livesplit.org/) synchronization: in-game time, autosplitting
 * Cheats for practice
 
 # Keybinds
@@ -33,4 +34,14 @@
 |  `Home` | Teleport to the first checkpoint |
 |  `End`  | Teleport to the last checkpoint |
 | `Backspace` | Flip the player color |
-| `Alt` + `Backspace` | Toggle ![KappaPride](https://static-cdn.jtvnw.net/emoticons/v1/55338/1.0) player
+| `I`         | Toggle invincibility |
+
+# Configuration
+
+## Command line arguments
+
+On Steam, they can be set via the "Set launch options..." button in the game's properties. More information about this here: https://support.steampowered.com/kb_article.php?ref=1040-JWMT-2947
+
+| Argument (case-sensitive) | Details                            |
+|---------------------------|------------------------------------|
+| `-disable-livesplit-sync` | Disables LiveSplit synchronization |

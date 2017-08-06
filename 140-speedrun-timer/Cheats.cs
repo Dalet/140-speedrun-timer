@@ -6,8 +6,8 @@ namespace SpeedrunTimerMod
 	class Cheats : MonoBehaviour
 	{
 		public static bool Enabled { get; set; }
+		public static bool InvincibilityEnabled { get; private set; }
 		public static Savepoint[] Savepoints { get; private set; } = new Savepoint[] { };
-		public static bool RainbowPlayerEnabled { get; set; }
 
 		List<BeatLayerSwitch> _beatSwitches;
 		Utils.Label _cheatWatermark;
@@ -17,14 +17,20 @@ namespace SpeedrunTimerMod
 		{
 			Savepoints = new Savepoint[] { };
 
+			if (Application.loadedLevelName == "Level_Menu")
+			{
+				InvincibilityEnabled = false;
+			}
+
 			_cheatWatermark = new Utils.Label
 			{
-				position = new Rect(UI.Scale(500), UI.Scale(100), Screen.width, Screen.height),
+				positionDelegate = () => new Rect(0, UI.Scale(100), Screen.width, Screen.height - UI.Scale(100)),
 				text = "CHEATS ENABLED",
+				fontSize = 30,
 				style = new GUIStyle
 				{
-					fontSize = UI.Scale(30),
-					fontStyle = FontStyle.Bold
+					fontStyle = FontStyle.Bold,
+					alignment = (TextAnchor)TextAlignment.Center
 				}
 			};
 			_cheatWatermark.style.normal.textColor = Color.magenta;
@@ -119,17 +125,12 @@ namespace SpeedrunTimerMod
 
 			if (Input.GetKeyDown(KeyCode.Backspace))
 			{
-				if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
-				{
-					RainbowPlayerEnabled = !RainbowPlayerEnabled;
-				}
-				else
-				{
-					if (RainbowPlayerEnabled)
-						RainbowPlayerEnabled = false;
-					else
-						TogglePlayerColor();
-				}
+				TogglePlayerColor();
+			}
+
+			if (Input.GetKeyUp(KeyCode.I) && Application.loadedLevelName != "Level_Menu")
+			{
+				InvincibilityEnabled = !InvincibilityEnabled;
 			}
 
 			RainbowPlayerUpdate();
@@ -137,7 +138,7 @@ namespace SpeedrunTimerMod
 
 		void RainbowPlayerUpdate()
 		{
-			if (!RainbowPlayerEnabled)
+			if (!InvincibilityEnabled)
 				return;
 
 			var player = Globals.player.GetComponent<MyCharacterController>();
@@ -151,7 +152,7 @@ namespace SpeedrunTimerMod
 		public static void LoadLevel(int level, bool mirrored)
 		{
 			// levels are offset by 1 in the 2017 update
-			if (!SpeedrunTimerLoader.IsLegacyVersion)
+			if (!ModLoader.IsLegacyVersion)
 				level++;
 
 			MirrorModeManager.mirrorModeActive = mirrored;
@@ -251,8 +252,10 @@ namespace SpeedrunTimerMod
 
 		public void OnGUI()
 		{
-			if (Enabled)
-				_cheatWatermark.OnGUI();
+			if (!Enabled)
+				return;
+
+			_cheatWatermark.OnGUI();
 		}
 	}
 }

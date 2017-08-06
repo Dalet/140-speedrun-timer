@@ -112,12 +112,14 @@ namespace SpeedrunTimerModInstaller
 
 			if (steamFinder.FindSteam())
 			{
-				var gameFolder = steamFinder.FindGameFolder("140");
-				var installer = new Installer();
-				if (installer.SetGamePath(gameFolder))
+				foreach (var gameFolder in steamFinder.FindGameFolders("140"))
 				{
-					Console.WriteLine(gameFolder);
-					return ExitCode.Success;
+					var installer = new Installer();
+					if (installer.SetGamePath(gameFolder))
+					{
+						Console.WriteLine(gameFolder);
+						return ExitCode.Success;
+					}
 				}
 			}
 
