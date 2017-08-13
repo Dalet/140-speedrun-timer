@@ -7,15 +7,16 @@ namespace SpeedrunTimerMod
 	{
 		public static bool Enabled { get; set; }
 		public static bool InvincibilityEnabled { get; private set; }
-		public static Savepoint[] Savepoints { get; private set; } = new Savepoint[] { };
 
+		List<Savepoint> _savepoints;
 		List<BeatLayerSwitch> _beatSwitches;
 		Utils.Label _cheatWatermark;
 		float _playerHue;
 
-		public void Awake()
+		void Awake()
 		{
-			Savepoints = new Savepoint[] { };
+			_savepoints = new List<Savepoint>();
+			_beatSwitches = new List<BeatLayerSwitch>();
 
 			if (Application.loadedLevelName == "Level_Menu")
 			{
@@ -36,31 +37,25 @@ namespace SpeedrunTimerMod
 			_cheatWatermark.style.normal.textColor = Color.magenta;
 		}
 
-		public void Start()
+		void Start()
 		{
-			_beatSwitches = new List<BeatLayerSwitch>();
-
 			var levelsFolder = GameObject.Find("Levels");
-			if (levelsFolder)
-			{
-				Savepoints = levelsFolder.GetComponentsInChildren<Savepoint>();
+			if (!levelsFolder)
+				return;
 
-				var beatLayerSwitches = levelsFolder.GetComponentsInChildren<BeatLayerSwitch>();
-				foreach (var layerSwitch in beatLayerSwitches)
-				{
-					_beatSwitches.Add(layerSwitch);
-				}
+			_savepoints.AddRange(levelsFolder.GetComponentsInChildren<Savepoint>());
+			_savepoints.Sort((s1, s2) => s1.transform.position.x.CompareTo(s2.transform.position.x));
 
-				_beatSwitches.Sort((s1, s2) => s1.globalBeatLayer < s2.globalBeatLayer ? -1 : 1);
+			_beatSwitches.AddRange(levelsFolder.GetComponentsInChildren<BeatLayerSwitch>());
+			_beatSwitches.Sort((s1, s2) => s1.globalBeatLayer.CompareTo(s2.globalBeatLayer));
 
-				// last switch of level 1 is out of bounds
-				// hub switch will bug out if used with cheats
-				if (Application.loadedLevel <= 1)
-					_beatSwitches.RemoveAt(_beatSwitches.Count - 1);
-			}
+			// last switch of level 1 is out of bounds
+			// hub switch will bug out if used with cheats
+			if (Application.loadedLevel <= 1)
+				_beatSwitches.RemoveAt(_beatSwitches.Count - 1);
 		}
 
-		public void Update()
+		void Update()
 		{
 			if (Application.isLoadingLevel)
 				return;
@@ -92,11 +87,10 @@ namespace SpeedrunTimerMod
 				for (var key = KeyCode.Alpha1; key <= KeyCode.Alpha9; key++)
 				{
 					int keyNum = key - KeyCode.Alpha1;
-					if (keyNum >= _beatSwitches.Count || !Input.GetKeyDown(key))
-						continue;
-
-					TeleportToBeatLayerSwitch(_beatSwitches[keyNum]);
-					break;
+					if (Input.GetKeyDown(key))
+					{
+						TeleportToBeatLayerSwitch(keyNum);
+					}
 				}
 			}
 
@@ -111,7 +105,7 @@ namespace SpeedrunTimerMod
 			}
 			else if (Input.GetKeyDown(KeyCode.End))
 			{
-				Globals.levelsManager.SetCurrentCheckpoint(Savepoints.Length - 1);
+				Globals.levelsManager.SetCurrentCheckpoint(_savepoints.Count - 1);
 				TeleportToCurrentCheckpoint();
 			}
 			else if (Input.GetKeyDown(KeyCode.PageUp))
@@ -131,6 +125,11 @@ namespace SpeedrunTimerMod
 			if (Input.GetKeyUp(KeyCode.I) && Application.loadedLevelName != "Level_Menu")
 			{
 				InvincibilityEnabled = !InvincibilityEnabled;
+			}
+
+			if (Input.GetKeyDown(KeyCode.Q))
+			{
+				KillPlayer();
 			}
 
 			RainbowPlayerUpdate();
@@ -161,6 +160,23 @@ namespace SpeedrunTimerMod
 			Application.LoadLevel(level);
 		}
 
+		void TeleportToBeatLayerSwitch(int id)
+		{
+			if (id == 4 && Application.loadedLevelName.StartsWith("Level1_"))
+			{
+				var levelsFolder = GameObject.Find("Levels");
+				var bossGate = levelsFolder.GetComponentInChildren<BossGate>();
+				if (bossGate)
+					TeleportToBeatLayerSwitch(bossGate);
+				return;
+			}
+
+			if (id >= 0 && id < _beatSwitches.Count)
+			{
+				TeleportToBeatLayerSwitch(_beatSwitches[id]);
+			}
+		}
+
 		public static void TeleportToBeatLayerSwitch(BeatLayerSwitch beatSwitch)
 		{
 			var player = Globals.player.GetComponent<MyCharacterController>();
@@ -168,6 +184,14 @@ namespace SpeedrunTimerMod
 			player.PlacePlayerCharacter(beatSwitch.transform.position, true);
 			if (beatSwitch.globalBeatLayer >= Globals.beatMaster.GetCurrentBeatLayer())
 				beatSwitch.CheatUse();
+		}
+
+		public static void TeleportToBeatLayerSwitch(BossGate bossGate)
+		{
+			var player = Globals.player.GetComponent<MyCharacterController>();
+			player.SetVelocity(Vector2.zero);
+			player.PlacePlayerCharacter(bossGate.transform.position, true);
+			bossGate.CheatUse();
 		}
 
 		public static void TeleportToSavepoint(Savepoint savepoint)
@@ -179,57 +203,48 @@ namespace SpeedrunTimerMod
 
 		public static void TeleportToCurrentCheckpoint()
 		{
-			if (Savepoints.Length == 0)
-				return;
-
 			var savepoint = Globals.levelsManager.GetSavepoint();
 			TeleportToSavepoint(savepoint);
 		}
 
-		public static void TeleportToNearestCheckpoint(bool forward = true)
+		public void TeleportToNearestCheckpoint(bool searchToRight = true)
 		{
-			if (Savepoints.Length == 0)
-				return;
-
-			var savepoint = GetNearestCheckpoint(forward);
+			var savepoint = GetNearestCheckpoint(searchToRight);
 			if (savepoint != null)
 				TeleportToSavepoint(savepoint);
 		}
 
-		static Savepoint GetNearestCheckpoint(bool forward = true)
+		Savepoint GetNearestCheckpoint(bool searchToRight = true)
 		{
-			if (Savepoints.Length == 0)
-				return null;
-
 			var levelManager = Globals.levelsManager;
 			var playerPos = Globals.player.GetComponent<MyCharacterController>().transform.position;
-			Savepoint savepoint = null;
+			var currentSavePoint = levelManager.GetSavepoint();
 
-			// skip the first savepoint, it is the spawn point
-			for (int i = 1; i < Savepoints.Length; i++)
+			var i = searchToRight
+				? 1 // skip the first savepoint, it is the spawn point
+				: _savepoints.Count - 1;
+			for (; i >= 0 && i < _savepoints.Count; i += searchToRight ? 1 : -1)
 			{
-				levelManager.SetCurrentCheckpoint(i);
-				savepoint = levelManager.GetSavepoint();
+				var savepoint = GetSavepoint(i);
+				if (currentSavePoint == savepoint)
+					continue;
 
-				if (playerPos.x < savepoint.transform.position.x)
+				var savepointPos = savepoint.transform.position;
+				var distance = savepointPos.x - playerPos.x;
+
+				if (searchToRight)
 				{
-					if (!forward)
-					{
-						if (i <= 1)
-							return null;
-
-						savepoint = GetSavepoint(i - 1);
-						if (i > 2 && savepoint.transform.position.x == playerPos.x)
-							savepoint = GetSavepoint(i - 2);
-					}
-					break;
+					if (distance > 0)
+						return savepoint;
 				}
-
-				if (!forward && i == Savepoints.Length - 1)
-					savepoint = GetSavepoint(i - 1);
+				else
+				{
+					if (distance < 0)
+						return savepoint;
+				}
 			}
 
-			return savepoint;
+			return null;
 		}
 
 		static Savepoint GetSavepoint(int id)
@@ -250,7 +265,13 @@ namespace SpeedrunTimerMod
 			player.visualPlayer.SetColor(color, 1);
 		}
 
-		public void OnGUI()
+		public static void KillPlayer()
+		{
+			var player = Globals.player.GetComponent<MyCharacterController>();
+			player.Kill();
+		}
+
+		void OnGUI()
 		{
 			if (!Enabled)
 				return;
