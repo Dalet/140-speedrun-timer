@@ -34,6 +34,7 @@
 |  `Home` | Teleport to the first checkpoint |
 |  `End`  | Teleport to the last checkpoint |
 | `Backspace` | Flip the player color |
+| `Q`         | Suicide              |
 | `I`         | Toggle invincibility |
 
 # Configuration
