@@ -43,8 +43,12 @@ namespace SpeedrunTimerMod
 			if (!levelsFolder)
 				return;
 
-			_savepoints.AddRange(levelsFolder.GetComponentsInChildren<Savepoint>());
-			_savepoints.Sort((s1, s2) => s1.transform.position.x.CompareTo(s2.transform.position.x));
+			foreach (var savepoint in levelsFolder.GetComponentsInChildren<Savepoint>())
+			{
+				if (!(savepoint is SpawnPoint))
+					_savepoints.Add(savepoint);
+			}
+			_savepoints.Sort((s1, s2) => s1.GetGlobalSavepointID().CompareTo(s2.GetGlobalSavepointID()));
 
 			_beatSwitches.AddRange(levelsFolder.GetComponentsInChildren<BeatLayerSwitch>());
 			_beatSwitches.Sort((s1, s2) => s1.globalBeatLayer.CompareTo(s2.globalBeatLayer));
@@ -100,13 +104,13 @@ namespace SpeedrunTimerMod
 			}
 			else if (Input.GetKeyDown(KeyCode.Home))
 			{
-				Globals.levelsManager.SetCurrentCheckpoint(1);
-				TeleportToCurrentCheckpoint();
+				var savepoint = _savepoints[0];
+				TeleportToSavepoint(savepoint);
 			}
 			else if (Input.GetKeyDown(KeyCode.End))
 			{
-				Globals.levelsManager.SetCurrentCheckpoint(_savepoints.Count - 1);
-				TeleportToCurrentCheckpoint();
+				var savepoint = _savepoints[_savepoints.Count - 1];
+				TeleportToSavepoint(savepoint);
 			}
 			else if (Input.GetKeyDown(KeyCode.PageUp))
 			{
@@ -217,29 +221,24 @@ namespace SpeedrunTimerMod
 		Savepoint GetNearestCheckpoint(bool searchToRight = true)
 		{
 			var levelManager = Globals.levelsManager;
-			var playerPos = Globals.player.GetComponent<MyCharacterController>().transform.position;
+			var playerPos = Globals.player.transform.position;
 			var currentSavePoint = levelManager.GetSavepoint();
 
-			var i = searchToRight
-				? 1 // skip the first savepoint, it is the spawn point
-				: _savepoints.Count - 1;
+			var i = searchToRight ? 0 : _savepoints.Count - 1;
 			for (; i >= 0 && i < _savepoints.Count; i += searchToRight ? 1 : -1)
 			{
-				var savepoint = GetSavepoint(i);
-				if (currentSavePoint == savepoint)
-					continue;
-
+				var savepoint = _savepoints[i];
 				var savepointPos = savepoint.transform.position;
 				var distance = savepointPos.x - playerPos.x;
 
 				if (searchToRight)
 				{
-					if (distance > 0)
+					if (distance > 0.1)
 						return savepoint;
 				}
 				else
 				{
-					if (distance < 0)
+					if (distance < -0.1)
 						return savepoint;
 				}
 			}
