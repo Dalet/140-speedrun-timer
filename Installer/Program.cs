@@ -164,10 +164,12 @@ namespace SpeedrunTimerModInstaller
 				return ExitCode.InvalidPath;
 			}
 
-			if (CheckInstall(path) != ExitCode.Upgradable)
+			var check = CheckInstall(path);
+			if (check != ExitCode.Upgradable)
 				return ExitCode.Error;
 
 			_installer.UnInstall();
+			_installer.SetGamePath(_installer.GamePath); // temp fix
 			_installer.Install();
 
 			return ExitCode.Success;
