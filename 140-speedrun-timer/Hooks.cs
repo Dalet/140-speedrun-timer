@@ -89,45 +89,45 @@ namespace SpeedrunTimerMod
 		public static void OnLevel1BossEnd()
 		{
 			Debug.Log("OnLevel1BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(1);
+			SpeedrunTimer.Instance?.CompleteLevel(1);
 		}
 
 		public static void OnLevel2BossEnd()
 		{
 			Debug.Log("OnLevel2BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(2);
+			SpeedrunTimer.Instance?.CompleteLevel(2);
 		}
 
 		public static void OnLevel3BossEnd()
 		{
 			Debug.Log("OnLevel3BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(3);
+			SpeedrunTimer.Instance?.CompleteLevel(3);
 		}
 
 		public static void OnLevel4BossEnd()
 		{
 			Debug.Log("OnLevel4BossEnd");
-			SpeedrunTimer.Instance.CompleteLevel(4);
+			SpeedrunTimer.Instance?.CompleteLevel(4);
 		}
 
 		public static void OnMenuKeyUsed() // triggered slightly before OnKeyUsed
 		{
 			Debug.Log("OnMenuKeyUsed");
 
-			SpeedrunTimer.Instance.StartLoad();
-			SpeedrunTimer.Instance.Unfreeze();
+			SpeedrunTimer.Instance?.StartLoad();
+			SpeedrunTimer.Instance?.Unfreeze();
 		}
 
 		public static void OnKeyUsed()
 		{
 			Debug.Log("OnKeyUsed");
-			SpeedrunTimer.Instance.Split();
+			SpeedrunTimer.Instance?.Split();
 		}
 
 		public static void OnResumeAfterDeath()
 		{
 			if (Application.loadedLevelName == "Level_Menu")
-				SpeedrunTimer.Instance.StartTimer();
+				SpeedrunTimer.Instance?.StartTimer();
 		}
 	}
 }
