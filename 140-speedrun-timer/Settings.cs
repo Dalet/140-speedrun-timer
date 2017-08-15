@@ -6,7 +6,8 @@ namespace SpeedrunTimerMod
 	{
 		const bool DEFAULT_LIVESPLIT_SYNC_ENABLED = true;
 
-		public bool LiveSplitSyncEnabled { get; set; } = DEFAULT_LIVESPLIT_SYNC_ENABLED;
+		public bool ModDisabled { get; private set; }
+		public bool LiveSplitSyncEnabled { get; private set; } = DEFAULT_LIVESPLIT_SYNC_ENABLED;
 
 		public bool Load()
 		{
@@ -21,6 +22,9 @@ namespace SpeedrunTimerMod
 			{
 				switch (args[i])
 				{
+					case "-disable-timer-mod":
+						ModDisabled = true;
+						break;
 					case "-disable-livesplit-sync":
 						LiveSplitSyncEnabled = false;
 						break;
