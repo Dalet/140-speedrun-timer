@@ -43,6 +43,7 @@
 
 On Steam, they can be set via the "Set launch options..." button in the game's properties. More information about this here: https://support.steampowered.com/kb_article.php?ref=1040-JWMT-2947
 
-| Argument (case-sensitive) | Details                            |
+| Argument (case-sensitive) | Description                        |
 |---------------------------|------------------------------------|
+| `-disable-timer-mod`      | Disables the mod                   |
 | `-disable-livesplit-sync` | Disables LiveSplit synchronization |
