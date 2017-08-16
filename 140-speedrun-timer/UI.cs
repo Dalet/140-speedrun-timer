@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -14,7 +14,8 @@ namespace SpeedrunTimerMod
 		Utils.Label _titleLabel;
 		MyCharacterController _player;
 
-		const int BASE_UI_RESOLUTION = 720;
+		const int BASE_UI_RES_WIDTH = 1280;
+		const int BASE_UI_RES_HEIGHT = 720;
 
 		public void Awake()
 		{
@@ -30,12 +31,12 @@ namespace SpeedrunTimerMod
 			{
 				style = timerStyle,
 				fontSize = timerFontSize,
-				positionDelegate = () => new Rect(Scale(4), 0, Screen.width, Screen.height)
+				positionDelegate = () => new Rect(ScaleVertical(4), 0, Screen.width, Screen.height)
 			};
 
 			_realTimeLabel = new Utils.Label()
 			{
-				enabled = false,
+				Enabled = false,
 				positionDelegate = () => new Rect(_gameTimeLabel.Position.xMin, _gameTimeLabel.Position.yMin + timerStyle.fontSize,
 					_gameTimeLabel.Position.width, _gameTimeLabel.Position.height),
 				style = timerStyle,
@@ -44,8 +45,10 @@ namespace SpeedrunTimerMod
 
 			_updateLabel = new Utils.Label()
 			{
-				positionDelegate = () => new Rect(Scale(4), Screen.height - _updateLabel.style.fontSize - Scale(4), Screen.width, Screen.height),
+				positionDelegate = () => new Rect(ScaleVertical(4), Screen.height - _updateLabel.style.fontSize - ScaleVertical(4), Screen.width, Screen.height),
 				fontSize = 18,
+				enableOutline = true,
+				outlineColor = Color.black,
 				style = new GUIStyle
 				{
 					fontStyle = FontStyle.Bold
@@ -54,10 +57,12 @@ namespace SpeedrunTimerMod
 
 			_debugLabel = new Utils.Label()
 			{
-				enabled = false,
-				positionDelegate = () => new Rect(Scale(4), _updateLabel.Position.yMin - _debugLabel.style.fontSize * 5 - Scale(3),
+				Enabled = false,
+				positionDelegate = () => new Rect(ScaleVertical(4), _updateLabel.Position.yMin - _debugLabel.style.fontSize * 5 - ScaleVertical(3),
 					Screen.width, Screen.height),
 				fontSize = 16,
+				enableOutline = true,
+				outlineColor = Color.black,
 				style = new GUIStyle
 				{
 					fontStyle = FontStyle.Bold
@@ -68,6 +73,8 @@ namespace SpeedrunTimerMod
 			{
 				style = _gameTimeLabel.style,
 				fontSize = _gameTimeLabel.fontSize,
+				enableOutline = true,
+				outlineColor = Color.black,
 				positionDelegate = _gameTimeLabel.positionDelegate,
 				text = $"Speedrun Timer v{ Utils.FormatVersion(Assembly.GetExecutingAssembly().GetName().Version)}"
 #if DEBUG
@@ -81,16 +88,16 @@ namespace SpeedrunTimerMod
 				= _updateLabel.style.normal.textColor = color;
 
 			ReadSettings();
-			_titleLabel.enabled = !_gameTimeLabel.enabled;
+			_titleLabel.Enabled = !_gameTimeLabel.Enabled;
 		}
 
 		public void OnGUI()
 		{
 
-			if (!_gameTimeLabel.enabled && Time.realtimeSinceStartup < 10)
+			if (!_gameTimeLabel.Enabled && Time.realtimeSinceStartup < 10)
 				_titleLabel.OnGUI();
 
-			if (_gameTimeLabel.enabled)
+			if (_gameTimeLabel.Enabled)
 			{
 				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitSync?.IsConnected ?? false;
 				var gtSuffix = livesplitConnected ? "•" : "";
@@ -98,7 +105,7 @@ namespace SpeedrunTimerMod
 				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime));
 			}
 
-			if (_debugLabel.enabled)
+			if (_debugLabel.Enabled)
 			{
 				var pos = _player.transform.position;
 				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
@@ -138,36 +145,41 @@ namespace SpeedrunTimerMod
 
 			if (Input.GetKeyDown(KeyCode.F1))
 			{
-				_realTimeLabel.enabled = !_realTimeLabel.enabled || !_gameTimeLabel.enabled;
-				_gameTimeLabel.enabled = true;
+				_realTimeLabel.Enabled = !_realTimeLabel.Enabled || !_gameTimeLabel.Enabled;
+				_gameTimeLabel.Enabled = true;
 			}
 
 			if (Input.GetKeyDown(KeyCode.F2))
 			{
-				_gameTimeLabel.enabled = !_gameTimeLabel.enabled;
-				_titleLabel.enabled = false;
+				_gameTimeLabel.Toggle();
+				_titleLabel.Enabled = false;
 			}
 
 			if (Input.GetKeyDown(KeyCode.F3))
-				_debugLabel.enabled = !_debugLabel.enabled;
+				_debugLabel.Toggle();
 		}
 
 		void ReadSettings()
 		{
-			_gameTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowTimer", _gameTimeLabel.enabled);
-			_realTimeLabel.enabled = Utils.PlayerPrefsGetBool("ShowRealTime", _realTimeLabel.enabled);
+			_gameTimeLabel.Enabled = Utils.PlayerPrefsGetBool("ShowTimer", _gameTimeLabel.Enabled);
+			_realTimeLabel.Enabled = Utils.PlayerPrefsGetBool("ShowRealTime", _realTimeLabel.Enabled);
 		}
 
 		public void OnApplicationQuit()
 		{
-			Utils.PlayerPrefsSetBool("ShowTimer", _gameTimeLabel.enabled);
-			Utils.PlayerPrefsSetBool("ShowRealTime", _realTimeLabel.enabled);
+			Utils.PlayerPrefsSetBool("ShowTimer", _gameTimeLabel.Enabled);
+			Utils.PlayerPrefsSetBool("ShowRealTime", _realTimeLabel.Enabled);
 			PlayerPrefs.Save();
 		}
 
-		public static int Scale(int pixels)
+		public static int ScaleVertical(int pixels)
 		{
-			return (int)Math.Round(pixels * (Screen.height / (float)BASE_UI_RESOLUTION));
+			return (int)Math.Round(pixels * (Screen.height / (float)BASE_UI_RES_HEIGHT));
+		}
+
+		public static int ScaleHorizontal(int pixels)
+		{
+			return (int)Math.Round(pixels * (Screen.width / (float)BASE_UI_RES_WIDTH));
 		}
 	}
 }

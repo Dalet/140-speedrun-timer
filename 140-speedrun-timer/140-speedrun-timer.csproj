@@ -63,6 +63,7 @@
     <Compile Include="LiveSplitSync.cs" />
     <Compile Include="Misc.cs" />
     <Compile Include="NamedPipeClient.cs" />
+    <Compile Include="Resources.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ModLoader.cs" />
     <Compile Include="SpeedrunTimer.cs" />
@@ -70,6 +71,10 @@
     <Compile Include="UI.cs" />
     <Compile Include="Updater.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="WavUtility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\beep.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

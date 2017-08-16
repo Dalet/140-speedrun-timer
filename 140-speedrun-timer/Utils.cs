@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+using System;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
@@ -74,24 +73,96 @@ namespace SpeedrunTimerMod
 		internal class Label
 		{
 			public Rect Position => positionDelegate();
+			public bool Enabled
+			{
+				get { return enabled; }
+				set
+				{
+					if (value)
+						Enable();
+					else
+						Disable();
+				}
+			}
 
-			public bool enabled = true;
 			public int fontSize;
 			public Func<Rect> positionDelegate;
 			public GUIStyle style;
 			public string text;
+			public bool enableOutline;
+			public Color outlineColor;
+			public float displayTime = -1;
+
+			bool enabled = true;
+			float timer;
+
+			public void Toggle()
+			{
+				Enabled = !enabled;
+			}
+
+			public void ResetTimer()
+			{
+				timer = 0;
+			}
 
 			public void OnGUI(string newText = null)
 			{
 				if (newText != null)
 					text = newText;
 
-				style.fontSize = UI.Scale(fontSize);
+				style.fontSize = UI.ScaleVertical(fontSize);
 
-				if (enabled)
+				if (!enabled)
+					return;
+
+				if (displayTime > 0)
 				{
-					GUI.Label(Position, text, style);
+					if (timer >= displayTime)
+					{
+						Disable();
+						return;
+					}
+					timer += Time.deltaTime;
 				}
+				Draw();
+			}
+
+			void Enable()
+			{
+				if (!enabled)
+					ResetTimer();
+				enabled = true;
+			}
+
+			void Disable()
+			{
+				enabled = false;
+			}
+
+			void Draw()
+			{
+				if (enableOutline)
+					DrawOutline();
+				GUI.Label(Position, text, style);
+			}
+
+			void DrawOutline()
+			{
+				var position = Position;
+				var oldColor = style.normal.textColor;
+				style.normal.textColor = outlineColor;
+				position.x--;
+				GUI.Label(position, text, style); // left
+				position.x += 2;
+				GUI.Label(position, text, style); // right
+				position.x--;
+				position.y--;
+				GUI.Label(position, text, style); // bottom
+				position.y += 2;
+				GUI.Label(position, text, style); // up
+				position.y--;
+				style.normal.textColor = oldColor;
 			}
 		}
 	}

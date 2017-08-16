@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
@@ -7,38 +7,85 @@ namespace SpeedrunTimerMod
 	{
 		public static bool Enabled { get; set; }
 		public static bool InvincibilityEnabled { get; private set; }
+		public static bool FlashWatermarkOnStart { get; set; }
 
 		List<Savepoint> _savepoints;
 		List<BeatLayerSwitch> _beatSwitches;
 		Utils.Label _cheatWatermark;
 		float _playerHue;
+		AudioSource _cheatBeep;
+
+		public void FlashWatermarkAcrossLoad()
+		{
+			FlashWatermarkOnStart = true;
+			FlashWatermark();
+		}
+
+		public void FlashWatermark(bool playSound = true)
+		{
+			if (!ModLoader.Settings.FlashCheatWatermark)
+				return;
+
+			_cheatWatermark.ResetTimer();
+			_cheatWatermark.Enabled = true;
+			if (playSound)
+			{
+				_cheatBeep.Play();
+			}
+		}
 
 		void Awake()
 		{
-			_savepoints = new List<Savepoint>();
-			_beatSwitches = new List<BeatLayerSwitch>();
-
-			if (Application.loadedLevelName == "Level_Menu")
-			{
-				InvincibilityEnabled = false;
-			}
+			_cheatBeep = gameObject.AddComponent<AudioSource>();
+			_cheatBeep.clip = Resources.Instance.CheatBeep;
 
 			_cheatWatermark = new Utils.Label
 			{
-				positionDelegate = () => new Rect(0, UI.Scale(100), Screen.width, Screen.height - UI.Scale(100)),
+				positionDelegate = () => new Rect(0, UI.ScaleVertical(100), Screen.width, Screen.height - UI.ScaleVertical(100)),
 				text = "CHEATS ENABLED",
-				fontSize = 30,
+				fontSize = 40,
+				enableOutline = true,
+				outlineColor = Color.black,
 				style = new GUIStyle
 				{
 					fontStyle = FontStyle.Bold,
-					alignment = (TextAnchor)TextAlignment.Center
+					alignment = TextAnchor.UpperCenter
 				}
 			};
+
+			if (ModLoader.Settings.FlashCheatWatermark)
+			{
+				_cheatWatermark.fontSize = 60;
+				_cheatWatermark.positionDelegate = () => new Rect(0, 0, Screen.width, Screen.height);
+				_cheatWatermark.displayTime = 2f;
+				_cheatWatermark.text = "CHEAT USED";
+				_cheatWatermark.style.alignment = TextAnchor.MiddleCenter;
+			}
+
 			_cheatWatermark.style.normal.textColor = Color.magenta;
 		}
 
 		void Start()
 		{
+			if (Application.loadedLevelName == "Level_Menu")
+			{
+				InvincibilityEnabled = false;
+			}
+
+			if (FlashWatermarkOnStart)
+			{
+				FlashWatermarkOnStart = false;
+				FlashWatermark();
+			}
+
+			LoadTeleportPoints();
+		}
+
+		void LoadTeleportPoints()
+		{
+			_savepoints = new List<Savepoint>();
+			_beatSwitches = new List<BeatLayerSwitch>();
+
 			var levelsFolder = GameObject.Find("Levels");
 			if (!levelsFolder)
 				return;
@@ -68,7 +115,10 @@ namespace SpeedrunTimerMod
 			{
 				if ((Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 					&& Input.GetKeyDown(KeyCode.F12))
+				{
 					Enabled = true;
+					FlashWatermark();
+				}
 				else
 					return;
 			}
@@ -82,6 +132,7 @@ namespace SpeedrunTimerMod
 					if (!Input.GetKeyDown(key))
 						continue;
 
+					FlashWatermarkAcrossLoad();
 					LoadLevel(key - KeyCode.Alpha0, rightAlt);
 					break;
 				}
@@ -93,6 +144,7 @@ namespace SpeedrunTimerMod
 					int keyNum = key - KeyCode.Alpha1;
 					if (Input.GetKeyDown(key))
 					{
+						FlashWatermark();
 						TeleportToBeatLayerSwitch(keyNum);
 					}
 				}
@@ -100,39 +152,47 @@ namespace SpeedrunTimerMod
 
 			if (Input.GetKeyDown(KeyCode.Delete))
 			{
+				FlashWatermark();
 				TeleportToCurrentCheckpoint();
 			}
 			else if (Input.GetKeyDown(KeyCode.Home))
 			{
+				FlashWatermark();
 				var savepoint = _savepoints[0];
 				TeleportToSavepoint(savepoint);
 			}
 			else if (Input.GetKeyDown(KeyCode.End))
 			{
+				FlashWatermark();
 				var savepoint = _savepoints[_savepoints.Count - 1];
 				TeleportToSavepoint(savepoint);
 			}
 			else if (Input.GetKeyDown(KeyCode.PageUp))
 			{
+				FlashWatermark();
 				TeleportToNearestCheckpoint();
 			}
 			else if (Input.GetKeyDown(KeyCode.PageDown))
 			{
+				FlashWatermark();
 				TeleportToNearestCheckpoint(false);
 			}
 
 			if (Input.GetKeyDown(KeyCode.Backspace))
 			{
+				FlashWatermark();
 				TogglePlayerColor();
 			}
 
 			if (Input.GetKeyUp(KeyCode.I) && Application.loadedLevelName != "Level_Menu")
 			{
+				FlashWatermark();
 				InvincibilityEnabled = !InvincibilityEnabled;
 			}
 
 			if (Input.GetKeyDown(KeyCode.Q))
 			{
+				FlashWatermark();
 				KillPlayer();
 			}
 

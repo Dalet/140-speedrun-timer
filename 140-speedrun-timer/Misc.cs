@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
@@ -50,6 +50,8 @@ namespace SpeedrunTimerMod
 					SpeedrunTimer.Instance.ResetTimer();
 					MirrorModeManager.mirrorModeActive = false;
 					MirrorModeManager.respawnFromMirror = false;
+					var cheatComponent = ModLoader.ModLevelObject.GetComponent<Cheats>();
+					cheatComponent.FlashWatermarkAcrossLoad();
 					Application.LoadLevel("Level_Menu");
 				}
 			}
