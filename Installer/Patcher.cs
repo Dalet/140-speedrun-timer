@@ -1,6 +1,7 @@
-﻿using Mono.Cecil;
+using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace SpeedrunTimerModInstaller
@@ -87,7 +88,10 @@ namespace SpeedrunTimerModInstaller
 			Patch_InvincibilityCheat();
 
 			if (!IsLegacyVersion)
+			{
 				Insert_OnLevel4BossEnd();
+				Patch_TrailFix();
+			}
 
 			GameAsmDef.Write(destination);
 		}
@@ -237,6 +241,43 @@ namespace SpeedrunTimerModInstaller
 
 			ilProc.InsertBefore(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Call, injectedMethodRef));
 			ilProc.InsertAfter(ilProc.Body.Instructions.First(), ilProc.Create(OpCodes.Brtrue, ilProc.Body.Instructions.Last()));
+		}
+
+		void Patch_TrailFix()
+		{
+			var methods = new List<string>
+			{
+				"AddToPos",
+				"GetPos",
+				"GetRot",
+				"GetShape",
+				"GetSpeed",
+				"GetDeltaTime"
+			};
+
+			foreach (var method in methods)
+				PatchTrailInstruction(method);
+		}
+
+		void PatchTrailInstruction(string methodName)
+		{
+			var historySizeDef = GetFieldDef(GameModule, "PlayerHistory", "historySize");
+			var targetMethod = GetMethodDef(GameModule, "PlayerHistory", methodName);
+			var ilProc = targetMethod.Body.GetILProcessor();
+			var instructions = ilProc.Body.Instructions;
+
+			for (var i = 0; i < instructions.Count - 1; i++)
+			{
+				var instruction = instructions[i];
+				var nextInstruction = instructions[i + 1];
+
+				if (instruction.OpCode == OpCodes.Ldsfld && instruction.Operand == historySizeDef
+					&& nextInstruction.OpCode == OpCodes.Sub)
+				{
+					nextInstruction.OpCode = OpCodes.Rem;
+					break;
+				}
+			}
 		}
 
 		static MethodDefinition GetMethodDef(ModuleDefinition module, string typeName, string methodName)
