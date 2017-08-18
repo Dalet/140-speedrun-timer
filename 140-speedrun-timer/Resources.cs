@@ -15,7 +15,6 @@ namespace SpeedrunTimerMod
 
 		public void LoadAllResources()
 		{
-			Debug.Log("persisten path:" +Application.persistentDataPath);
 			using (var stream = GetResourceStream("beep.wav"))
 			{
 				var bytes = ReadAllBytes(stream);
