@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace SpeedrunTimerMod
 {
@@ -8,6 +8,7 @@ namespace SpeedrunTimerMod
 
 		public bool ModDisabled { get; private set; }
 		public bool LiveSplitSyncEnabled { get; private set; } = DEFAULT_LIVESPLIT_SYNC_ENABLED;
+		public bool FlashCheatWatermark { get; private set; }
 
 		public bool Load()
 		{
@@ -27,6 +28,9 @@ namespace SpeedrunTimerMod
 						break;
 					case "-disable-livesplit-sync":
 						LiveSplitSyncEnabled = false;
+						break;
+					case "-flash-cheat-watermark":
+						FlashCheatWatermark = true;
 						break;
 				}
 			}
