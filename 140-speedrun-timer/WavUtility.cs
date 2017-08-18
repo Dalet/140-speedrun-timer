@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Text;
 using System.IO;
 using System;
@@ -46,7 +46,8 @@ public class WavUtility
 
 		// NB: Only uncompressed PCM wav files are supported.
 		string formatCode = FormatCode (audioFormat);
-		Debug.AssertFormat (audioFormat == 1 || audioFormat == 65534, "Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", audioFormat, formatCode);
+		if (audioFormat != 1 && audioFormat != 65534)
+			Debug.Log(string.Format("Detected format code '{0}' {1}, but only PCM and WaveFormatExtensable uncompressed formats are currently supported.", audioFormat, formatCode));
 
 		UInt16 channels = BitConverter.ToUInt16 (fileBytes, 22);
 		int sampleRate = BitConverter.ToInt32 (fileBytes, 24);
@@ -76,7 +77,7 @@ public class WavUtility
 			throw new Exception (bitDepth + " bit depth is not supported.");
 		}
 
-		AudioClip audioClip = AudioClip.Create (name, data.Length, (int)channels, sampleRate, false);
+		AudioClip audioClip = AudioClip.Create(name, data.Length, (int)channels, sampleRate, false, false);
 		audioClip.SetData (data, 0);
 		return audioClip;
 	}
@@ -87,7 +88,8 @@ public class WavUtility
 	{
 		int wavSize = BitConverter.ToInt32 (source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat (wavSize > 0 && wavSize == dataSize, "Failed to get valid 8-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+		if (!(wavSize > 0 && wavSize == dataSize))
+			Debug.Log(string.Format("Failed to get valid 8-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset));
 
 		float[] data = new float[wavSize];
 
@@ -106,7 +108,8 @@ public class WavUtility
 	{
 		int wavSize = BitConverter.ToInt32 (source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat (wavSize > 0 && wavSize == dataSize, "Failed to get valid 16-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+		if (!(wavSize > 0 && wavSize == dataSize))
+			Debug.Log(string.Format("Failed to get valid 16-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset));
 
 		int x = sizeof(Int16); // block size = 2
 		int convertedSize = wavSize / x;
@@ -123,7 +126,8 @@ public class WavUtility
 			++i;
 		}
 
-		Debug.AssertFormat (data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
+		if (data.Length != convertedSize)
+			Debug.Log(string.Format("AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize));
 
 		return data;
 	}
@@ -132,7 +136,8 @@ public class WavUtility
 	{
 		int wavSize = BitConverter.ToInt32 (source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat (wavSize > 0 && wavSize == dataSize, "Failed to get valid 24-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+		if (!(wavSize > 0 && wavSize == dataSize))
+			Debug.Log(string.Format("Failed to get valid 24-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset));
 
 		int x = 3; // block size = 3
 		int convertedSize = wavSize / x;
@@ -152,7 +157,8 @@ public class WavUtility
 			++i;
 		}
 
-		Debug.AssertFormat (data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
+		if (data.Length != convertedSize)
+			Debug.Log(string.Format("AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize));
 
 		return data;
 	}
@@ -161,7 +167,8 @@ public class WavUtility
 	{
 		int wavSize = BitConverter.ToInt32 (source, headerOffset);
 		headerOffset += sizeof(int);
-		Debug.AssertFormat (wavSize > 0 && wavSize == dataSize, "Failed to get valid 32-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset);
+		if (!(wavSize > 0 && wavSize == dataSize))
+			Debug.Log(string.Format("Failed to get valid 32-bit wav size: {0} from data bytes: {1} at offset: {2}", wavSize, dataSize, headerOffset));
 
 		int x = sizeof(float); //  block size = 4
 		int convertedSize = wavSize / x;
@@ -178,7 +185,8 @@ public class WavUtility
 			++i;
 		}
 
-		Debug.AssertFormat (data.Length == convertedSize, "AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize);
+		if (data.Length != convertedSize)
+			Debug.Log(string.Format("AudioClip .wav data is wrong size: {0} == {1}", data.Length, convertedSize));
 
 		return data;
 	}
@@ -187,8 +195,7 @@ public class WavUtility
 
 	public static byte[] FromAudioClip (AudioClip audioClip)
 	{
-		string file;
-		return FromAudioClip (audioClip, out file, false);
+		return FromAudioClip(audioClip, out string file, false);
 	}
 
 	public static byte[] FromAudioClip (AudioClip audioClip, out string filepath, bool saveAsFile = true, string dirname = "recordings")
@@ -216,7 +223,8 @@ public class WavUtility
 		byte[] bytes = stream.ToArray ();
 
 		// Validate total bytes
-		Debug.AssertFormat (bytes.Length == fileSize, "Unexpected AudioClip to wav format byte count: {0} == {1}", bytes.Length, fileSize);
+		if (bytes.Length != fileSize)
+			Debug.Log(string.Format("Unexpected AudioClip to wav format byte count: {0} == {1}", bytes.Length, fileSize));
 
 		// Save file to persistant storage location
 		if (saveAsFile) {
@@ -252,7 +260,8 @@ public class WavUtility
 		count += WriteBytesToMemoryStream (ref stream, wave, "FORMAT");
 
 		// Validate header
-		Debug.AssertFormat (count == total, "Unexpected wav descriptor byte count: {0} == {1}", count, total);
+		if (count != total)
+			Debug.Log(string.Format("Unexpected wav descriptor byte count: {0} == {1}", count, total));
 
 		return count;
 	}
@@ -285,7 +294,8 @@ public class WavUtility
 		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (bitDepth), "BITS_PER_SAMPLE");
 
 		// Validate format
-		Debug.AssertFormat (count == total, "Unexpected wav fmt byte count: {0} == {1}", count, total);
+		if (count != total)
+			Debug.Log(string.Format("Unexpected wav fmt byte count: {0} == {1}", count, total));
 
 		return count;
 	}
@@ -308,13 +318,15 @@ public class WavUtility
 		count += WriteBytesToMemoryStream (ref stream, BitConverter.GetBytes (subchunk2Size), "SAMPLES");
 
 		// Validate header
-		Debug.AssertFormat (count == total, "Unexpected wav data id byte count: {0} == {1}", count, total);
+		if (count != total)
+			Debug.Log(string.Format("Unexpected wav data id byte count: {0} == {1}", count, total));
 
 		// Write bytes to stream
 		count += WriteBytesToMemoryStream (ref stream, bytes, "DATA");
 
 		// Validate audio data
-		Debug.AssertFormat (bytes.Length == subchunk2Size, "Unexpected AudioClip to wav subchunk2 size: {0} == {1}", bytes.Length, subchunk2Size);
+		if (bytes.Length != subchunk2Size)
+			Debug.Log(string.Format("Unexpected AudioClip to wav subchunk2 size: {0} == {1}", bytes.Length, subchunk2Size));
 
 		return count;
 	}
@@ -335,7 +347,8 @@ public class WavUtility
 		byte[] bytes = dataStream.ToArray ();
 
 		// Validate converted bytes
-		Debug.AssertFormat (data.Length * x == bytes.Length, "Unexpected float[] to Int16 to byte[] size: {0} == {1}", data.Length * x, bytes.Length);
+		if (data.Length * x != bytes.Length)
+			Debug.Log(string.Format("Unexpected float[] to Int16 to byte[] size: {0} == {1}", data.Length * x, bytes.Length));
 
 		dataStream.Dispose ();
 
@@ -360,7 +373,8 @@ public class WavUtility
 	public static UInt16 BitDepth (AudioClip audioClip)
 	{
 		UInt16 bitDepth = Convert.ToUInt16 (audioClip.samples * audioClip.channels * audioClip.length / audioClip.frequency);
-		Debug.AssertFormat (bitDepth == 8 || bitDepth == 16 || bitDepth == 32, "Unexpected AudioClip bit depth: {0}. Expected 8 or 16 or 32 bit.", bitDepth);
+		if (!(bitDepth == 8 || bitDepth == 16 || bitDepth == 32))
+			Debug.Log(string.Format("Unexpected AudioClip bit depth: {0}. Expected 8 or 16 or 32 bit.", bitDepth));
 		return bitDepth;
 	}
 
