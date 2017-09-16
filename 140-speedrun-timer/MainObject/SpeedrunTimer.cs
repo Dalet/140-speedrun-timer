@@ -223,14 +223,14 @@ namespace SpeedrunTimerMod
 			});
 		}
 
-		public void EndLoad()
+		public void EndLoad(int millisecondsOffset = 0, int quarterBeatsOffset = 0)
 		{
 			if (!IsRunning || !IsGameTimePaused)
 				return;
 
 			DoAfterUpdate(() =>
 			{
-				_beatTimer.ResumeTimer();
+				_beatTimer.ResumeTimer(millisecondsOffset, quarterBeatsOffset);
 			});
 		}
 
