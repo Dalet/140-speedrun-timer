@@ -33,10 +33,20 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <NoWarn>CS0618</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Pre-release|AnyCPU'">
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE;PRE_RELEASE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Experimental|AnyCPU'">
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;EXPERIMENTAL</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,24 +68,40 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
-    <Compile Include="Cheats.cs" />
+    <Compile Include="GameObservers\BeatLayerSwitchObserver.cs" />
+    <Compile Include="GameObservers\GameObserverAttribute.cs" />
+    <Compile Include="GameObservers\Level1BossObserver.cs" />
+    <Compile Include="GameObservers\Level2BossObserver.cs" />
+    <Compile Include="GameObservers\Level3BossObserver.cs" />
+    <Compile Include="GameObservers\Level4BossObserver.cs" />
+    <Compile Include="GameObservers\MenuSystemObserver.cs" />
+    <Compile Include="GameObservers\PlayerControlStartObserver.cs" />
+    <Compile Include="GameObservers\TitleScreenObserver.cs" />
+    <Compile Include="LevelObject\PlayerControlOverride.cs" />
+    <Compile Include="MainObject\BeatTimerController.cs" />
+    <Compile Include="BeatTiming\BeatTime.cs" />
+    <Compile Include="BeatTiming\BeatTimer.cs" />
+    <Compile Include="LevelObject\Cheats.cs" />
+    <Compile Include="LevelObject\GameObserversManager.cs" />
     <Compile Include="Hooks.cs" />
-    <Compile Include="LiveSplitSync.cs" />
-    <Compile Include="Misc.cs" />
-    <Compile Include="NamedPipeClient.cs" />
+    <Compile Include="LiveSplit\LiveSplitSync.cs" />
+    <Compile Include="LevelObject\ResetHotkey.cs" />
+    <Compile Include="IPC\NamedPipeClient.cs" />
+    <Compile Include="MainObject\DebugBeatListener.cs" />
     <Compile Include="Resources.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ModLoader.cs" />
-    <Compile Include="SpeedrunTimer.cs" />
+    <Compile Include="MainObject\SpeedrunTimer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI.cs" />
-    <Compile Include="Updater.cs" />
+    <Compile Include="MainObject\UI.cs" />
+    <Compile Include="MainObject\Updater.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WavUtility.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\beep.wav" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -101,13 +101,13 @@ namespace SpeedrunTimerMod
 			{
 				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitSync?.IsConnected ?? false;
 				var gtSuffix = livesplitConnected ? "•" : "";
-				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime) + gtSuffix);
-				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime));
+				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime, 3) + gtSuffix);
+				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime, 3));
 			}
 
 			if (_debugLabel.Enabled)
 			{
-				var pos = _player.transform.position;
+				var pos = _player?.transform.position ?? null;
 				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
 
 				var isRunning = SpeedrunTimer.Instance.IsRunning;
@@ -115,15 +115,27 @@ namespace SpeedrunTimerMod
 				var livesplitSyncEnabled = SpeedrunTimer.Instance.LiveSplitSyncEnabled;
 				var liveplitSyncConnecting = SpeedrunTimer.Instance.LiveSplitSync?.IsConnecting ?? false;
 
+				var playerX = pos.HasValue ? PadPosition(pos.Value.x) : "??";
+				var playerY = pos.HasValue ? PadPosition(pos.Value.y) : "??";
+
+				var beat = DebugBeatListener.LastBeatId >= 0
+					? (DebugBeatListener.LastBeatId + 1).ToString().PadLeft(2, '0')
+					: "-";
+				var beatDbgStr = $"{beat}/16";
+
 				_debugLabel.OnGUI(
-					$"Checkpoint: {currentCheckpoint + 1} | Beat: {Misc.BeatDbgStr} | Pos: ({PadPosition(pos.x)}, {PadPosition(pos.y)})\n"
+					$"Checkpoint: {currentCheckpoint + 1} | Beat: {beatDbgStr} | Pos: ({playerX}, {playerY})\n"
 					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {isRunning} | IsGameTimePaused: {gtPaused} | LiveSplitSyncEnabled: {livesplitSyncEnabled}, TryingToConnect: {liveplitSyncConnecting}\n"
-					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion} | Legacy: {ModLoader.IsLegacyVersion}"
+					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | Unity: {Application.unityVersion} | Legacy: {ModLoader.IsLegacyVersion}"
 				);
 			}
 
 			if (Updater.NeedUpdate)
 				_updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
+#if EXPERIMENTAL
+			else
+				_updateLabel.OnGUI($"Experimental build v{Assembly.GetExecutingAssembly().GetName().Version}");
+#endif
 		}
 
 		static string PadPosition(float p)

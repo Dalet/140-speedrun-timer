@@ -9,9 +9,9 @@ namespace SpeedrunTimerMod
 		public static bool IsLegacyVersion { get; private set; }
 		public static Settings Settings { get; private set; }
 
-		public static GameObject ModLoaderObject { get; private set; }
-		public static GameObject ModMainObject { get; private set; }
-		public static GameObject ModLevelObject { get; private set; }
+		public static GameObject LoaderObject { get; private set; }
+		public static GameObject MainObject { get; private set; }
+		public static GameObject LevelObject { get; private set; }
 
 		static bool _disabled;
 		static string _errorDisplayMessage;
@@ -40,32 +40,39 @@ namespace SpeedrunTimerMod
 			if (Settings.ModDisabled)
 			{
 				_disabled = true;
+				return;
 			}
+
+			Application.targetFrameRate = Settings.TargetFramerate;
+			Application.runInBackground = Settings.RunInBackground;
+			QualitySettings.vSyncCount = Settings.Vsync ? 1 : 0;
 		}
 
 		void ModObjInit()
 		{
-			if (ModMainObject != null)
+			if (MainObject != null)
 				return;
 
 			Resources.Instance.LoadAllResources();
 
-			ModMainObject = new GameObject();
-			DontDestroyOnLoad(ModMainObject);
+			MainObject = new GameObject();
+			DontDestroyOnLoad(MainObject);
 
-			var speedrunTimer = ModMainObject.AddComponent<SpeedrunTimer>();
+			var speedrunTimer = MainObject.AddComponent<SpeedrunTimer>();
 			speedrunTimer.LiveSplitSyncEnabled = Settings.LiveSplitSyncEnabled;
 
-			ModMainObject.AddComponent<UI>();
-			ModMainObject.AddComponent<Updater>();
+			MainObject.AddComponent<UI>();
+			MainObject.AddComponent<Updater>();
+            MainObject.AddComponent<DebugBeatListener>();
 		}
 
 		void LevelObjInit()
 		{
-			ModLevelObject = new GameObject();
-			ModLevelObject.AddComponent<Hooks>();
-			ModLevelObject.AddComponent<Misc>();
-			ModLevelObject.AddComponent<Cheats>();
+			LevelObject = new GameObject();
+            LevelObject.AddComponent<GameObserversManager>();
+			LevelObject.AddComponent<ResetHotkey>();
+			LevelObject.AddComponent<Cheats>();
+			LevelObject.AddComponent<PlayerControlOverride>();
 		}
 
 		void OnGUI()
@@ -89,11 +96,11 @@ namespace SpeedrunTimerMod
 				return;
 
 			// one mod loader object instance per level
-			if (ModLoaderObject != null)
+			if (LoaderObject != null)
 				TriggerCriticalError("ModLoader.Inject() was called twice in the same level. Corrupted installation?");
 
-			ModLoaderObject = new GameObject();
-			ModLoaderObject.AddComponent<ModLoader>();
+			LoaderObject = new GameObject();
+			LoaderObject.AddComponent<ModLoader>();
 		}
 
 		public static void TriggerCriticalError(string exceptionMsg, string displayMsg = null)
@@ -109,8 +116,8 @@ namespace SpeedrunTimerMod
 
 		public static void DestroyModObjects()
 		{
-			Destroy(ModMainObject);
-			Destroy(ModLevelObject);
+			Destroy(MainObject);
+			Destroy(LevelObject);
 		}
 
 		static bool CheckIfLegacy()

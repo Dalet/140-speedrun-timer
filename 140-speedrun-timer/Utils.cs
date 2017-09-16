@@ -7,7 +7,10 @@ namespace SpeedrunTimerMod
 	{
 		public static string FormatTime(double totalSeconds, int decimals = 2)
 		{
+			var sign = totalSeconds < 0 ? "-" : "";
+
 			totalSeconds = Math.Round(totalSeconds, decimals, MidpointRounding.AwayFromZero);
+			totalSeconds = Math.Abs(totalSeconds);
 
 			var seconds = totalSeconds % 60;
 			var minutes = (int)(totalSeconds / 60);
@@ -17,7 +20,7 @@ namespace SpeedrunTimerMod
 			var secondsStr = ((int)seconds).ToString().PadLeft(2, '0');
 			var millisecondsStr = milliseconds.ToString().PadLeft(decimals, '0');
 
-			return $"{minutes}:{secondsStr}.{millisecondsStr}";
+			return $"{sign}{minutes}:{secondsStr}.{millisecondsStr}";
 		}
 
 		public static string FormatVersion(Version ver)
@@ -68,6 +71,22 @@ namespace SpeedrunTimerMod
 			if (t < 1.0f / 2.0f) return q;
 			if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
 			return p;
+		}
+
+		public static int[] GetSimilarQuarterBeats(int beatIndex)
+		{
+			var beats = new int[4];
+
+			var beat = beatIndex;
+			for (var i = 0; i < 4; i++)
+			{
+				beats[i] = beat;
+				beat += 4;
+				if (beat > 15)
+					beat -= 16;
+			}
+
+			return beats;
 		}
 
 		internal class Label

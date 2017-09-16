@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using Debug = UnityEngine.Debug;
 
-namespace SpeedrunTimerMod
+namespace SpeedrunTimerMod.IPC
 {
 	class NamedPipeClient : IDisposable
 	{

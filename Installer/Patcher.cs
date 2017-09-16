@@ -79,17 +79,13 @@ namespace SpeedrunTimerModInstaller
 				destination = _gameDllPath;
 
 			Insert_Inject();
-			Insert_OnResumeAfterDeath();
-			//Insert_OnLevel3BossEnd();
-			//Insert_OnMenuKeyUsed();
-			Insert_OnKeyUsed();
-			Insert_OnPlayerFixedUpdate();
+			Insert_PlayerResumeControl();
 			Patch_NoCheatAchievements();
+			Insert_OnResumeAfterDeath();
 			Patch_InvincibilityCheat();
 
 			if (!IsLegacyVersion)
 			{
-				Insert_OnLevel4BossEnd();
 				Patch_TrailFix();
 			}
 
@@ -131,31 +127,14 @@ namespace SpeedrunTimerModInstaller
 			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
 		}
 
-		void Insert_OnPlayerFixedUpdate()
+		void Insert_PlayerResumeControl()
 		{
-			// Hooks.OnPlayerFixedUpdate() (calls SpeedrunTimer.EndLoad)
-			var injectedMethodRef = GetMethodDef(ModModule, "Hooks", "OnPlayerFixedUpdate");
-			var targetMethodName = IsLegacyVersion ? "FixedUpdate" : "upDATE_FixedUpdate";
-			var targetMethod = GetMethodDef(GameModule, "MyCharacterController", targetMethodName);
-
+			var injectedMethodRef = GetMethodDef(ModModule, "Hooks", "PlayerResumeControl");
+			var targetMethod = GetMethodDef(GameModule, "MyCharacterController", "ResumeControl");
 			var ilProc = targetMethod.Body.GetILProcessor();
-			var logicPaused = GetFieldDef(GameModule, "MyCharacterController", "logicPaused");
-			var controlPaused = GetFieldDef(GameModule, "MyCharacterController", "controlPaused");
-			var moveDirection = GetFieldDef(GameModule, "MyCharacterController", "moveDirection");
 
-			var instructionsToInject = new Instruction[]
-			{
-				ilProc.Create(OpCodes.Ldarg_0),
-				ilProc.Create(OpCodes.Ldfld, GameModule.Import(logicPaused)),
-				ilProc.Create(OpCodes.Ldarg_0),
-				ilProc.Create(OpCodes.Ldfld, GameModule.Import(controlPaused)),
-				ilProc.Create(OpCodes.Ldarg_0),
-				ilProc.Create(OpCodes.Ldfld, GameModule.Import(moveDirection)),
-				ilProc.Create(OpCodes.Call, GameModule.Import(injectedMethodRef))
-			};
-
-			foreach (var instruc in instructionsToInject)
-				ilProc.InsertBefore(ilProc.Body.Instructions.Last(), instruc);
+			var instruction = ilProc.Create(OpCodes.Call, GameModule.Import(injectedMethodRef));
+			ilProc.InsertBefore(ilProc.Body.Instructions.Last(), instruction);
 		}
 
 		void Insert_OnResumeAfterDeath()
@@ -164,55 +143,6 @@ namespace SpeedrunTimerModInstaller
 			var injectedMethodRef = GameModule.Import(injectedMethodDef);
 			var targetMethod = GetMethodDef(GameModule, "MyCharacterController", "ResumeAfterDeath");
 
-			var ilProc = targetMethod.Body.GetILProcessor();
-			var targetInstruction = ilProc.Body.Instructions.First();
-
-			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
-		}
-
-		void Insert_OnMenuKeyUsed()
-		{
-			var injectedMethodDef = GetMethodDef(ModModule, "Hooks", "OnMenuKeyUsed");
-			var injectedMethodRef = GameModule.Import(injectedMethodDef);
-
-			var targetMethod = GetMethodDef(GameModule, "MenuSystem", "OnColorSphereOpen");
-			var ilProc = targetMethod.Body.GetILProcessor();
-			var targetInstruction = ilProc.Body.Instructions.First();
-
-			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
-		}
-
-		void Insert_OnKeyUsed()
-		{
-			var injectedMethodDef = GetMethodDef(ModModule, "Hooks", "OnKeyUsed");
-			var injectedMethodRef = GameModule.Import(injectedMethodDef);
-
-			var targetClass = IsLegacyVersion ? "Key" : "GateKey";
-			var targetMethod = GetMethodDef(GameModule, targetClass, "ColorSphereOpened");
-			var ilProc = targetMethod.Body.GetILProcessor();
-			var targetInstruction = ilProc.Body.Instructions.First();
-
-			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
-		}
-
-		void Insert_OnLevel3BossEnd()
-		{
-			var injectedMethodDef = GetMethodDef(ModModule, "Hooks", "OnLevel3BossEnd");
-			var injectedMethodRef = GameModule.Import(injectedMethodDef);
-
-			var targetMethod = GetMethodDef(GameModule, "BossSphereArena", "OnPart3Done");
-			var ilProc = targetMethod.Body.GetILProcessor();
-			var targetInstruction = ilProc.Body.Instructions.First();
-
-			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
-		}
-
-		void Insert_OnLevel4BossEnd()
-		{
-			var injectedMethodDef = GetMethodDef(ModModule, "Hooks", "OnLevel4BossEnd");
-			var injectedMethodRef = GameModule.Import(injectedMethodDef);
-
-			var targetMethod = GetMethodDef(GameModule, "GravityBossEnding", "StartEnding");
 			var ilProc = targetMethod.Body.GetILProcessor();
 			var targetInstruction = ilProc.Body.Instructions.First();
 
