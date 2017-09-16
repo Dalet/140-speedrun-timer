@@ -2,6 +2,7 @@ using Mono.Cecil;
 using Mono.Cecil.Cil;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace SpeedrunTimerModInstaller
@@ -13,22 +14,27 @@ namespace SpeedrunTimerModInstaller
 
 		string _gameDllPath;
 		string _modDllPath;
+		string _unityDllPath;
 
 		DefaultAssemblyResolver _resolver;
 		ReaderParameters _readerParams;
 
 		AssemblyDefinition GameAsmDef => _gameAsmDef.Value;
 		AssemblyDefinition ModAsmDef => _modAsmDef.Value;
+		AssemblyDefinition UnityAsmDef => _unityAsmDef.Value;
 		Lazy<AssemblyDefinition> _gameAsmDef;
 		Lazy<AssemblyDefinition> _modAsmDef;
+		Lazy<AssemblyDefinition> _unityAsmDef;
 
 		ModuleDefinition GameModule => GameAsmDef?.MainModule;
 		ModuleDefinition ModModule => ModAsmDef?.MainModule;
+		ModuleDefinition UnityModule => UnityAsmDef.MainModule;
 
 		public Patcher(string assembliesPath, string gameDllPath, string modDllPath)
 		{
 			_gameDllPath = gameDllPath;
 			_modDllPath = modDllPath;
+			_unityDllPath = Path.Combine(assembliesPath, "UnityEngine.dll");
 
 			_resolver = new DefaultAssemblyResolver();
 			_resolver.AddSearchDirectory(assembliesPath);
@@ -64,6 +70,21 @@ namespace SpeedrunTimerModInstaller
 					return null;
 				}
 			});
+			_unityAsmDef = new Lazy<AssemblyDefinition>(() =>
+			{
+				try
+				{
+					return AssemblyDefinition.ReadAssembly(_unityDllPath, _readerParams);
+				}
+				catch (UnauthorizedAccessException)
+				{
+					throw;
+				}
+				catch
+				{
+					return null;
+				}
+			});
 
 			_isLegacyVersion = new Lazy<bool>(CheckLegacyVersion);
 		}
@@ -87,6 +108,7 @@ namespace SpeedrunTimerModInstaller
 			if (!IsLegacyVersion)
 			{
 				Patch_TrailFix();
+				Patch_GlobalBeatMaster_Deltatime();
 			}
 
 			GameAsmDef.Write(destination);
@@ -187,6 +209,24 @@ namespace SpeedrunTimerModInstaller
 
 			foreach (var method in methods)
 				PatchTrailInstruction(method);
+		}
+
+		void Patch_GlobalBeatMaster_Deltatime()
+		{
+			var get_fixedDeltaTimeRef = GameModule.Import(GetMethodDef(UnityModule, "Time", "get_fixedDeltaTime"));
+			var get_deltaTimeRef = GameModule.Import(GetMethodDef(UnityModule, "Time", "get_deltaTime"));
+
+			var targetMethod = GetMethodDef(GameModule, "GlobalBeatMaster", "Update");
+			var ilProc = targetMethod.Body.GetILProcessor();
+
+			foreach (var inst in targetMethod.Body.Instructions)
+			{
+				if (inst.OpCode == OpCodes.Call && ((MethodReference)inst.Operand).FullName == get_fixedDeltaTimeRef.FullName)
+				{
+					inst.Operand = get_deltaTimeRef;
+					break;
+				}
+			}
 		}
 
 		void PatchTrailInstruction(string methodName)
