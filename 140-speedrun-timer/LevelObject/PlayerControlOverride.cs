@@ -42,6 +42,7 @@ namespace SpeedrunTimerMod
 
 		public void HoldUntilBeat(params int[] beatIds)
 		{
+			/*
 			var timeSinceBeat = Time.time - _lastBeatTime;
 			if (timeSinceBeat <= 0.02 && beatIds.Contains(_currentBeatId))
 			{
@@ -49,6 +50,7 @@ namespace SpeedrunTimerMod
 				Released?.Invoke();
 				return;
 			}
+			*/
 
 			this.enabled = true;
 
