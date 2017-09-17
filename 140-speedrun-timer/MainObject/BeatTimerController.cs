@@ -7,14 +7,20 @@ namespace SpeedrunTimerMod
 	{
 		public BeatTimer BeatTimer { get; set; }
 
+		bool _firstLevelUpdate;
+		bool _endSoundPlaying;
 		bool _firstBeatAfterReset;
-		bool _firstLevelBeat;
-		float _lastBeatTimestamp;
-		float _lastBeatResetTimestamp;
+
+		void OnLevelWasLoaded(int level)
+		{
+			SubscribeGlobalBeatMaster();
+			_firstLevelUpdate = true;
+		}
 
 		void Start()
 		{
 			SubscribeGlobalBeatMaster();
+			_endSoundPlaying = TheEndSound.EndSoundPlaying() && Application.loadedLevelName == "Level_Menu";
 		}
 
 		void OnEnable()
@@ -28,16 +34,11 @@ namespace SpeedrunTimerMod
 			UnsubGlobalBeatMaster();
 		}
 
-		void OnLevelWasLoaded(int level)
-		{
-			SubscribeGlobalBeatMaster();
-			_firstLevelBeat = true;
-		}
-
 		void UnsubGlobalBeatMaster()
 		{
 			Globals.beatMaster.onBeat -= OnGlobalBeat;
 			Globals.beatMaster.onBeatReset -= OnGlobalBeatReset;
+			Globals.beatMaster.globalBeatStarted -= OnGlobalBeatStarted;
 		}
 
 		void SubscribeGlobalBeatMaster()
@@ -45,42 +46,50 @@ namespace SpeedrunTimerMod
 			UnsubGlobalBeatMaster();
 			Globals.beatMaster.onBeat += OnGlobalBeat;
 			Globals.beatMaster.onBeatReset += OnGlobalBeatReset;
+			Globals.beatMaster.globalBeatStarted += OnGlobalBeatStarted;
+		}
+
+		void Update()
+		{
+			if (_firstLevelUpdate)
+			{
+				// this is when time starts counting down from the beat start offset
+				_firstLevelUpdate = false;
+				if (BeatTimer != null && BeatTimer.IsStarted)
+				{
+					BeatTimer.AddTime((int)BeatTimer.GetInterpolation());
+					BeatTimer.ResetInterpolation();
+				}
+			}
+		}
+
+		void OnGlobalBeatStarted()
+		{
+			Debug.Log("GlobalBeatStarted: " + DebugBeatListener.DebugStr);
+			if (BeatTimer == null || !BeatTimer.IsStarted)
+				return;
+
+			// we know the beat starts 1 second after level load
+			// except when end sound is playing
+			// see GlobalBeatMaster.startTime
+			var beatStartTime = !_endSoundPlaying ? 1000 : 3000;
+
+			BeatTimer.AddTime(beatStartTime);
+			BeatTimer.ResetInterpolation();
+			SpeedrunTimer.Instance.EndLoad(beatStartTime * -1);
 		}
 
 		void OnGlobalBeatReset()
 		{
 			_firstBeatAfterReset = true;
-			_lastBeatResetTimestamp = Time.time;
 		}
 
 		void OnGlobalBeat(int index)
 		{
-			if (!_firstLevelBeat)
-			{
-				if (!_firstBeatAfterReset)
-					BeatTimer?.OnQuarterBeat();
-				else
-					_firstBeatAfterReset = false;
-			}
+			if (!_firstBeatAfterReset)
+				BeatTimer?.OnQuarterBeat();
 			else
-			{
-				_firstLevelBeat = false;
-				OnLevelFirstBeat();
-			}
-
-			_lastBeatTimestamp = Time.time;
-		}
-
-		void OnLevelFirstBeat()
-		{
-			if (!BeatTimer.IsStarted)
-				return;
-
-			BeatTimer.AddRealTime((int)BeatTimer.GetInterpolation());
-			BeatTimer.ResetInterpolation();
-
-			if (Application.loadedLevelName == "Level_Menu")
-				BeatTimer.ResumeTimer();
+				_firstBeatAfterReset = false;
 		}
 	}
 }

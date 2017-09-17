@@ -128,5 +128,10 @@ namespace SpeedrunTimerMod.BeatTiming
 			if (!IsPaused)
 				_timePaused = _timePaused.AddOffset(milliseconds);
 		}
+
+		public void AddTime(int milliseconds)
+		{
+			_realTime = _realTime.AddOffset(milliseconds);
+		}
 	}
 }

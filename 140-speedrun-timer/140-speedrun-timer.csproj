@@ -75,7 +75,6 @@
     <Compile Include="GameObservers\Level3BossObserver.cs" />
     <Compile Include="GameObservers\Level4BossObserver.cs" />
     <Compile Include="GameObservers\MenuSystemObserver.cs" />
-    <Compile Include="GameObservers\PlayerControlStartObserver.cs" />
     <Compile Include="GameObservers\TitleScreenObserver.cs" />
     <Compile Include="LevelObject\PlayerControlOverride.cs" />
     <Compile Include="MainObject\BeatTimerController.cs" />
