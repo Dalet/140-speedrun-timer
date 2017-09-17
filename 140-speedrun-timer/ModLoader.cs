@@ -58,7 +58,7 @@ namespace SpeedrunTimerMod
 			MainObject = new GameObject();
 			DontDestroyOnLoad(MainObject);
 
-            MainObject.AddComponent<DebugBeatListener>();
+			MainObject.AddComponent<DebugBeatListener>();
 			var speedrunTimer = MainObject.AddComponent<SpeedrunTimer>();
 			speedrunTimer.LiveSplitSyncEnabled = Settings.LiveSplitSyncEnabled;
 			MainObject.AddComponent<UI>();
