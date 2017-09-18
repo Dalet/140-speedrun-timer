@@ -1,6 +1,7 @@
 using SpeedrunTimerMod.BeatTiming;
 using SpeedrunTimerMod.LiveSplit;
 using System;
+using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -15,6 +16,7 @@ namespace SpeedrunTimerMod
 
 		public double GameTime { get; private set; }
 		public double RealTime { get; private set; }
+		public double RealRealTime => _realTimeSw?.Elapsed.TotalSeconds ?? 0;
 
 		public LiveSplitSync LiveSplitSync { get; private set; }
 
@@ -24,6 +26,7 @@ namespace SpeedrunTimerMod
 		bool _visualFreeze;
 		bool _livesplitSyncEnabled;
 		int _lastLastUpdateFrame;
+		Stopwatch _realTimeSw;
 
 		public bool LiveSplitSyncEnabled
 		{
@@ -52,6 +55,7 @@ namespace SpeedrunTimerMod
 				AlwaysPauseGameTime = true
 			};
 			LiveSplitSync.Connected += LiveSplitSync_OnConnected;
+			_realTimeSw = new Stopwatch();
 		}
 
 		void LiveSplitSync_OnConnected(object sender, EventArgs e)
@@ -182,6 +186,7 @@ namespace SpeedrunTimerMod
 			DoAfterUpdate(() =>
 			{
 				ResetTimer();
+				_realTimeSw.Start();
 				_beatTimer.StartTimer(millisecondsOffset, quarterBeatsOffset);
 
 				if (LiveSplitSyncEnabled)
@@ -200,6 +205,7 @@ namespace SpeedrunTimerMod
 
 		public void ResetTimer()
 		{
+			_realTimeSw.Reset();
 			_beatTimer.ResetTimer();
 			_visualFreeze = false;
 

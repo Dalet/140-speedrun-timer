@@ -102,7 +102,8 @@ namespace SpeedrunTimerMod
 				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitSync?.IsConnected ?? false;
 				var gtSuffix = livesplitConnected ? "•" : "";
 				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime, 3) + gtSuffix);
-				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime, 3));
+				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime, 3) + "\n"
+					+ Utils.FormatTime(SpeedrunTimer.Instance.RealRealTime, 3));
 			}
 
 			if (_debugLabel.Enabled)
