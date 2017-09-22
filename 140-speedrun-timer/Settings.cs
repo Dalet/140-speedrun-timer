@@ -7,7 +7,7 @@ namespace SpeedrunTimerMod
 		const bool DEFAULT_LIVESPLIT_SYNC_ENABLED = true;
 		const int DEFAULT_TARGET_FRAMERATE = -1;
 		const bool DEFAULT_VSYNC = true;
-		const bool DEFAULT_RUN_BACKGROUND = false;
+		const bool DEFAULT_RUN_BACKGROUND = true;
 
 		public bool ModDisabled { get; private set; }
 		public bool LiveSplitSyncEnabled { get; private set; } = DEFAULT_LIVESPLIT_SYNC_ENABLED;
