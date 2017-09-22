@@ -17,7 +17,7 @@ namespace SpeedrunTimerMod
 		const int BASE_UI_RES_WIDTH = 1280;
 		const int BASE_UI_RES_HEIGHT = 720;
 
-		public void Awake()
+		void Awake()
 		{
 			var color = new Color(235 / 255f, 235 / 255f, 235 / 255f);
 
@@ -81,6 +81,8 @@ namespace SpeedrunTimerMod
 					+ " (debug)"
 #elif PRE_RELEASE
 					+ " (pre-release)"
+#elif EXPERIMENTAL
+					+ " (experimental)"
 #endif
 			};
 
@@ -91,7 +93,7 @@ namespace SpeedrunTimerMod
 			_titleLabel.Enabled = !_gameTimeLabel.Enabled;
 		}
 
-		public void OnGUI()
+		void OnGUI()
 		{
 
 			if (!_gameTimeLabel.Enabled && Time.realtimeSinceStartup < 10)
@@ -108,7 +110,7 @@ namespace SpeedrunTimerMod
 
 			if (_debugLabel.Enabled)
 			{
-				var pos = _player?.transform.position ?? null;
+				var pos = _player?.transform?.position ?? null;
 				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
 
 				var isRunning = SpeedrunTimer.Instance.IsRunning;
@@ -152,7 +154,7 @@ namespace SpeedrunTimerMod
 			return str;
 		}
 
-		public void Update()
+		void Update()
 		{
 			_player = Globals.player.GetComponent<MyCharacterController>();
 
@@ -178,7 +180,7 @@ namespace SpeedrunTimerMod
 			_realTimeLabel.Enabled = Utils.PlayerPrefsGetBool("ShowRealTime", _realTimeLabel.Enabled);
 		}
 
-		public void OnApplicationQuit()
+		void OnApplicationQuit()
 		{
 			Utils.PlayerPrefsSetBool("ShowTimer", _gameTimeLabel.Enabled);
 			Utils.PlayerPrefsSetBool("ShowRealTime", _realTimeLabel.Enabled);
