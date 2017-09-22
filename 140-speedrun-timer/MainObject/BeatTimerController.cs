@@ -57,15 +57,18 @@ namespace SpeedrunTimerMod
 				_firstLevelUpdate = false;
 				if (BeatTimer != null && BeatTimer.IsStarted)
 				{
-					BeatTimer.AddTime((int)BeatTimer.GetInterpolation());
+					var interpolation = BeatTimer.GetInterpolation();
+					BeatTimer.AddTime((int)interpolation);
 					BeatTimer.ResetInterpolation();
+
+					Debug.Log($"First level update: added {interpolation}ms to timer \n"
+						+ DebugBeatListener.DebugStr);
 				}
 			}
 		}
 
 		void OnGlobalBeatStarted()
 		{
-			Debug.Log("GlobalBeatStarted: " + DebugBeatListener.DebugStr);
 			if (BeatTimer == null || !BeatTimer.IsStarted)
 				return;
 
@@ -77,6 +80,9 @@ namespace SpeedrunTimerMod
 			BeatTimer.AddTime(beatStartTime);
 			BeatTimer.ResetInterpolation();
 			SpeedrunTimer.Instance.EndLoad(beatStartTime * -1);
+
+			Debug.Log($"GlobalBeatStarted: added {beatStartTime}ms to timer\n"
+				+ DebugBeatListener.DebugStr);
 		}
 
 		void OnGlobalBeatReset()
@@ -89,7 +95,12 @@ namespace SpeedrunTimerMod
 			if (!_firstBeatAfterReset)
 				BeatTimer?.OnQuarterBeat();
 			else
+			{
 				_firstBeatAfterReset = false;
+				var time = Mathf.RoundToInt((Time.time - DebugBeatListener.LastBeatTimestamp) * 1000);
+				BeatTimer?.AddRealTime(time);
+				Debug.Log($"First beat after reset: adding {time}ms to real time\n" + DebugBeatListener.DebugStr);
+			}
 		}
 	}
 }
