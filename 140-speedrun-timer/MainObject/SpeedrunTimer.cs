@@ -16,17 +16,16 @@ namespace SpeedrunTimerMod
 
 		public double GameTime { get; private set; }
 		public double RealTime { get; private set; }
-		public double RealRealTime => _realTimeSw?.Elapsed.TotalSeconds ?? 0;
 
 		public LiveSplitSync LiveSplitSync { get; private set; }
 
 		event Action LateUpdateActions;
 		BeatTimer _beatTimer;
 		BeatTimerController _beatController;
+		Stopwatch _realTimeSw;
 		bool _visualFreeze;
 		bool _livesplitSyncEnabled;
 		int _lastLastUpdateFrame;
-		Stopwatch _realTimeSw;
 
 		public bool LiveSplitSyncEnabled
 		{
@@ -112,7 +111,7 @@ namespace SpeedrunTimerMod
 				? _beatTimer.Time.TimeSpan
 				: _beatTimer.InterpolatedTime;
 
-			RealTime = _beatTimer.InterpolatedRealTime.TotalSeconds;
+			RealTime = _realTimeSw.Elapsed.TotalSeconds;
 			GameTime = gameTimeTs.TotalSeconds;
 
 			if (LiveSplitSyncEnabled && IsRunning)

@@ -55,7 +55,7 @@ namespace SpeedrunTimerMod
 			{
 				// this is when time starts counting down from the beat start offset
 				_firstLevelUpdate = false;
-				if (BeatTimer != null && BeatTimer.IsStarted)
+				if (BeatTimer != null && BeatTimer.IsStarted && !BeatTimer.IsPaused)
 				{
 					var interpolation = BeatTimer.GetInterpolation();
 					BeatTimer.AddTime((int)interpolation);
@@ -77,7 +77,6 @@ namespace SpeedrunTimerMod
 			// see GlobalBeatMaster.startTime
 			var beatStartTime = !_endSoundPlaying ? 1000 : 3000;
 
-			BeatTimer.AddTime(beatStartTime);
 			BeatTimer.ResetInterpolation();
 			SpeedrunTimer.Instance.EndLoad(beatStartTime * -1);
 
@@ -95,12 +94,7 @@ namespace SpeedrunTimerMod
 			if (!_firstBeatAfterReset)
 				BeatTimer?.OnQuarterBeat();
 			else
-			{
 				_firstBeatAfterReset = false;
-				var time = Mathf.RoundToInt((Time.time - DebugBeatListener.LastBeatTimestamp) * 1000);
-				BeatTimer?.AddRealTime(time);
-				Debug.Log($"First beat after reset: adding {time}ms to real time\n" + DebugBeatListener.DebugStr);
-			}
 		}
 	}
 }

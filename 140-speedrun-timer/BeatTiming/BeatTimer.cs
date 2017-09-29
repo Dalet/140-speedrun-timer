@@ -9,38 +9,16 @@ namespace SpeedrunTimerMod.BeatTiming
 		public bool IsStarted { get; private set; }
 		public bool IsPaused { get; private set; }
 
-		BeatTime _realTime;
-		BeatTime _timePaused;
-		BeatTime _pauseTimestamp;
 		Stopwatch _interbeatStopwatch;
 
 		public BeatTimer(int bpm)
 		{
 			Bpm = bpm;
 			_interbeatStopwatch = new Stopwatch();
-			_realTime = new BeatTime(Bpm);
-			_timePaused = new BeatTime(Bpm);
+			Time = new BeatTime(Bpm);
 		}
 
-		public BeatTime RealTime => _realTime;
-
-		public BeatTime Time
-		{
-			get
-			{
-				return _realTime - TimePaused;
-			}
-		}
-
-		public TimeSpan InterpolatedRealTime
-		{
-			get
-			{
-				if (!IsStarted)
-					return TimeSpan.Zero;
-				return RealTime.TimeSpan + _interbeatStopwatch.Elapsed;
-			}
-		}
+		public BeatTime Time { get; private set; }
 
 		public TimeSpan InterpolatedTime
 		{
@@ -50,16 +28,6 @@ namespace SpeedrunTimerMod.BeatTiming
 					return Time.TimeSpan;
 
 				return Time.TimeSpan + _interbeatStopwatch.Elapsed;
-			}
-		}
-
-		public BeatTime TimePaused
-		{
-			get
-			{
-				if (!IsPaused)
-					return _timePaused;
-				return _timePaused + _realTime - _pauseTimestamp;
 			}
 		}
 
@@ -77,9 +45,9 @@ namespace SpeedrunTimerMod.BeatTiming
 		{
 			ResetInterpolation();
 
-			if (IsStarted)
+			if (IsStarted && !IsPaused)
 			{
-				_realTime = _realTime.AddQuarterBeats(1);
+				Time = Time.AddQuarterBeats(1);
 			}
 		}
 
@@ -88,7 +56,7 @@ namespace SpeedrunTimerMod.BeatTiming
 			if (IsStarted)
 				return;
 
-			_realTime = new BeatTime(Bpm, quarterBeatsOffset * -1, millisecondsOffset * -1);
+			Time = new BeatTime(Bpm, quarterBeatsOffset * -1, millisecondsOffset * -1);
 			_interbeatStopwatch.Start();
 			IsStarted = true;
 		}
@@ -98,8 +66,8 @@ namespace SpeedrunTimerMod.BeatTiming
 			if (!IsPaused)
 				return;
 
-			var unpauseTimestamp = _realTime + new BeatTime(Bpm, quarterBeatsOffset, millisecondsOffset);
-			_timePaused += unpauseTimestamp - _pauseTimestamp;
+			var offset = new BeatTime(Bpm, quarterBeatsOffset, millisecondsOffset);
+			Time -= offset;
 			IsPaused = false;
 		}
 
@@ -108,30 +76,25 @@ namespace SpeedrunTimerMod.BeatTiming
 			if (!IsStarted || IsPaused)
 				return;
 
+			var offset = new BeatTime(Bpm, quarterBeatsOffset, millisecondsOffset);
+			Time += offset;
 			IsPaused = true;
-			_pauseTimestamp = _realTime + new BeatTime(Bpm, quarterBeatsOffset, millisecondsOffset);
 		}
 
 		public void ResetTimer()
 		{
 			IsStarted = IsPaused = false;
-			_realTime = _timePaused = _pauseTimestamp = new BeatTime(Bpm);
+			Time = new BeatTime(Bpm);
 			_interbeatStopwatch.Stop();
 			_interbeatStopwatch.Reset();
 		}
 
-		public void AddRealTime(int milliseconds)
-		{
-			_realTime = _realTime.AddOffset(milliseconds);
-
-			// time paused needs to be adjusted so game time stays the same
-			if (!IsPaused)
-				_timePaused = _timePaused.AddOffset(milliseconds);
-		}
-
 		public void AddTime(int milliseconds)
 		{
-			_realTime = _realTime.AddOffset(milliseconds);
+			if (!IsStarted)
+				return;
+
+			Time = Time.AddOffset(milliseconds);
 		}
 	}
 }
