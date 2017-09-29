@@ -38,7 +38,6 @@ namespace SpeedrunTimerModTests
 			Assert.IsTrue(beatTimer.IsStarted);
 			Assert.IsFalse(beatTimer.IsPaused);
 			Assert.AreEqual((-3 + 2) * 250 - 1111, beatTimer.Time.Milliseconds);
-			Assert.AreEqual((-3 + 2) * 250 - 1111, beatTimer.RealTime.Milliseconds);
 
 
 			beatTimer = new BeatTimer(60);
@@ -49,7 +48,6 @@ namespace SpeedrunTimerModTests
 			beatTimer.OnQuarterBeat();
 
 			Assert.AreEqual((3 - 1) * 250 + 260, beatTimer.Time.Milliseconds);
-			Assert.AreEqual((3 - 1) * 250 + 260, beatTimer.RealTime.Milliseconds);
 		}
 
 		[TestMethod]
@@ -67,7 +65,6 @@ namespace SpeedrunTimerModTests
 			beatTimer.OnQuarterBeat();
 
 			Assert.AreEqual(2 * 250, beatTimer.Time.Milliseconds);
-			Assert.AreEqual(5 * 250, beatTimer.RealTime.Milliseconds);
 
 
 			beatTimer = new BeatTimer(60);
@@ -79,7 +76,6 @@ namespace SpeedrunTimerModTests
 			beatTimer.OnQuarterBeat();
 
 			Assert.AreEqual((2 - 3) * 250 + 1111, beatTimer.Time.Milliseconds);
-			Assert.AreEqual(3 * 250, beatTimer.RealTime.Milliseconds);
 		}
 
 		[TestMethod]
@@ -98,7 +94,6 @@ namespace SpeedrunTimerModTests
 			beatTimer.OnQuarterBeat();
 
 			Assert.AreEqual(3 * 250, beatTimer.Time.Milliseconds);
-			Assert.AreEqual(5 * 250, beatTimer.RealTime.Milliseconds);
 
 
 			beatTimer = new BeatTimer(60);
@@ -110,25 +105,7 @@ namespace SpeedrunTimerModTests
 			beatTimer.OnQuarterBeat();
 			beatTimer.ResumeTimer(42, 8);
 
-			Assert.AreEqual(250 - (1111 - 3 * 250) + 42 + 8 * 250, beatTimer.TimePaused.Milliseconds);
 			Assert.AreEqual((2 - 3 - 8) * 250 + 1111 - 42, beatTimer.Time.Milliseconds);
-			Assert.AreEqual(3 * 250, beatTimer.RealTime.Milliseconds);
-		}
-
-		[TestMethod]
-		public void BeatTimer_AddRealTime()
-		{
-			var beatTimer = new BeatTimer(60);
-
-			beatTimer.StartTimer();
-			beatTimer.OnQuarterBeat();
-			beatTimer.OnQuarterBeat();
-			beatTimer.OnQuarterBeat();
-			beatTimer.OnQuarterBeat();
-			beatTimer.AddRealTime(11);
-
-			Assert.AreEqual(4 * 250 + 11, beatTimer.RealTime.Milliseconds);
-			Assert.AreEqual(4 * 250, beatTimer.Time.Milliseconds);
 		}
 	}
 }
