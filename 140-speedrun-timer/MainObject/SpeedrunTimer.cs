@@ -1,7 +1,6 @@
 using SpeedrunTimerMod.BeatTiming;
 using SpeedrunTimerMod.LiveSplit;
 using System;
-using System.Diagnostics;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -17,14 +16,19 @@ namespace SpeedrunTimerMod
 		public double GameTime { get; private set; }
 		public double RealTime { get; private set; }
 
-		public LiveSplitSync LiveSplitSync { get; private set; }
+		public bool LiveSplitConnected => _liveSplitSync?.IsConnected ?? false;
+		public bool LiveSplitConnecting => _liveSplitSync?.IsConnecting ?? false;
 
 		event Action LateUpdateActions;
+
 		BeatTimer _beatTimer;
 		BeatTimerController _beatController;
-		Stopwatch _realTimeSw;
+		SpeedrunStopwatch _speedrunStopwatch;
 		bool _visualFreeze;
+
+		LiveSplitSync _liveSplitSync;
 		bool _livesplitSyncEnabled;
+
 		int _lastLastUpdateFrame;
 
 		public bool LiveSplitSyncEnabled
@@ -37,9 +41,9 @@ namespace SpeedrunTimerMod
 
 				_livesplitSyncEnabled = value;
 				if (_livesplitSyncEnabled)
-					LiveSplitSync.ConnectAsync();
+					_liveSplitSync.ConnectAsync();
 				else
-					LiveSplitSync.GracefulDisconnect();
+					_liveSplitSync.GracefulDisconnect();
 			}
 		}
 
@@ -49,23 +53,23 @@ namespace SpeedrunTimerMod
 			_beatTimer = new BeatTimer(140);
 			_beatController = gameObject.AddComponent<BeatTimerController>();
 			_beatController.BeatTimer = _beatTimer;
-			LiveSplitSync = new LiveSplitSync()
+			_liveSplitSync = new LiveSplitSync()
 			{
 				AlwaysPauseGameTime = true
 			};
-			LiveSplitSync.Connected += LiveSplitSync_OnConnected;
-			_realTimeSw = new Stopwatch();
+			_liveSplitSync.Connected += LiveSplitSync_OnConnected;
+			_speedrunStopwatch = new SpeedrunStopwatch();
 		}
 
 		void LiveSplitSync_OnConnected(object sender, EventArgs e)
 		{
 			if (!IsRunning)
-				LiveSplitSync.Reset();
+				_liveSplitSync.Reset();
 		}
 
 		void OnDestroy()
 		{
-			LiveSplitSync.GracefulDispose();
+			_liveSplitSync.GracefulDispose();
 			Instance = null;
 		}
 
@@ -111,12 +115,12 @@ namespace SpeedrunTimerMod
 				? _beatTimer.Time.TimeSpan
 				: _beatTimer.InterpolatedTime;
 
-			RealTime = _realTimeSw.Elapsed.TotalSeconds;
+			RealTime = _speedrunStopwatch.RealTime.TotalSeconds;
 			GameTime = gameTimeTs.TotalSeconds;
 
 			if (LiveSplitSyncEnabled && IsRunning)
 			{
-				LiveSplitSync.UpdateTime(gameTimeTs, _visualFreeze); // force the update if frozen
+				_liveSplitSync.UpdateTime(gameTimeTs, _visualFreeze); // force the update if frozen
 			}
 		}
 
@@ -148,16 +152,20 @@ namespace SpeedrunTimerMod
 
 				var offset = new BeatTime(_beatTimer.Bpm, quarterbeatsOffset, millisecondsOffset);
 				var splitBeatTime = _beatTimer.Time + offset;
-				var timespan = splitBeatTime.TimeSpan;
-				var timeStr = Utils.FormatTime(timespan.TotalSeconds, 3);
+				var timeStr = Utils.FormatTime(splitBeatTime.TimeSpan, 3);
 
-				var debugStr = $"Split at {timeStr} / {splitBeatTime}";
-				if (millisecondsOffset != 0 || quarterbeatsOffset != 0)
-					debugStr += $" ({offset} offset)";
-				Debug.Log(debugStr + "\n" + DebugBeatListener.DebugStr);
+				var stopwatchTime = _speedrunStopwatch.GameTime + offset.TimeSpan;
+				var stopwatchTimeStr = Utils.FormatTime(stopwatchTime, 3);
+
+				var splitTimeStr = $"Split at {timeStr} / {splitBeatTime}";
+				var offsetStr = millisecondsOffset != 0 || quarterbeatsOffset != 0
+					? $" ({offset} offset)"
+					: string.Empty;
+				Debug.Log($"{splitTimeStr}{offsetStr}\n(stopwatch: {stopwatchTimeStr})\n"
+					+ DebugBeatListener.DebugStr);
 
 				if (LiveSplitSyncEnabled)
-					LiveSplitSync.Split(timespan);
+					_liveSplitSync.Split(splitBeatTime.TimeSpan);
 			});
 		}
 
@@ -168,7 +176,7 @@ namespace SpeedrunTimerMod
 			{
 				Debug.Log("Unsplit");
 				if (LiveSplitSyncEnabled)
-					LiveSplitSync.Unsplit();
+					_liveSplitSync.Unsplit();
 			});
 		}
 
@@ -182,14 +190,15 @@ namespace SpeedrunTimerMod
 			if (IsRunning)
 				return;
 
+			var beatTime = new BeatTime(_beatTimer.Bpm, quarterBeatsOffset, millisecondsOffset);
 			DoAfterUpdate(() =>
 			{
 				ResetTimer();
-				_realTimeSw.Start();
+				_speedrunStopwatch.Start((int)beatTime.Milliseconds);
 				_beatTimer.StartTimer(millisecondsOffset, quarterBeatsOffset);
 
 				if (LiveSplitSyncEnabled)
-					LiveSplitSync.Start();
+					_liveSplitSync.Start();
 			});
 		}
 
@@ -204,12 +213,12 @@ namespace SpeedrunTimerMod
 
 		public void ResetTimer()
 		{
-			_realTimeSw.Reset();
+			_speedrunStopwatch.Reset();
 			_beatTimer.ResetTimer();
 			_visualFreeze = false;
 
 			if (LiveSplitSyncEnabled)
-				LiveSplitSync.Reset();
+				_liveSplitSync.Reset();
 		}
 
 		/// <summary>
@@ -222,8 +231,10 @@ namespace SpeedrunTimerMod
 			if (!IsRunning || IsGameTimePaused)
 				return;
 
+			var beatTimeOffset = new BeatTime(_beatTimer.Bpm, quarterBeatsOffset, millisecondsOffset);
 			DoAfterUpdate(() =>
 			{
+				_speedrunStopwatch.Pause((int)beatTimeOffset.Milliseconds);
 				_beatTimer.PauseTimer(millisecondsOffset, quarterBeatsOffset);
 			});
 		}
@@ -233,8 +244,10 @@ namespace SpeedrunTimerMod
 			if (!IsRunning || !IsGameTimePaused)
 				return;
 
+			var beatTimeOffset = new BeatTime(_beatTimer.Bpm, quarterBeatsOffset, millisecondsOffset);
 			DoAfterUpdate(() =>
 			{
+				_speedrunStopwatch.Resume((int)beatTimeOffset.Milliseconds);
 				_beatTimer.ResumeTimer(millisecondsOffset, quarterBeatsOffset);
 			});
 		}

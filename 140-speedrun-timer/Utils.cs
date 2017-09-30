@@ -23,6 +23,11 @@ namespace SpeedrunTimerMod
 			return $"{sign}{minutes}:{secondsStr}.{millisecondsStr}";
 		}
 
+		public static string FormatTime(TimeSpan timespan, int decimals = 2)
+		{
+			return FormatTime(timespan.TotalSeconds, decimals);
+		}
+
 		public static string FormatVersion(Version ver)
 		{
 			if (ver == null)

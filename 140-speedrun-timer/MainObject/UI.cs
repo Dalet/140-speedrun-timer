@@ -101,7 +101,7 @@ namespace SpeedrunTimerMod
 
 			if (_gameTimeLabel.Enabled)
 			{
-				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitSync?.IsConnected ?? false;
+				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitConnected;
 				var gtSuffix = livesplitConnected ? "•" : "";
 				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime, 3) + gtSuffix);
 				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime, 3));
@@ -115,7 +115,7 @@ namespace SpeedrunTimerMod
 				var isRunning = SpeedrunTimer.Instance.IsRunning;
 				var gtPaused = SpeedrunTimer.Instance.IsGameTimePaused;
 				var livesplitSyncEnabled = SpeedrunTimer.Instance.LiveSplitSyncEnabled;
-				var liveplitSyncConnecting = SpeedrunTimer.Instance.LiveSplitSync?.IsConnecting ?? false;
+				var liveplitSyncConnecting = SpeedrunTimer.Instance.LiveSplitConnecting;
 
 				var playerX = pos.HasValue ? PadPosition(pos.Value.x) : "??";
 				var playerY = pos.HasValue ? PadPosition(pos.Value.y) : "??";
