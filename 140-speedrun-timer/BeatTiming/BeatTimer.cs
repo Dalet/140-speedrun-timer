@@ -6,8 +6,9 @@ namespace SpeedrunTimerMod.BeatTiming
 	public class BeatTimer
 	{
 		public int Bpm { get; private set; }
-		public bool IsStarted { get; private set; }
 		public bool IsPaused { get; private set; }
+		public bool IsStarted { get; private set; }
+		public BeatTime Time { get; private set; }
 
 		Stopwatch _interbeatStopwatch;
 
@@ -17,8 +18,6 @@ namespace SpeedrunTimerMod.BeatTiming
 			_interbeatStopwatch = new Stopwatch();
 			Time = new BeatTime(Bpm);
 		}
-
-		public BeatTime Time { get; private set; }
 
 		public TimeSpan InterpolatedTime
 		{
