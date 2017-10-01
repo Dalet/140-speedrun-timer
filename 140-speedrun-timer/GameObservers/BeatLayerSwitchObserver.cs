@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 namespace SpeedrunTimerMod.GameObservers
@@ -5,13 +6,14 @@ namespace SpeedrunTimerMod.GameObservers
 	[GameObserver]
 	class BeatLayerSwitchObserver : MonoBehaviour
 	{
-		GameObject _levelsFolder;
 		MenuSystem _menuSystem;
+		BossGate _bossGate;
+		ColorSphere[] _beatSwitchColorSpheres;
 
 		void Awake()
 		{
-			_levelsFolder = GameObject.Find("Levels");
-			if (_levelsFolder == null)
+			var levelsFolder = GameObject.Find("Levels");
+			if (levelsFolder == null)
 			{
 				Debug.Log($"{nameof(BeatLayerSwitchObserver)}: Couldn't find Levels object");
 				Destroy(this);
@@ -23,43 +25,60 @@ namespace SpeedrunTimerMod.GameObservers
 				_menuSystem = menuSystemObj.GetComponent<MenuSystem>();
 			else
 				Debug.Log($"{nameof(BeatLayerSwitchObserver)}: Couldn't find _MenuSystem object");
+
+			_bossGate = levelsFolder.GetComponentInChildren<BossGate>();
+
+			var beatswitches = levelsFolder.GetComponentsInChildren<BeatLayerSwitch>();
+			var colorSpheres = beatswitches.Select(b => b.colorSphere);
+
+			if (_menuSystem != null)
+				colorSpheres = colorSpheres.Where(c => c != _menuSystem.colorSphere);
+
+			_beatSwitchColorSpheres = colorSpheres.ToArray();
 		}
 
 		void OnEnable()
 		{
-			var colorSpheres = _levelsFolder.GetComponentsInChildren<ColorSphere>();
-			foreach (var colorSphere in colorSpheres)
+			if (_beatSwitchColorSpheres != null)
 			{
-				if (_menuSystem != null && colorSphere == _menuSystem.colorSphere)
-				{
-					colorSphere.colorSphereOpened += OnMenuKeyUsed;
-					colorSphere.colorSphereExpanding += OnMenuColorSphereExpanding;
-				}
-				else
-				{
+				foreach (var colorSphere in _beatSwitchColorSpheres)
 					colorSphere.colorSphereExpanding += OnColorSphereExpanding;
-				}
 			}
+
+			if (_menuSystem != null)
+			{
+				_menuSystem.colorSphere.colorSphereOpened += OnMenuKeyUsed;
+				_menuSystem.colorSphere.colorSphereExpanding += OnMenuColorSphereExpanding;
+			}
+
+			if (_bossGate != null)
+				_bossGate.colorSphere.colorSphereExpanding += OnBossGateColorSphereExpanding;
 		}
 
 		void OnDisable()
 		{
-			if (_levelsFolder == null)
-				return;
-
-			var colorSpheres = _levelsFolder.GetComponentsInChildren<ColorSphere>();
-			foreach (var colorSphere in colorSpheres)
+			if (_beatSwitchColorSpheres != null)
 			{
-				if (_menuSystem != null && colorSphere == _menuSystem.colorSphere)
-				{
-					colorSphere.colorSphereOpened -= OnMenuKeyUsed;
-					colorSphere.colorSphereExpanding -= OnMenuColorSphereExpanding;
-				}
-				else
-				{
+				foreach (var colorSphere in _beatSwitchColorSpheres)
 					colorSphere.colorSphereExpanding -= OnColorSphereExpanding;
-				}
 			}
+
+			if (_menuSystem != null)
+			{
+				_menuSystem.colorSphere.colorSphereOpened -= OnMenuKeyUsed;
+				_menuSystem.colorSphere.colorSphereExpanding -= OnMenuColorSphereExpanding;
+			}
+
+			if (_bossGate != null)
+				_bossGate.colorSphere.colorSphereExpanding -= OnBossGateColorSphereExpanding;
+		}
+
+		void OnBossGateColorSphereExpanding()
+		{
+			// colorSphereExpanding is triggered twice for some reason
+			_bossGate.colorSphere.colorSphereExpanding -= OnBossGateColorSphereExpanding;
+			Debug.Log("BossGate colorsphere expanding: " + DebugBeatListener.DebugStr);
+			SpeedrunTimer.Instance?.Split();
 		}
 
 		void OnColorSphereExpanding()
