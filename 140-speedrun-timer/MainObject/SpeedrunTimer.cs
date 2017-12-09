@@ -73,14 +73,6 @@ namespace SpeedrunTimerMod
 			Instance = null;
 		}
 
-		void OnApplicationPause(bool pause)
-		{
-			if (pause)
-				_beatTimer.PauseInterpolation();
-			else
-				_beatTimer.ResumeInterpolation();
-		}
-
 		void LateUpdate()
 		{
 			if (LateUpdateActions != null)

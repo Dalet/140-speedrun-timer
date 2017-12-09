@@ -34,6 +34,14 @@ namespace SpeedrunTimerMod
 			UnsubGlobalBeatMaster();
 		}
 
+		void OnApplicationPause(bool pause)
+		{
+			if (pause)
+				BeatTimer.PauseInterpolation();
+			else
+				BeatTimer.ResumeInterpolation();
+		}
+
 		void UnsubGlobalBeatMaster()
 		{
 			Globals.beatMaster.onBeat -= OnGlobalBeat;
