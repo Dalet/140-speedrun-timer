@@ -1,31 +1,40 @@
 using System;
+using System.Text;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
 	internal static class Utils
 	{
-		public static string FormatTime(double totalSeconds, int decimals = 2)
-		{
-			var sign = totalSeconds < 0 ? "-" : "";
-
-			totalSeconds = Math.Round(totalSeconds, decimals, MidpointRounding.AwayFromZero);
-			totalSeconds = Math.Abs(totalSeconds);
-
-			var seconds = totalSeconds % 60;
-			var minutes = (int)(totalSeconds / 60);
-			var milliseconds = Math.Round((totalSeconds - (int)totalSeconds) * Math.Pow(10, decimals));
-
-			var minutesStr = minutes.ToString();
-			var secondsStr = ((int)seconds).ToString().PadLeft(2, '0');
-			var millisecondsStr = milliseconds.ToString().PadLeft(decimals, '0');
-
-			return $"{sign}{minutes}:{secondsStr}.{millisecondsStr}";
-		}
-
 		public static string FormatTime(TimeSpan timespan, int decimals = 2)
 		{
-			return FormatTime(timespan.TotalSeconds, decimals);
+			var sign = string.Empty;
+			if (timespan < TimeSpan.Zero)
+			{
+				sign = "-";
+				timespan = timespan.Negate();
+			}
+
+			var millisecondsStr = string.Empty;
+			if (decimals > 0)
+			{
+				var totalSeconds = timespan.TotalSeconds;
+				var milliseconds = Math.Round((totalSeconds - (int)totalSeconds) * Math.Pow(10, decimals));
+				millisecondsStr = "." + milliseconds.ToString().PadLeft(decimals, '0');
+			}
+
+			var hours = ((int)timespan.TotalHours);
+			var hoursStr = hours > 0
+				? hours.ToString() + ":"
+				: string.Empty;
+
+			return string.Format($"{sign}{hoursStr}{{0:00}}:{{1:00}}{millisecondsStr}",
+				timespan.Minutes, timespan.Seconds);
+		}
+
+		public static string FormatTime(double totalSeconds, int decimals = 2)
+		{
+			return FormatTime(TimeSpan.FromSeconds(totalSeconds), decimals);
 		}
 
 		public static string FormatVersion(Version ver)

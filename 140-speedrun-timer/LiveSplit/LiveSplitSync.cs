@@ -90,7 +90,7 @@ namespace SpeedrunTimerMod.LiveSplit
 			if (!IsConnected || (!force && _lastTimeUpdate.ElapsedMilliseconds < 15))
 				return;
 
-			var cmd = LiveSplitCommands.SetGameTime + " " + Utils.FormatTime(timespan.TotalSeconds, 3);
+			var cmd = LiveSplitCommands.SetGameTime + " " + Utils.FormatTime(timespan, 3);
 			SendCommand(cmd);
 			_lastTimeUpdate.Reset();
 			_lastTimeUpdate.Start();
