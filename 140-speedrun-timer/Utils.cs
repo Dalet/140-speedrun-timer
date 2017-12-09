@@ -1,5 +1,4 @@
 using System;
-using System.Text;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
@@ -15,14 +14,6 @@ namespace SpeedrunTimerMod
 				timespan = timespan.Negate();
 			}
 
-			var millisecondsStr = string.Empty;
-			if (decimals > 0)
-			{
-				var totalSeconds = timespan.TotalSeconds;
-				var milliseconds = Math.Round((totalSeconds - (int)totalSeconds) * Math.Pow(10, decimals));
-				millisecondsStr = "." + milliseconds.ToString().PadLeft(decimals, '0');
-			}
-
 			var hours = ((int)timespan.TotalHours);
 			var hoursStr = hours > 0
 				? hours.ToString() + ":"
@@ -34,6 +25,14 @@ namespace SpeedrunTimerMod
 				: minutes.ToString().PadLeft(2, '0');
 
 			var secondsStr = timespan.Seconds.ToString().PadLeft(2, '0');
+
+			var millisecondsStr = string.Empty;
+			if (decimals > 0)
+			{
+				var totalSeconds = timespan.TotalSeconds;
+				var milliseconds = Math.Round((totalSeconds - (int)totalSeconds) * Math.Pow(10, decimals));
+				millisecondsStr = "." + milliseconds.ToString().PadLeft(decimals, '0');
+			}
 
 			return $"{sign}{hoursStr}{minutesStr}:{secondsStr}{millisecondsStr}";
 		}
