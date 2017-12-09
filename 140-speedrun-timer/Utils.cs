@@ -28,8 +28,14 @@ namespace SpeedrunTimerMod
 				? hours.ToString() + ":"
 				: string.Empty;
 
-			return string.Format($"{sign}{hoursStr}{{0:00}}:{{1:00}}{millisecondsStr}",
-				timespan.Minutes, timespan.Seconds);
+			var minutes = timespan.Minutes;
+			var minutesStr = hours == 0 && minutes < 10
+				? minutes.ToString()
+				: minutes.ToString().PadLeft(2, '0');
+
+			var secondsStr = timespan.Seconds.ToString().PadLeft(2, '0');
+
+			return $"{sign}{hoursStr}{minutesStr}:{secondsStr}{millisecondsStr}";
 		}
 
 		public static string FormatTime(double totalSeconds, int decimals = 2)
