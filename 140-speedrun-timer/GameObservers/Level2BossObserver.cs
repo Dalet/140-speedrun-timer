@@ -1,3 +1,4 @@
+using System.Reflection;
 using UnityEngine;
 
 namespace SpeedrunTimerMod.GameObservers
@@ -5,8 +6,8 @@ namespace SpeedrunTimerMod.GameObservers
 	[GameObserver]
 	class Level2BossObserver : MonoBehaviour
 	{
-		MyCharacterController _player;
 		TunnelBossEndSequence _tunnelSequence;
+		bool _checkScrollEnded;
 
 		void Awake()
 		{
@@ -27,43 +28,39 @@ namespace SpeedrunTimerMod.GameObservers
 			_tunnelSequence = bossObj.GetComponent<TunnelBossEndSequence>();
 		}
 
-		void Start()
-		{
-			_player = Globals.player.GetComponent<MyCharacterController>();
-		}
-
 		void OnEnable()
 		{
-			_tunnelSequence.evilBlock.attack += EvilBlock_attack;
+			if (_tunnelSequence != null)
+				_tunnelSequence.endScrollingBeat.onBeat += EndScrollingBeat_onBeat;
 		}
 
 		void OnDisable()
 		{
 			if (_tunnelSequence != null)
-				_tunnelSequence.evilBlock.attack -= EvilBlock_attack;
-			if (_player != null)
-				_player.Killed -= Player_Killed;
+				_tunnelSequence.endScrollingBeat.onBeat -= EndScrollingBeat_onBeat;
 		}
 
-		void EvilBlock_attack(int attackIndex)
+		void EndScrollingBeat_onBeat()
 		{
-			if (attackIndex != 10)
+			_checkScrollEnded = true;
+		}
+
+		void LateUpdate()
+		{
+			if (!_checkScrollEnded)
 				return;
 
-			_player.Killed += Player_Killed;
-			OnLevel2BossEnd();
-		}
+			_checkScrollEnded = false;
 
-		void Player_Killed()
-		{
-			_player.Killed -= Player_Killed;
-			SpeedrunTimer.Instance?.Unsplit();
+			if (_tunnelSequence.wallToMakeTriggerWhenDoorsStartClosing1.isTrigger)
+				OnLevel2BossEnd();
 		}
 
 		void OnLevel2BossEnd()
 		{
 			Debug.Log("OnLevel2BossEnd: " + DebugBeatListener.DebugStr);
 			SpeedrunTimer.Instance?.CompleteLevel(2);
+			this.enabled = false;
 		}
 	}
 }
