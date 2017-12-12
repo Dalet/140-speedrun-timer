@@ -28,7 +28,8 @@ namespace SpeedrunTimerMod.GameObservers
 
 		void OnEnable()
 		{
-			_bossArena.pattern.part3DoneEvent += Pattern_part3DoneEvent;
+			if (_bossArena != null)
+				_bossArena.pattern.part3DoneEvent += Pattern_part3DoneEvent;
 		}
 
 		void OnDisable()
