@@ -14,12 +14,15 @@ namespace SpeedrunTimerMod.GameObservers
 
 		void Awake()
 		{
+			if (Application.loadedLevelName != "Level_Menu")
+			{
+				Destroy(this);
+				return;
+			}
+
 			if (_titleScreenStateField == null)
 				_titleScreenStateField = typeof(TitleScreen)
 					.GetField("myState", BindingFlags.Instance | BindingFlags.NonPublic);
-
-			if (Application.loadedLevelName != "Level_Menu")
-				Destroy(this);
 		}
 
 		void Start()
