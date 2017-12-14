@@ -52,10 +52,15 @@ namespace SpeedrunTimerMod.GameObservers
 			var titleScreenState = _titleScreenStateField.GetValue(_titlescreen);
 			if (titleScreenState != _prevTitleScreenState && _titleScreenStateStart == _prevTitleScreenState)
 			{
-				SpeedrunTimer.Instance.StartTimer();
-				Debug.Log("SpeedrunTimer started: " + DebugBeatListener.DebugStr);
+				OnTitleScreenStart();
 			}
 			_prevTitleScreenState = titleScreenState;
+		}
+
+		void OnTitleScreenStart()
+		{
+			SpeedrunTimer.Instance.StartTimer();
+			Debug.Log("SpeedrunTimer started: " + DebugBeatListener.DebugStr);
 		}
 	}
 }
