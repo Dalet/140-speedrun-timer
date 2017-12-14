@@ -14,7 +14,7 @@ namespace SpeedrunTimerMod.GameObservers
 
 		void Awake()
 		{
-			if (Application.loadedLevelName != "Level_Menu")
+			if (ModLoader.Settings.ILMode || Application.loadedLevelName != "Level_Menu")
 			{
 				Destroy(this);
 				return;
