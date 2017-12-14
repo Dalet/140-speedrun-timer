@@ -99,6 +99,10 @@ namespace SpeedrunTimerMod.GameObservers
 		void OnMenuKeyUsed()
 		{
 			Debug.Log("OnMenuKeyUsed: " + DebugBeatListener.DebugStr);
+
+			if (ModLoader.Settings.ILMode)
+				SpeedrunTimer.Instance?.ResetTimer();
+
 			SpeedrunTimer.Instance?.Unfreeze();
 		}
 	}

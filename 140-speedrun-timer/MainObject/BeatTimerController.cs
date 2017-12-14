@@ -63,21 +63,12 @@ namespace SpeedrunTimerMod
 			{
 				// this is when time starts counting down from the beat start offset
 				_firstLevelUpdate = false;
-				if (BeatTimer != null && BeatTimer.IsStarted && !BeatTimer.IsPaused)
-				{
-					var interpolation = BeatTimer.GetInterpolation();
-					BeatTimer.AddTime((int)interpolation);
-					BeatTimer.ResetInterpolation();
-
-					Debug.Log($"First level update: added {interpolation}ms to timer \n"
-						+ DebugBeatListener.DebugStr);
-				}
 			}
 		}
 
 		void OnGlobalBeatStarted()
 		{
-			if (BeatTimer == null || !BeatTimer.IsStarted)
+			if (BeatTimer == null)
 				return;
 
 			// we know the beat starts 1 second after level load
@@ -85,8 +76,15 @@ namespace SpeedrunTimerMod
 			// see GlobalBeatMaster.startTime
 			var beatStartTime = !_endSoundPlaying ? 1000 : 3000;
 
-			BeatTimer.ResetInterpolation();
-			SpeedrunTimer.Instance.EndLoad(beatStartTime * -1);
+			if (BeatTimer.IsStarted)
+			{
+				BeatTimer.ResetInterpolation();
+				SpeedrunTimer.Instance.EndLoad(beatStartTime * -1);
+			}
+			else if (ModLoader.Settings.ILMode && Application.loadedLevelName != "Level_Menu")
+			{
+				SpeedrunTimer.Instance.StartTimer(beatStartTime * -1);
+			}
 
 			Debug.Log($"GlobalBeatStarted: added {beatStartTime}ms to timer\n"
 				+ DebugBeatListener.DebugStr);
