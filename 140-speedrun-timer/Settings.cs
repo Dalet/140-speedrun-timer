@@ -15,6 +15,7 @@ namespace SpeedrunTimerMod
 		public int TargetFramerate { get; set; } = DEFAULT_TARGET_FRAMERATE;
 		public bool Vsync { get; set; } = DEFAULT_VSYNC;
 		public bool RunInBackground { get; set; } = DEFAULT_RUN_BACKGROUND;
+		public bool ILMode { get; set; }
 
 		public bool Load()
 		{
@@ -37,6 +38,9 @@ namespace SpeedrunTimerMod
 						break;
 					case "-flash-cheat-watermark":
 						FlashCheatWatermark = true;
+						break;
+					case "-timer-il-mode":
+						ILMode = true;
 						break;
 				}
 			}

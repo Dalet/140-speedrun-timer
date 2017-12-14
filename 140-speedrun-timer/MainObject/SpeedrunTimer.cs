@@ -118,7 +118,9 @@ namespace SpeedrunTimerMod
 
 		public void CompleteLevel(int level)
 		{
-			Freeze();
+			if (level == 3 || level == 4 || ModLoader.Settings.ILMode)
+				Freeze();
+
 			Split();
 		}
 
