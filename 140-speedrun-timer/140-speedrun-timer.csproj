@@ -70,6 +70,7 @@
     </Compile>
     <Compile Include="GameObservers\BeatLayerSwitchObserver.cs" />
     <Compile Include="GameObservers\GameObserverAttribute.cs" />
+    <Compile Include="GameObservers\LevelObserver.cs" />
     <Compile Include="GameObservers\Level1BossObserver.cs" />
     <Compile Include="GameObservers\Level2BossObserver.cs" />
     <Compile Include="GameObservers\Level3BossObserver.cs" />
