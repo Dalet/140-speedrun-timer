@@ -10,17 +10,38 @@ namespace SpeedrunTimerMod.GameObservers
 
 		void Start()
 		{
+			SubscribeGlobalBeatMaster();
 			_isInMenu = Application.loadedLevelName == "Level_Menu";
 			_endSoundPlaying = TheEndSound.EndSoundPlaying() && _isInMenu;
+
+			if (!_isInMenu && !Cheats.LevelLoadedByCheat)
+				SpeedrunTimer.Instance.Split();
 		}
 
 		void OnEnable()
 		{
-			Globals.beatMaster.globalBeatStarted += OnGlobalBeatStarted;
+			SubscribeGlobalBeatMaster();
 		}
 
 		void OnDisable()
 		{
+			UnsubGlobalBeatMaster();
+		}
+
+		void SubscribeGlobalBeatMaster()
+		{
+			if (Globals.beatMaster == null)
+				return;
+
+			UnsubGlobalBeatMaster();
+			Globals.beatMaster.globalBeatStarted += OnGlobalBeatStarted;
+		}
+
+		void UnsubGlobalBeatMaster()
+		{
+			if (Globals.beatMaster == null)
+				return;
+
 			Globals.beatMaster.globalBeatStarted -= OnGlobalBeatStarted;
 		}
 

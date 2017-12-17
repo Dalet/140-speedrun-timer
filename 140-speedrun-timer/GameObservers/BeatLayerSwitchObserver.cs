@@ -92,7 +92,6 @@ namespace SpeedrunTimerMod.GameObservers
 			Debug.Log("OnMenuColorSphereExpanding: " + DebugBeatListener.DebugStr);
 
 			// colorsphere expands 32 quarterbeats after opening, then starts the load after 0.66s
-			SpeedrunTimer.Instance?.Split();
 			SpeedrunTimer.Instance?.StartLoad(660);
 		}
 
