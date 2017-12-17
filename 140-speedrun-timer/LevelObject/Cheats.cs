@@ -9,6 +9,9 @@ namespace SpeedrunTimerMod
 		public static bool InvincibilityEnabled { get; private set; }
 		public static bool FlashWatermarkOnStart { get; set; }
 
+		public static bool LevelLoadedByCheat { get; private set; }
+		static bool _loadingLevel;
+
 		List<Savepoint> _savepoints;
 		List<BeatLayerSwitch> _beatSwitches;
 		Utils.Label _cheatWatermark;
@@ -36,6 +39,11 @@ namespace SpeedrunTimerMod
 
 		void Awake()
 		{
+			if (!_loadingLevel)
+				LevelLoadedByCheat = false;
+			else
+				_loadingLevel = false;
+
 			_cheatBeep = gameObject.AddComponent<AudioSource>();
 			_cheatBeep.clip = Resources.Instance.CheatBeep;
 
@@ -220,6 +228,8 @@ namespace SpeedrunTimerMod
 
 			MirrorModeManager.mirrorModeActive = mirrored;
 			MirrorModeManager.respawnFromMirror = false;
+			_loadingLevel = true;
+			LevelLoadedByCheat = true;
 
 			Application.LoadLevel(level);
 		}
