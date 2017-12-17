@@ -1,4 +1,6 @@
+using System;
 using System.Linq;
+using System.Reflection;
 using UnityEngine;
 
 namespace SpeedrunTimerMod.GameObservers
@@ -6,9 +8,32 @@ namespace SpeedrunTimerMod.GameObservers
 	[GameObserver]
 	class BeatLayerSwitchObserver : MonoBehaviour
 	{
+		static Type _keyType;
+		static EventInfo _keyUsedEvent;
+		static MethodInfo _onKeyUsed;
+
+		readonly Delegate _onKeyUsedDelegate;
+
 		MenuSystem _menuSystem;
 		BossGate _bossGate;
 		ColorSphere[] _beatSwitchColorSpheres;
+		object[] _keys;
+		bool _openGateOnNextBeat;
+
+		static BeatLayerSwitchObserver()
+		{
+			var typeName = ModLoader.IsLegacyVersion ? "Key" : "GateKey";
+			_keyType = typeof(MenuSystem).Assembly.GetType(typeName);
+			_keyUsedEvent = _keyType.GetEvent("keyUsedEvent");
+			_onKeyUsed = typeof(BeatLayerSwitchObserver)
+				.GetMethod(nameof(OnKeyUsed), BindingFlags.NonPublic | BindingFlags.Instance);
+		}
+
+		BeatLayerSwitchObserver()
+		{
+			var handlerType = _keyUsedEvent.EventHandlerType;
+			_onKeyUsedDelegate = Delegate.CreateDelegate(handlerType, this, _onKeyUsed);
+		}
 
 		void Awake()
 		{
@@ -35,10 +60,14 @@ namespace SpeedrunTimerMod.GameObservers
 				colorSpheres = colorSpheres.Where(c => c != _menuSystem.colorSphere);
 
 			_beatSwitchColorSpheres = colorSpheres.ToArray();
+
+			_keys = levelsFolder.GetComponentsInChildren(_keyType);
 		}
 
 		void OnEnable()
 		{
+			SubscribeGlobalBeatMaster();
+
 			if (_beatSwitchColorSpheres != null)
 			{
 				foreach (var colorSphere in _beatSwitchColorSpheres)
@@ -53,10 +82,18 @@ namespace SpeedrunTimerMod.GameObservers
 
 			if (_bossGate != null)
 				_bossGate.colorSphere.colorSphereExpanding += OnBossGateColorSphereExpanding;
+
+			if (_keys != null)
+			{
+				foreach (var key in _keys)
+					_keyUsedEvent.AddEventHandler(key, _onKeyUsedDelegate);
+			}
 		}
 
 		void OnDisable()
 		{
+			UnsubGlobalBeatMaster();
+
 			if (_beatSwitchColorSpheres != null)
 			{
 				foreach (var colorSphere in _beatSwitchColorSpheres)
@@ -71,6 +108,43 @@ namespace SpeedrunTimerMod.GameObservers
 
 			if (_bossGate != null)
 				_bossGate.colorSphere.colorSphereExpanding -= OnBossGateColorSphereExpanding;
+
+			if (_keys != null)
+			{
+				foreach (var key in _keys)
+					_keyUsedEvent.RemoveEventHandler(key, _onKeyUsedDelegate);
+			}
+		}
+
+		void SubscribeGlobalBeatMaster()
+		{
+			if (Globals.beatMaster == null)
+				return;
+
+			UnsubGlobalBeatMaster();
+			Globals.beatMaster.onBeat += BeatMaster_onBeat;
+		}
+
+		void UnsubGlobalBeatMaster()
+		{
+			if (Globals.beatMaster == null)
+				return;
+
+			Globals.beatMaster.onBeat -= BeatMaster_onBeat;
+		}
+
+		void BeatMaster_onBeat(int index)
+		{
+			if (_openGateOnNextBeat && (index + 1) % 4 == 0)
+			{
+				_openGateOnNextBeat = false;
+				SpeedrunTimer.Instance.Split(660, 32);
+			}
+		}
+
+		void OnKeyUsed()
+		{
+			_openGateOnNextBeat = true;
 		}
 
 		void OnBossGateColorSphereExpanding()
@@ -92,7 +166,6 @@ namespace SpeedrunTimerMod.GameObservers
 			Debug.Log("OnMenuColorSphereExpanding: " + DebugBeatListener.DebugStr);
 
 			// colorsphere expands 32 quarterbeats after opening, then starts the load after 0.66s
-			SpeedrunTimer.Instance?.Split();
 			SpeedrunTimer.Instance?.StartLoad(660);
 		}
 
