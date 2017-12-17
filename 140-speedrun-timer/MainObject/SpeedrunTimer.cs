@@ -131,13 +131,13 @@ namespace SpeedrunTimerMod
 		/// <param name="quarterBeatsOffset"></param>
 		public void Split(int millisecondsOffset = 0, int quarterbeatsOffset = 0)
 		{
-			if (!IsRunning)
-				return;
-
 			// if the split is on beat, the beatTimer might not have ticked yet (onBeat eventhandler not called yet)
 			// so delay until LateUpdate
 			DoAfterUpdate(() =>
 			{
+				if (!IsRunning)
+					return;
+
 				if (IsGameTimePaused)
 				{
 					millisecondsOffset = 0;
@@ -181,12 +181,12 @@ namespace SpeedrunTimerMod
 		/// <param name="quarterBeatsOffset"></param>
 		public void StartTimer(int millisecondsOffset = 0, int quarterBeatsOffset = 0)
 		{
-			if (IsRunning)
-				return;
-
 			var beatTime = new BeatTime(_beatTimer.Bpm, quarterBeatsOffset, millisecondsOffset);
 			DoAfterUpdate(() =>
 			{
+				if (IsRunning)
+					return;
+
 				ResetTimer();
 				_speedrunStopwatch.Start((int)beatTime.Milliseconds);
 				_beatTimer.StartTimer(millisecondsOffset, quarterBeatsOffset);
@@ -222,12 +222,12 @@ namespace SpeedrunTimerMod
 		/// <param name="quarterBeatsOffset"></param>
 		public void StartLoad(int millisecondsOffset = 0, int quarterBeatsOffset = 0)
 		{
-			if (!IsRunning || IsGameTimePaused)
-				return;
-
 			var beatTimeOffset = new BeatTime(_beatTimer.Bpm, quarterBeatsOffset, millisecondsOffset);
 			DoAfterUpdate(() =>
 			{
+				if (!IsRunning || IsGameTimePaused)
+					return;
+
 				_speedrunStopwatch.Pause((int)beatTimeOffset.Milliseconds);
 				_beatTimer.PauseTimer(millisecondsOffset, quarterBeatsOffset);
 			});
@@ -235,12 +235,12 @@ namespace SpeedrunTimerMod
 
 		public void EndLoad(int millisecondsOffset = 0, int quarterBeatsOffset = 0)
 		{
-			if (!IsRunning || !IsGameTimePaused)
-				return;
-
 			var beatTimeOffset = new BeatTime(_beatTimer.Bpm, quarterBeatsOffset, millisecondsOffset);
 			DoAfterUpdate(() =>
 			{
+				if (!IsRunning || !IsGameTimePaused)
+					return;
+
 				_speedrunStopwatch.Resume((int)beatTimeOffset.Milliseconds);
 				_beatTimer.ResumeTimer(millisecondsOffset, quarterBeatsOffset);
 			});
