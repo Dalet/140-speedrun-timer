@@ -17,7 +17,7 @@ namespace SpeedrunTimerMod
 		const int BASE_UI_RES_WIDTH = 1280;
 		const int BASE_UI_RES_HEIGHT = 720;
 
-		public void Awake()
+		void Awake()
 		{
 			var color = new Color(235 / 255f, 235 / 255f, 235 / 255f);
 
@@ -81,6 +81,8 @@ namespace SpeedrunTimerMod
 					+ " (debug)"
 #elif PRE_RELEASE
 					+ " (pre-release)"
+#elif EXPERIMENTAL
+					+ " (experimental)"
 #endif
 			};
 
@@ -91,7 +93,7 @@ namespace SpeedrunTimerMod
 			_titleLabel.Enabled = !_gameTimeLabel.Enabled;
 		}
 
-		public void OnGUI()
+		void OnGUI()
 		{
 
 			if (!_gameTimeLabel.Enabled && Time.realtimeSinceStartup < 10)
@@ -99,31 +101,43 @@ namespace SpeedrunTimerMod
 
 			if (_gameTimeLabel.Enabled)
 			{
-				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitSync?.IsConnected ?? false;
+				var livesplitConnected = SpeedrunTimer.Instance.LiveSplitConnected;
 				var gtSuffix = livesplitConnected ? "•" : "";
-				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime) + gtSuffix);
-				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime));
+				_gameTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.GameTime, 3) + gtSuffix);
+				_realTimeLabel.OnGUI(Utils.FormatTime(SpeedrunTimer.Instance.RealTime, 3));
 			}
 
 			if (_debugLabel.Enabled)
 			{
-				var pos = _player.transform.position;
+				var pos = _player?.transform?.position ?? null;
 				var currentCheckpoint = Globals.levelsManager.GetCurrentCheckPoint();
 
 				var isRunning = SpeedrunTimer.Instance.IsRunning;
 				var gtPaused = SpeedrunTimer.Instance.IsGameTimePaused;
 				var livesplitSyncEnabled = SpeedrunTimer.Instance.LiveSplitSyncEnabled;
-				var liveplitSyncConnecting = SpeedrunTimer.Instance.LiveSplitSync?.IsConnecting ?? false;
+				var liveplitSyncConnecting = SpeedrunTimer.Instance.LiveSplitConnecting;
+
+				var playerX = pos.HasValue ? PadPosition(pos.Value.x) : "??";
+				var playerY = pos.HasValue ? PadPosition(pos.Value.y) : "??";
+
+				var beat = DebugBeatListener.LastBeatId >= 0
+					? (DebugBeatListener.LastBeatId + 1).ToString().PadLeft(2, '0')
+					: "-";
+				var beatDbgStr = $"{beat}/16";
 
 				_debugLabel.OnGUI(
-					$"Checkpoint: {currentCheckpoint + 1} | Beat: {Misc.BeatDbgStr} | Pos: ({PadPosition(pos.x)}, {PadPosition(pos.y)})\n"
+					$"Checkpoint: {currentCheckpoint + 1} | Beat: {beatDbgStr} | Pos: ({playerX}, {playerY})\n"
 					+ $"Frame: {Time.renderedFrameCount} | IsRunning: {isRunning} | IsGameTimePaused: {gtPaused} | LiveSplitSyncEnabled: {livesplitSyncEnabled}, TryingToConnect: {liveplitSyncConnecting}\n"
-					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | .NET: {Environment.Version} | Unity: {Application.unityVersion} | Legacy: {ModLoader.IsLegacyVersion}"
+					+ $"Level {Application.loadedLevel} \"{Application.loadedLevelName}\" | Unity: {Application.unityVersion} | Legacy: {ModLoader.IsLegacyVersion}"
 				);
 			}
 
 			if (Updater.NeedUpdate)
 				_updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
+#if EXPERIMENTAL
+			else
+				_updateLabel.OnGUI($"Experimental build v{Assembly.GetExecutingAssembly().GetName().Version}");
+#endif
 		}
 
 		static string PadPosition(float p)
@@ -139,7 +153,7 @@ namespace SpeedrunTimerMod
 			return str;
 		}
 
-		public void Update()
+		void Update()
 		{
 			_player = Globals.player.GetComponent<MyCharacterController>();
 
@@ -165,7 +179,7 @@ namespace SpeedrunTimerMod
 			_realTimeLabel.Enabled = Utils.PlayerPrefsGetBool("ShowRealTime", _realTimeLabel.Enabled);
 		}
 
-		public void OnApplicationQuit()
+		void OnApplicationQuit()
 		{
 			Utils.PlayerPrefsSetBool("ShowTimer", _gameTimeLabel.Enabled);
 			Utils.PlayerPrefsSetBool("ShowRealTime", _realTimeLabel.Enabled);

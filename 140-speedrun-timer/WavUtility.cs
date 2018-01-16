@@ -2,6 +2,7 @@ using UnityEngine;
 using System.Text;
 using System.IO;
 using System;
+using System.Reflection;
 
 /// <summary>
 /// WAV utility for recording and audio playback functions in Unity.
@@ -19,6 +20,15 @@ using System;
 
 public class WavUtility
 {
+	static readonly MethodInfo AudioClip_SetData;
+	static readonly MethodInfo AudioClip_GetData;
+
+	static WavUtility()
+	{
+		AudioClip_SetData = typeof(AudioClip).GetMethod(nameof(AudioClip.SetData));
+		AudioClip_GetData = typeof(AudioClip).GetMethod(nameof(AudioClip.GetData));
+	}
+
 	// Force save as 16-bit .wav
 	const int BlockSize_16Bit = 2;
 
@@ -78,7 +88,7 @@ public class WavUtility
 		}
 
 		AudioClip audioClip = AudioClip.Create(name, data.Length, (int)channels, sampleRate, false, false);
-		audioClip.SetData (data, 0);
+		AudioClip_SetData.Invoke(audioClip, new object[] { data, 0 });
 		return audioClip;
 	}
 
@@ -307,7 +317,7 @@ public class WavUtility
 
 		// Copy float[] data from AudioClip
 		float[] data = new float[audioClip.samples * audioClip.channels];
-		audioClip.GetData (data, 0);
+		AudioClip_GetData.Invoke(audioClip, new object[] { data, 0 });
 
 		byte[] bytes = ConvertAudioClipDataToInt16ByteArray (data);
 

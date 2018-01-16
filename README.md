@@ -1,5 +1,5 @@
 # Speedrun Timer Mod
-![screenshot](http://i.imgur.com/gsssoOt.png)
+![screenshot](https://i.imgur.com/ur42sz0.png)
 
 # Installation
 [Download page](https://github.com/Dalet/140-speedrun-timer/releases/)
@@ -48,3 +48,4 @@ On Steam, they can be set via the "Set launch options..." button in the game's p
 | `-disable-timer-mod`      | Disables the mod                                        |
 | `-disable-livesplit-sync` | Disables LiveSplit synchronization                      |
 | `-flash-cheat-watermark`  | Makes the cheat watermark appear only on cheat triggers |
+| `-timer-il-mode`          | Enables IL mode. The timer will start on level load and reset upon hub activation. |

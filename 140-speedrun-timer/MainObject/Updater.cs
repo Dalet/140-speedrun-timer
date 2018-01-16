@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Reflection;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
-	internal sealed class Updater : MonoBehaviour
+	sealed class Updater : MonoBehaviour
 	{
 		const string REPO_URL = "https://raw.githubusercontent.com/Dalet/140-speedrun-timer/";
 		const string UPDATE_URL = REPO_URL + "master/latestVersion.txt";
@@ -14,18 +14,24 @@ namespace SpeedrunTimerMod
 		public static bool NeedUpdate { get; private set; }
 		public static string LatestVersion { get; private set; }
 
-		public void Start()
+		void Awake()
 		{
 			if (LatestVersion != null)
 				return;
 
-			StartCoroutine(CheckUpdate());
+			StartCoroutine(CheckUpdateThenDestroy());
+		}
+
+		IEnumerator CheckUpdateThenDestroy()
+		{
+			yield return CheckUpdate();
+			Destroy(this);
 		}
 
 		IEnumerator CheckUpdate()
 		{
 			yield return CheckVersion(UPDATE_URL);
-#if PRE_RELEASE
+#if PRE_RELEASE || EXPERIMENTAL
 			if (!NeedUpdate)
 				yield return CheckVersion(UPDATE_URL_UNSTABLE);
 #endif

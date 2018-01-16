@@ -1,8 +1,9 @@
-﻿using System;
+using SpeedrunTimerMod.IPC;
+using System;
 using System.Diagnostics;
 using System.Threading;
 
-namespace SpeedrunTimerMod
+namespace SpeedrunTimerMod.LiveSplit
 {
 	public class LiveSplitSync : IDisposable
 	{
@@ -89,7 +90,7 @@ namespace SpeedrunTimerMod
 			if (!IsConnected || (!force && _lastTimeUpdate.ElapsedMilliseconds < 15))
 				return;
 
-			var cmd = LiveSplitCommands.SetGameTime + " " + Utils.FormatTime(timespan.TotalSeconds, 3);
+			var cmd = LiveSplitCommands.SetGameTime + " " + Utils.FormatTime(timespan, 3);
 			SendCommand(cmd);
 			_lastTimeUpdate.Reset();
 			_lastTimeUpdate.Start();
@@ -105,9 +106,13 @@ namespace SpeedrunTimerMod
 		public void Split(double seconds)
 		{
 			var timeStr = Utils.FormatTime(seconds, 3);
-			UnityEngine.Debug.Log("Split at: " + timeStr);
 			var cmd = LiveSplitCommands.SetGameTime + " " + timeStr + "\n" + LiveSplitCommands.Split;
 			SendCommand(cmd);
+		}
+
+		public void Unsplit()
+		{
+			SendCommand(LiveSplitCommands.UnSplit);
 		}
 	}
 

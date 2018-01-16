@@ -3,21 +3,43 @@ using UnityEngine;
 
 namespace SpeedrunTimerMod
 {
-	internal static class Utils
+	public static class Utils
 	{
+		public static string FormatTime(TimeSpan timespan, int decimals = 2)
+		{
+			var sign = string.Empty;
+			if (timespan < TimeSpan.Zero)
+			{
+				sign = "-";
+				timespan = timespan.Negate();
+			}
+
+			var hours = ((int)timespan.TotalHours);
+			var hoursStr = hours > 0
+				? hours.ToString() + ":"
+				: string.Empty;
+
+			var minutes = timespan.Minutes;
+			var minutesStr = hours == 0 && minutes < 10
+				? minutes.ToString()
+				: minutes.ToString().PadLeft(2, '0');
+
+			var secondsStr = timespan.Seconds.ToString().PadLeft(2, '0');
+
+			var millisecondsStr = string.Empty;
+			if (decimals > 0)
+			{
+				var totalSeconds = timespan.TotalSeconds;
+				var milliseconds = Math.Round((totalSeconds - (int)totalSeconds) * Math.Pow(10, decimals));
+				millisecondsStr = "." + milliseconds.ToString().PadLeft(decimals, '0');
+			}
+
+			return $"{sign}{hoursStr}{minutesStr}:{secondsStr}{millisecondsStr}";
+		}
+
 		public static string FormatTime(double totalSeconds, int decimals = 2)
 		{
-			totalSeconds = Math.Round(totalSeconds, decimals, MidpointRounding.AwayFromZero);
-
-			var seconds = totalSeconds % 60;
-			var minutes = (int)(totalSeconds / 60);
-			var milliseconds = Math.Round((totalSeconds - (int)totalSeconds) * Math.Pow(10, decimals));
-
-			var minutesStr = minutes.ToString();
-			var secondsStr = ((int)seconds).ToString().PadLeft(2, '0');
-			var millisecondsStr = milliseconds.ToString().PadLeft(decimals, '0');
-
-			return $"{minutes}:{secondsStr}.{millisecondsStr}";
+			return FormatTime(TimeSpan.FromSeconds(totalSeconds), decimals);
 		}
 
 		public static string FormatVersion(Version ver)
@@ -68,6 +90,22 @@ namespace SpeedrunTimerMod
 			if (t < 1.0f / 2.0f) return q;
 			if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
 			return p;
+		}
+
+		public static int[] GetSimilarQuarterBeats(int beatIndex)
+		{
+			var beats = new int[4];
+
+			var beat = beatIndex;
+			for (var i = 0; i < 4; i++)
+			{
+				beats[i] = beat;
+				beat += 4;
+				if (beat > 15)
+					beat -= 16;
+			}
+
+			return beats;
 		}
 
 		internal class Label
