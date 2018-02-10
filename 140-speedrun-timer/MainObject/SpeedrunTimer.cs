@@ -42,6 +42,13 @@ namespace SpeedrunTimerMod
 				if (_livesplitSyncEnabled == value)
 					return;
 
+				// force livesplit sync off on systems other than windows
+				if (Application.platform != RuntimePlatform.WindowsPlayer)
+				{
+					_livesplitSyncEnabled = false;
+					return;
+				}
+
 				_livesplitSyncEnabled = value;
 				if (_livesplitSyncEnabled)
 					_liveSplitSync.ConnectAsync();
