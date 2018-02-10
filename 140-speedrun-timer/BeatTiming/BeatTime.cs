@@ -42,6 +42,11 @@ namespace SpeedrunTimerMod.BeatTiming
 
 		public static BeatTime operator +(BeatTime left, BeatTime right)
 		{
+			if (left.bpm == 0 && right.bpm != 0)
+				return right;
+			if (left.bpm != 0 && right.bpm == 0)
+				return left;
+
 			if (left.bpm != right.bpm)
 				throw new ArgumentException("The BPMs must match.");
 
@@ -52,6 +57,11 @@ namespace SpeedrunTimerMod.BeatTiming
 
 		public static BeatTime operator -(BeatTime left, BeatTime right)
 		{
+			if (left.bpm == 0 && right.bpm != 0)
+				return new BeatTime(right.bpm, 0 - right.quarterBeatCount, 0 - right.offset);
+			if (left.bpm != 0 && right.bpm == 0)
+				return left;
+
 			if (left.bpm != right.bpm)
 				throw new ArgumentException("The BPMs must match.");
 
@@ -62,6 +72,7 @@ namespace SpeedrunTimerMod.BeatTiming
 
 		public static decimal GetQuarterBeatInterval(int bpm)
 		{
+			if (bpm == 0) return 0;
 			return (decimal)60 / bpm / 4 * 1000;
 		}
 

@@ -90,7 +90,7 @@ namespace SpeedrunTimerMod.LiveSplit
 			if (!IsConnected || (!force && _lastTimeUpdate.ElapsedMilliseconds < 15))
 				return;
 
-			var cmd = LiveSplitCommands.SetGameTime + " " + Utils.FormatTime(timespan, 3);
+			var cmd = LiveSplitCommands.SetGameTime + " " + timespan.ToString();
 			SendCommand(cmd);
 			_lastTimeUpdate.Reset();
 			_lastTimeUpdate.Start();
@@ -101,14 +101,14 @@ namespace SpeedrunTimerMod.LiveSplit
 			SendCommand(LiveSplitCommands.Reset);
 		}
 
-		public void Split(TimeSpan gameTime) => Split(gameTime.TotalSeconds);
-
-		public void Split(double seconds)
+		public void Split(TimeSpan timespan)
 		{
-			var timeStr = Utils.FormatTime(seconds, 3);
-			var cmd = LiveSplitCommands.SetGameTime + " " + timeStr + "\n" + LiveSplitCommands.Split;
+			var time = timespan.ToString();
+			var cmd = LiveSplitCommands.SetGameTime + " " + time + "\n" + LiveSplitCommands.Split;
 			SendCommand(cmd);
 		}
+
+		public void Split(double seconds) => Split(TimeSpan.FromSeconds(seconds));
 
 		public void Unsplit()
 		{

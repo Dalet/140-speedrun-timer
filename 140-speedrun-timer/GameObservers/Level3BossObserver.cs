@@ -43,6 +43,8 @@ namespace SpeedrunTimerMod.GameObservers
 			Debug.Log("OnLevel3BossEnd: " + DebugBeatListener.DebugStr);
 			SpeedrunTimer.Instance?.CompleteLevel(3);
 			SpeedrunTimer.Instance?.StartLoad(39000, 64);
+			OldSpeedrunTimer.Instance?.StartLoad();
+			OldSpeedrunTimer.Instance?.CompleteLevel(3);
 		}
 	}
 }

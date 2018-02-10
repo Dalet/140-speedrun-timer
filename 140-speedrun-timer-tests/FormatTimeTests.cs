@@ -93,5 +93,12 @@ namespace SpeedrunTimerModTests
 			var ts5 = new TimeSpan(0, 1, 10, 10, 1);
 			Assert.AreEqual("1:10:10.00", Utils.FormatTime(ts5, 2));
 		}
+
+		[TestMethod]
+		public void FormatTime_TimeSpanMillsecondRounded()
+		{
+			var ts = TimeSpan.FromTicks(23109996174); // 00:38:30.9996174
+			Assert.AreEqual("38:31.000", Utils.FormatTime(ts, 3));
+		}
 	}
 }

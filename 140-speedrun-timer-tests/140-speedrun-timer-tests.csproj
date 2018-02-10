@@ -52,6 +52,7 @@
     <Compile Include="BeatTimeTests.cs" />
     <Compile Include="BeatTimerTests.cs" />
     <Compile Include="FormatTimeTests.cs" />
+    <Compile Include="RunLogTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

@@ -75,8 +75,10 @@
     <Compile Include="GameObservers\Level2BossObserver.cs" />
     <Compile Include="GameObservers\Level3BossObserver.cs" />
     <Compile Include="GameObservers\Level4BossObserver.cs" />
+    <Compile Include="GameObservers\OldTiming\OldLevelObserver.cs" />
+    <Compile Include="GameObservers\OldTiming\PlayerObserver.cs" />
     <Compile Include="GameObservers\TitleScreenObserver.cs" />
-    <Compile Include="LevelObject\PlayerControlOverride.cs" />
+    <Compile Include="Logging\RunLogFile.cs" />
     <Compile Include="MainObject\BeatTimerController.cs" />
     <Compile Include="BeatTiming\BeatTime.cs" />
     <Compile Include="BeatTiming\BeatTimer.cs" />
@@ -87,7 +89,10 @@
     <Compile Include="LevelObject\ResetHotkey.cs" />
     <Compile Include="IPC\NamedPipeClient.cs" />
     <Compile Include="MainObject\DebugBeatListener.cs" />
+    <Compile Include="MainObject\OldSpeedrunTimer.cs" />
     <Compile Include="Resources.cs" />
+    <Compile Include="Logging\RunLog.cs" />
+    <Compile Include="Logging\RunLogCsvWriter.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="ModLoader.cs" />
     <Compile Include="MainObject\SpeedrunTimer.cs" />
@@ -95,6 +100,7 @@
     <Compile Include="MainObject\UI.cs" />
     <Compile Include="MainObject\Updater.cs" />
     <Compile Include="SpeedrunStopwatch.cs" />
+    <Compile Include="SpeedrunTime.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="WavUtility.cs" />
   </ItemGroup>

@@ -41,6 +41,7 @@ namespace SpeedrunTimerMod.GameObservers
 		{
 			Debug.Log("OnLevel1BossEnd: " + DebugBeatListener.DebugStr);
 			SpeedrunTimer.Instance?.CompleteLevel(1);
+			OldSpeedrunTimer.Instance?.CompleteLevel(1);
 		}
 	}
 }

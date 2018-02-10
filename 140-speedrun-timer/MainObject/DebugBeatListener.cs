@@ -92,6 +92,7 @@ namespace SpeedrunTimerMod
 			if (_firstBeat)
 			{
 				_firstBeat = false;
+				Debug.Log("First beat after reset:" + DebugStr);
 				return;
 			}
 

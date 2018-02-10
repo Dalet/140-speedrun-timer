@@ -10,6 +10,7 @@ namespace SpeedrunTimerMod
 
         public bool IsStarted => _realTime.IsRunning;
 		public bool IsPaused => _realTime.IsRunning && !_gameTime.IsRunning;
+		public DateTime StartDate { get; private set; }
 
 		Stopwatch _realTime;
 		Stopwatch _gameTime;
@@ -37,7 +38,9 @@ namespace SpeedrunTimerMod
 
             _realTime.Start();
             _gameTime.Start();
-            _realTimeOffset = _gameTimeOffset = TimeSpan.FromMilliseconds(millisecondsOffset * -1);
+
+			_realTimeOffset = _gameTimeOffset = TimeSpan.FromMilliseconds(millisecondsOffset * -1);
+			StartDate = DateTime.UtcNow + _realTimeOffset;
         }
 
 		public void Stop(int millisecondsOffset = 0)

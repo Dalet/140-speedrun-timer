@@ -7,6 +7,8 @@ namespace SpeedrunTimerMod
 	{
 		public static string FormatTime(TimeSpan timespan, int decimals = 2)
 		{
+			timespan = TimeSpan.FromSeconds(timespan.TotalSeconds); // rounds to nearest millisecond
+
 			var sign = string.Empty;
 			if (timespan < TimeSpan.Zero)
 			{

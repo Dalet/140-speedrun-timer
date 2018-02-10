@@ -41,6 +41,7 @@ namespace SpeedrunTimerMod
 				{
 					_resetHits = 0;
 					SpeedrunTimer.Instance.ResetTimer();
+					OldSpeedrunTimer.Instance.ResetTimer();
 					MirrorModeManager.mirrorModeActive = false;
 					MirrorModeManager.respawnFromMirror = false;
 					if (Cheats.Enabled)

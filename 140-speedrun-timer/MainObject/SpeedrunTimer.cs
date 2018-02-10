@@ -1,5 +1,6 @@
 using SpeedrunTimerMod.BeatTiming;
 using SpeedrunTimerMod.LiveSplit;
+using SpeedrunTimerMod.Logging;
 using System;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
@@ -13,8 +14,10 @@ namespace SpeedrunTimerMod
 		public bool IsGameTimePaused => _beatTimer.IsPaused;
 		public bool IsRunning => _beatTimer.IsStarted;
 
-		public double GameTime { get; private set; }
-		public double RealTime { get; private set; }
+		public TimeSpan GameTime { get; private set; }
+		public TimeSpan RealTime { get; private set; }
+
+		public RunLog RunLog { get; private set; }
 
 		public bool LiveSplitConnected => _liveSplitSync?.IsConnected ?? false;
 		public bool LiveSplitConnecting => _liveSplitSync?.IsConnecting ?? false;
@@ -59,6 +62,7 @@ namespace SpeedrunTimerMod
 			};
 			_liveSplitSync.Connected += LiveSplitSync_OnConnected;
 			_speedrunStopwatch = new SpeedrunStopwatch();
+			RunLog = new RunLog();
 		}
 
 		void LiveSplitSync_OnConnected(object sender, EventArgs e)
@@ -103,17 +107,26 @@ namespace SpeedrunTimerMod
 
 		void UpdateVisibleTime()
 		{
-			var gameTimeTs = _visualFreeze
+			GameTime = _visualFreeze
 				? _beatTimer.Time.TimeSpan
 				: _beatTimer.InterpolatedTime;
-
-			RealTime = _speedrunStopwatch.RealTime.TotalSeconds;
-			GameTime = gameTimeTs.TotalSeconds;
+			RealTime = _speedrunStopwatch.RealTime;
 
 			if (LiveSplitSyncEnabled && IsRunning)
 			{
-				_liveSplitSync.UpdateTime(gameTimeTs, _visualFreeze); // force the update if frozen
+				_liveSplitSync.UpdateTime(GameTime, _visualFreeze); // force the update if frozen
 			}
+		}
+
+		public void LevelStart(int level, int millisecondsOffset = 0)
+		{
+			DoAfterUpdate(() =>
+			{
+				var realTime = _speedrunStopwatch.RealTime + TimeSpan.FromMilliseconds(millisecondsOffset);
+				var gameTime = _beatTimer.Time.AddOffset(millisecondsOffset);
+				var time = new SpeedrunTime(realTime, gameTime);
+				RunLog.LevelStart(level, time);
+			});
 		}
 
 		public void CompleteLevel(int level)
@@ -122,6 +135,35 @@ namespace SpeedrunTimerMod
 				Freeze();
 
 			Split();
+			DoAfterUpdate(() =>
+			{
+				var time = new SpeedrunTime(_speedrunStopwatch.RealTime, _beatTimer.Time);
+				RunLog.CompleteLevel(level, time);
+
+				if (level != 2)
+					Log(level);
+			});
+		}
+
+		void Log(int level)
+		{
+			var anyPercent = RunLog.IsLevelDone(1)
+				&& RunLog.IsLevelDone(2)
+				&& RunLog.IsLevelDone(3);
+			var allLevels = anyPercent && RunLog.IsLevelDone(4);
+
+			var writer = new RunLogCsvWriter(RunLog, OldSpeedrunTimer.Instance.RunLog)
+			{
+				Level1 = level == 1,
+				//Level2 = level == 2, // logged in OldSpeedrunTimer
+				Level3 = level == 3,
+				Level4 = level == 4,
+				AllLevels = allLevels,
+				AnyPercent = anyPercent && !allLevels,
+			};
+
+			// write at end of frame to make sure the old timer's log is ready
+			StartCoroutine(writer.WriteToLogAsyncOnFrameEnd());
 		}
 
 		/// <summary>
@@ -190,6 +232,7 @@ namespace SpeedrunTimerMod
 				ResetTimer();
 				_speedrunStopwatch.Start((int)beatTime.Milliseconds);
 				_beatTimer.StartTimer(millisecondsOffset, quarterBeatsOffset);
+				RunLog.StartDate = _speedrunStopwatch.StartDate + beatTime.TimeSpan;
 
 				if (LiveSplitSyncEnabled)
 					_liveSplitSync.Start();
@@ -210,6 +253,7 @@ namespace SpeedrunTimerMod
 			_speedrunStopwatch.Reset();
 			_beatTimer.ResetTimer();
 			_visualFreeze = false;
+			RunLog = new RunLog();
 
 			if (LiveSplitSyncEnabled)
 				_liveSplitSync.Reset();
