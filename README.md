@@ -17,6 +17,7 @@
 ## Speedrun Log
 
 When you complete a level, an entry is added to `speedrun-log.csv` in the game's directory.
+
 Platform | File location
 ---------|-----------
 Windows  | `... steamapps\common\140`
