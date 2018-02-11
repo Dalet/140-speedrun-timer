@@ -15,10 +15,16 @@ namespace SpeedrunTimerMod.Logging
 
 		static string GetFolder()
 		{
-			if (Application.platform == RuntimePlatform.WindowsPlayer)
-				return Application.dataPath;
-			else
-				return Application.persistentDataPath;
+			switch (Application.platform)
+			{
+				case RuntimePlatform.WindowsPlayer:
+				case RuntimePlatform.LinuxPlayer:
+					return Path.Combine(Application.dataPath, "..");
+				case RuntimePlatform.OSXPlayer:
+					return Path.Combine(Path.Combine(Application.dataPath, ".."), "..");
+				default:
+					return Application.persistentDataPath;
+			}
 		}
 
 		public static bool OpenFile()
