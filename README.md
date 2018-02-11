@@ -14,6 +14,15 @@
 * [LiveSplit](http://livesplit.org/) synchronization: in-game time, autosplitting
 * Cheats for practice
 
+## Speedrun Log
+
+When you complete a level, an entry is added to `speedrun-log.csv` in the game's directory.
+Platform | File location
+---------|-----------
+Windows  | `... steamapps\common\140`
+macOS    | `~/Library/Application Support/Steam/steamapps/common/140`
+Linux    | `~/.local/share/Steam/steamapps/common/140`
+
 # Keybinds
 |   Key   |  Description |
 | ------- | ------------ |
@@ -36,6 +45,7 @@
 | `Backspace` | Flip the player color |
 | `Q`         | Suicide              |
 | `I`         | Toggle invincibility |
+
 
 # Configuration
 
