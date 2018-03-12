@@ -84,7 +84,6 @@
     <Compile Include="BeatTiming\BeatTimer.cs" />
     <Compile Include="LevelObject\Cheats.cs" />
     <Compile Include="LevelObject\GameObserversManager.cs" />
-    <Compile Include="Hooks.cs" />
     <Compile Include="LiveSplit\LiveSplitSync.cs" />
     <Compile Include="LevelObject\ResetHotkey.cs" />
     <Compile Include="IPC\NamedPipeClient.cs" />
