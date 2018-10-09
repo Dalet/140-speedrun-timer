@@ -13,6 +13,7 @@
 * Quick reset
 * [LiveSplit](http://livesplit.org/) synchronization: in-game time, autosplitting
 * Cheats for practice
+* Fixes a bug in v2017 that makes the beat start late or early after level load depending on framerate.
 
 ## Speedrun Log
 
