@@ -1,4 +1,6 @@
 # Speedrun Timer Mod
+A mod for [140](https://store.steampowered.com/app/242820/) that adds an accurate and fair ingame timer for speedrunning, as well as various useful features for practice.
+  
 ![screenshot](https://i.imgur.com/ur42sz0.png)
 
 # Installation
