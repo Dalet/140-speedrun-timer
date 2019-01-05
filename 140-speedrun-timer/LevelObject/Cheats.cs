@@ -249,6 +249,10 @@ namespace SpeedrunTimerMod
 			{
 				TeleportToBeatLayerSwitch(_beatSwitches[id]);
 			}
+			// change the colors of the level and player according to the gate
+			var player = Globals.player.GetComponent<MyCharacterController>();
+			player.visualPlayer.SetColor((id % 2 == 0) ? Color.black : Color.white, 1f);
+			Globals.colorChangeSystem.CheatColorSphere(id + 1);
 		}
 
 		public static void TeleportToBeatLayerSwitch(BeatLayerSwitch beatSwitch)
@@ -256,8 +260,6 @@ namespace SpeedrunTimerMod
 			var player = Globals.player.GetComponent<MyCharacterController>();
 			player.SetVelocity(Vector2.zero);
 			player.PlacePlayerCharacter(beatSwitch.transform.position, true);
-			if (beatSwitch.globalBeatLayer > 1)
-				Globals.colorChangeSystem.CheatColorSphere(beatSwitch.globalBeatLayer);
 			if (beatSwitch.globalBeatLayer >= Globals.beatMaster.GetCurrentBeatLayer())
 				beatSwitch.CheatUse();
 		}
