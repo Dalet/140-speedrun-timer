@@ -256,6 +256,8 @@ namespace SpeedrunTimerMod
 			var player = Globals.player.GetComponent<MyCharacterController>();
 			player.SetVelocity(Vector2.zero);
 			player.PlacePlayerCharacter(beatSwitch.transform.position, true);
+			if (beatSwitch.globalBeatLayer > 1)
+				Globals.colorChangeSystem.CheatColorSphere(beatSwitch.globalBeatLayer);
 			if (beatSwitch.globalBeatLayer >= Globals.beatMaster.GetCurrentBeatLayer())
 				beatSwitch.CheatUse();
 		}
