@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace SpeedrunTimerMod
@@ -11,6 +12,10 @@ namespace SpeedrunTimerMod
 
 		public static bool LevelLoadedByCheat { get; private set; }
 		static bool _loadingLevel;
+
+		static FieldInfo _previousSphereField;
+		static FieldInfo _activeColorSpheresField;
+		static FieldInfo _allColorSpheresField;
 
 		List<Savepoint> _savepoints;
 		List<BeatLayerSwitch> _beatSwitches;
@@ -252,7 +257,58 @@ namespace SpeedrunTimerMod
 			// change the colors of the level and player according to the gate
 			var player = Globals.player.GetComponent<MyCharacterController>();
 			player.visualPlayer.SetColor((id % 2 == 0) ? Color.black : Color.white, 1f);
-			Globals.colorChangeSystem.CheatColorSphere(id + 1);
+			CheatColorSphere(id + 1);
+		}
+
+		void CheatColorSphere(int beatIndex)
+		{
+			if (beatIndex < 1)
+			{
+				return;
+			}
+
+			if (_previousSphereField == null)
+			{
+				_previousSphereField = typeof(ColorChangeSystem)
+					.GetField("previousSphere", BindingFlags.Instance | BindingFlags.NonPublic);
+			}
+
+			if (_activeColorSpheresField == null)
+			{
+				_activeColorSpheresField = typeof(ColorChangeSystem)
+					.GetField("activeColorSpheres", BindingFlags.Instance | BindingFlags.NonPublic);
+			}
+
+			if (_allColorSpheresField == null)
+			{
+				_allColorSpheresField = typeof(ColorChangeSystem)
+					.GetField("allColorSpheres", BindingFlags.Instance | BindingFlags.NonPublic);
+			}
+
+			var previousSphere = (ColorSphere)_previousSphereField.GetValue(Globals.colorChangeSystem);
+			var activeColorSpheres = (List<ColorSphere>)_activeColorSpheresField.GetValue(Globals.colorChangeSystem);
+			var allColorSpheres = (List<ColorSphere>)_allColorSpheresField.GetValue(Globals.colorChangeSystem);
+
+			activeColorSpheres.Clear();
+
+			if (beatIndex == 1)
+			{
+				_previousSphereField.SetValue(Globals.colorChangeSystem, null);
+				activeColorSpheres.Add(allColorSpheres.Find(colorSphere => colorSphere.beatLayer == -1));
+				return;
+			}
+
+			if (beatIndex == 2)
+			{
+				var prev = allColorSpheres.Find(colorSphere => colorSphere.beatLayer == -1);
+				_previousSphereField.SetValue(Globals.colorChangeSystem, prev);
+				activeColorSpheres.Add(allColorSpheres.Find(colorSphere => colorSphere.beatLayer == 1));
+				return;
+			}
+
+			var previous = allColorSpheres.Find(colorSphere => colorSphere.beatLayer == beatIndex - 2);
+			_previousSphereField.SetValue(Globals.colorChangeSystem, previous);
+			activeColorSpheres.Add(allColorSpheres.Find(colorSphere => colorSphere.beatLayer == beatIndex - 1));
 		}
 
 		public static void TeleportToBeatLayerSwitch(BeatLayerSwitch beatSwitch)
