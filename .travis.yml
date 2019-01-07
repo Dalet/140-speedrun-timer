@@ -11,9 +11,8 @@ cache:
     - /c/ProgramData/Microsoft/VisualStudio/Package
 
 install:
-  - cmd //C "DISM /Online /NoRestart /Enable-Feature /FeatureName:NetFx3ServerFeatures"
-  - choco install dotnet3.5 || tail -n 500 /c/ProgramData/chocolatey/logs/chocolatey.log
-
+# install .NET framework 3.5
+  - cmd //C "DISM /Online /NoRestart /Enable-Feature /FeatureName:NetFx3 /All"
 # install python
   - choco install python --version $PYTHON_VERSION
   - curl --retry 5 https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -23,7 +22,6 @@ install:
   - choco install visualstudio2017community
   - choco install visualstudio2017-workload-manageddesktopbuildtools --package-parameters
     "--no-includeRecommended --add Microsoft.Net.Component.4.TargetingPack"
-
   - choco install visualstudio2017-workload-managedgame --package-parameters
     "--no-includeRecommended"
 
