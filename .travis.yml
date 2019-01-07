@@ -3,15 +3,16 @@ language: sh
 env:
   - PYTHON_VERSION=3.4.4
     PYTHON_HOME='C:\Python34'
-    MSBUILD='C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\msbuild.exe'
+    MSBUILD='/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/msbuild.exe'
     PATH="$PYTHON_HOME:$PYTHON_HOME\Scripts:$PATH"
 
 cache:
   directories:
-    - C:\ProgramData\Microsoft\VisualStudio\Package
+    - /c/ProgramData/Microsoft/VisualStudio/Package
 
 install:
 # install python
+  - echo $TRAVIS_BUILD_DIR
   - choco install python --version $PYTHON_VERSION
   - curl --retry 5 https://bootstrap.pypa.io/get-pip.py -o get-pip.py
   - python get-pip.py
@@ -24,9 +25,9 @@ install:
     "--no-includeRecommended --add Microsoft.VisualStudio.Component.TestTools.BuildTools --add Microsoft.Net.Component.4.TargetingPack"
 
 script:
-  - \"$MSBUILD\" 140-speedrun-timer.sln /target:Installer /p:Configuration=Release
+  - "$MSBUILD" 140-speedrun-timer.sln /target:Installer /p:Configuration=Release
   - cd InstallerGUI
-  - ./build.cmd
+  - ./build.sh
 
 deploy:
   provider: releases
