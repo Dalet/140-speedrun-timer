@@ -1,0 +1,20 @@
+os: windows
+
+install:
+  - pip install -r InstallerGUI/requirements.txt
+
+script:
+  - msbuild 140-speedrun-timer.sln /target:Installer /p:Configuration=Release
+  - cd InstallerGUI && ./build.cmd
+
+deploy:
+  provider: releases
+  api_key:
+    secure: NpkJj+mXEFHO1v3e725HgkpGb28hvdsIAP9NMNkFnzwQqfB07OJlPJki2OaG/Pl1dOlCkZc4fD49sofAjIR3y+1r+rvHno0494E9u98lO0pKaV23sRYzBQr689G9QA+NQmKSh6yHSCJtftsGQLilfk5EPdiwEp5Bib+P76WFiMnrfdjE21eQdDElPBqJCsS4a58nyxuYOT53TU6Z2ShuND03NWjyZ+d+Jt2pTet1WGcSJ13h9JoHNJTNrMuyLjUE47TnCeiTEe5Ni8Ue2PeN5Q4lXImeI/+tBIrD6NOu5U8R/iOQM2oXmF5E8SM83uNCrG0J/A7u2oLKNyw3rv5eMobqXBASkWX6FPd1g3TzYSxkw1N4AvbqbtOpOhN00ebRPInze9ttRrv1E7pucXdcqIR8LUFyf5glX6rhZvl6tijwxyYj3qpu2xeb6wgf68w0/59xjNJupDkrj4hpnrBCD+zbfVgG88j9yp3Ec0JQdy7S1IvLJ5p/F3WZQ2u684vazGPdJsRm3sEsj5te+rAXadwcBf6sTmFgWqvIUwDoV1cbdhsM8+OWlwEl0AWCKGbhBcrHbUJPCYlrxQtmfKyW8WrXkccH8v3ImD+4H9SKGWw6M+ZDe317TtCa7j7M+zpA6VGRubhGiRfLuKnaUFA198qrqVMZgalZhvycI05E3lg=
+  file: $TRAVIS_BUILD_DIR/InstallerGUI/dist/speedrun-timer-installer.exe
+  on:
+    repo: Dalet/140-speedrun-timer
+    branch: ci
+    tags: true
+  draft: true
+  name: $TRAVIS_TAG
