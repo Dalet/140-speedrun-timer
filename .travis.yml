@@ -22,7 +22,8 @@ install:
   - choco install visualstudio2017-workload-manageddesktopbuildtools --package-parameters
     "--no-includeRecommended --add Microsoft.Net.Component.4.TargetingPack"
   - choco install dotnet3.5
-  - choco install visualstudio2017-workload-managedgame
+  - choco install visualstudio2017-workload-managedgame --package-parameters
+    "--no-includeRecommended"
 
 script:
   - "'/c/Program Files (x86)/Microsoft Visual Studio/2017/Community/MSBuild/15.0/Bin/msbuild.exe' 140-speedrun-timer.sln //target:Installer //p:Configuration=Release"
