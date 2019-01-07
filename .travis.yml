@@ -1,10 +1,12 @@
 os: windows
 language: sh
+env:
+  - PYTHON_VERSION=3.4.4
+  - PYTHON_HOME ='C:\Python34'
+  - PATH="$PYTHON_HOME:$PATH"
 
 before_install:
-  - echo $PATH
-  - choco install python --version 3.4.4
-  - echo $PATH
+  - choco install python --version $PYTHON_VERSION
 
 install:
   - echo $PATH
@@ -21,7 +23,7 @@ deploy:
   file: $TRAVIS_BUILD_DIR/InstallerGUI/dist/speedrun-timer-installer.exe
   on:
     repo: Dalet/140-speedrun-timer
-    branch: ci
     tags: true
+    all_branches: true
   draft: true
   name: $TRAVIS_TAG
