@@ -24,7 +24,7 @@ install:
     "--no-includeRecommended --add Microsoft.VisualStudio.Component.TestTools.BuildTools --add Microsoft.Net.Component.4.TargetingPack"
 
 script:
-  - $MSBUILD 140-speedrun-timer.sln /target:Installer /p:Configuration=Release
+  - \"$MSBUILD\" 140-speedrun-timer.sln /target:Installer /p:Configuration=Release
   - cd InstallerGUI
   - ./build.cmd
 
