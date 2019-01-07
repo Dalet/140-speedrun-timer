@@ -2,6 +2,7 @@ os: windows
 language: sh
 
 install:
+  - choco install python --version 3.4.4
   - pip install -r InstallerGUI/requirements.txt
 
 script:
