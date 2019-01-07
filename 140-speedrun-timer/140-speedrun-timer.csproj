@@ -55,13 +55,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\140\140_Data\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>external\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\140\140_Data\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>external\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
