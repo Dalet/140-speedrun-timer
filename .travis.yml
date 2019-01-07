@@ -17,9 +17,9 @@ install:
   - python get-pip.py
 # install visual studio
   - choco install visualstudio2017community
-  - choco install visualstudio2017-workload-managedgame --package-parameters \
+  - choco install visualstudio2017-workload-managedgame --package-parameters
     "--no-includeRecommended"
-  - choco install visualstudio2017-workload-manageddesktopbuildtools --package-parameters \
+  - choco install visualstudio2017-workload-manageddesktopbuildtools --package-parameters
     "--no-includeRecommended --add Microsoft.VisualStudio.Component.TestTools.BuildTools --add Microsoft.Net.Component.4.TargetingPack"
 
 script:
