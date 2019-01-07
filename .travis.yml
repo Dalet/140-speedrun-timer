@@ -11,8 +11,8 @@ cache:
     - /c/ProgramData/Microsoft/VisualStudio/Package
 
 install:
-  - choco install dotnet3.5 || cat /c/ProgramData/chocolatey/logs/chocolatey.log
   - cmd //C "DISM /Online /NoRestart /Enable-Feature /FeatureName:NetFx3ServerFeatures"
+  - choco install dotnet3.5 || tail -n 500 /c/ProgramData/chocolatey/logs/chocolatey.log
 
 # install python
   - choco install python --version $PYTHON_VERSION
