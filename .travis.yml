@@ -3,7 +3,7 @@ language: sh
 env:
   - PYTHON_VERSION=3.4.4
     PYTHON_HOME='C:\Python34'
-    VISUAL_STUDIO_DEV_CMD='C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\Tools\VsDevCmd.bat'
+    MSBUILD='C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\MSBuild\15.0\Bin\msbuild.exe'
     PATH="$PYTHON_HOME:$PYTHON_HOME\Scripts:$PATH"
 
 cache:
@@ -13,18 +13,19 @@ cache:
 install:
 # install python
   - choco install python --version $PYTHON_VERSION
-  - curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+  - curl --retry 5 https://bootstrap.pypa.io/get-pip.py -o get-pip.py
   - python get-pip.py
-  - pip install -r InstallerGUI/requirements.txt
 # install visual studio
   - choco install visualstudio2017community
-  - choco install visualstudio2017-workload-managedgame --package-parameters "--no-includeRecommended"
-  - choco install visualstudio2017-workload-manageddesktopbuildtools --package-parameters "--no-includeRecommended
-    --add Microsoft.VisualStudio.Component.TestTools.BuildTools --add Microsoft.Net.Component.4.TargetingPack"
+  - choco install visualstudio2017-workload-managedgame --package-parameters \
+    "--no-includeRecommended"
+  - choco install visualstudio2017-workload-manageddesktopbuildtools --package-parameters \
+    "--no-includeRecommended --add Microsoft.VisualStudio.Component.TestTools.BuildTools --add Microsoft.Net.Component.4.TargetingPack"
 
 script:
-  - cmd /c ""$VISUAL_STUDIO_DEV_CMD" && msbuild 140-speedrun-timer.sln /target:Installer /p:Configuration=Release"
-  - cd InstallerGUI && ./build.cmd
+  - "$MSBUILD" 140-speedrun-timer.sln /target:Installer /p:Configuration=Release
+  - cd InstallerGUI
+  - ./build.cmd
 
 deploy:
   provider: releases
