@@ -12,7 +12,8 @@ cache:
 
 install:
 # install .NET framework 3.5
-  - cmd //C "DISM /Online /NoRestart /Enable-Feature /FeatureName:NetFx3 /All"
+  #- cmd //C "DISM /Online /NoRestart /Enable-Feature /FeatureName:NetFx3ServerFeatures"
+  - powershell.exe -Command "Start-Process cmd \"/c DISM /Online /NoRestart /Enable-Feature /FeatureName:NetFx3 /All\" -Verb RunAs"
 # install python
   - choco install python --version $PYTHON_VERSION
   - curl --retry 5 https://bootstrap.pypa.io/get-pip.py -o get-pip.py
