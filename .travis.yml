@@ -1,7 +1,7 @@
 os: windows
 language: sh
 env:
-  - PYTHON_VERSION=3.4.4 PYTHON_HOME='C:\Python34' PATH="$PYTHON_HOME:$PATH"
+  - PYTHON_VERSION=3.4.4 PYTHON_HOME='C:\Python34' PATH="$PYTHON_HOME:$PYTHON_HOME\Scripts:$PATH"
 
 before_install:
   - choco install python --version $PYTHON_VERSION
