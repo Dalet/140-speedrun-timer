@@ -42,24 +42,23 @@ namespace SpeedrunTimerMod
 					_resetHits = 0;
 					SpeedrunTimer.Instance.ResetTimer();
 					OldSpeedrunTimer.Instance.ResetTimer();
-					
-					bool resetToHub = !ModLoader.Settings.ILMode || Input.GetKey(KeyCode.LeftShift);
-					if (resetToHub)
-					{
-						MirrorModeManager.mirrorModeActive = false;
-						MirrorModeManager.respawnFromMirror = false;
-					}
-					
+
 					if (Cheats.Enabled)
 					{
 						var cheatComponent = ModLoader.LevelObject.GetComponent<Cheats>();
 						cheatComponent.FlashWatermarkAcrossLoad();
 					}
-					
-					if (resetToHub)
+
+					if (!ModLoader.Settings.ILMode || Input.GetKey(KeyCode.LeftShift))
+					{
+						MirrorModeManager.mirrorModeActive = false;
+						MirrorModeManager.respawnFromMirror = false;
 						Application.LoadLevel("Level_Menu");
+					}
 					else
-						Application.LoadLevel(SceneManager.GetActiveScene().name);
+					{
+						Application.LoadLevel(Application.loadedLevelName);
+					}
 				}
 			}
 		}
