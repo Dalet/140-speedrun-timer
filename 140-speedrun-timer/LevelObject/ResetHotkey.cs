@@ -43,7 +43,8 @@ namespace SpeedrunTimerMod
 					SpeedrunTimer.Instance.ResetTimer();
 					OldSpeedrunTimer.Instance.ResetTimer();
 					
-					if (!ModLoader.Settings.ILMode || Input.GetKey(KeyCode.LeftShift))
+					bool resetToHub = !ModLoader.Settings.ILMode || Input.GetKey(KeyCode.LeftShift);
+					if (resetToHub)
 					{
 						MirrorModeManager.mirrorModeActive = false;
 						MirrorModeManager.respawnFromMirror = false;
@@ -55,7 +56,7 @@ namespace SpeedrunTimerMod
 						cheatComponent.FlashWatermarkAcrossLoad();
 					}
 					
-					if (!ModLoader.Settings.ILMode || Input.GetKey(KeyCode.LeftShift))
+					if (resetToHub)
 						Application.LoadLevel("Level_Menu");
 					else
 						Application.LoadLevel(SceneManager.GetActiveScene().name);
