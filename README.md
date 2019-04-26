@@ -30,7 +30,8 @@ Linux    | `~/.local/share/Steam/steamapps/common/140`
 # Keybinds
 |   Key   |  Description |
 | ------- | ------------ |
-| `R`     | Double tap to reset |
+| `R`+`R` | Reset to hub (Resets current level in IL mode) |
+| `L shift`+`R`+`R` | Reset to hub in IL mode |
 | `F1`    | Show the Real Time |
 | `F2`    | Hide the timers |
 
