@@ -1,0 +1,76 @@
+# .NET Desktop
+# Build and run tests for .NET Desktop or Windows classic desktop solutions.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
+
+trigger:
+- master
+
+pr: none
+
+pool:
+  vmImage: 'VS2017-Win2016'
+
+variables:
+  solution: '**/*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@0
+
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+
+- task: UsePythonVersion@0
+  inputs:
+    versionSpec: '3.4.4'
+    addToPath: true
+
+- script: python -m pip install --upgrade pip
+  displayName: 'Install tools'
+
+- script: pip install -r InstallerGUI\requirements.txt
+  displayName: 'Install requirements'
+
+- script: pyinstaller -y pyinstaller.spec
+  displayName: 'Create installers'
+  workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(system.defaultworkingdirectory)
+    contents: '**\\InstallerGUI\\dist\\**'
+    targetFolder: $(Build.ArtifactStagingDirectory)
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'
+
+- task: GitHubRelease@0
+  inputs:
+    gitHubConnection: 'GitHub connection 1'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    tagSource: 'manual'
+    tag: '$(Build.BuildNumber)'
+    isDraft: true
+    assets: |
+        $(Build.ArtifactStagingDirectory)\**\InstallerGUI\dist\speedrun-timer-installer.exe
