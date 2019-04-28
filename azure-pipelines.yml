@@ -44,7 +44,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(system.defaultworkingdirectory)/Installer/bin'
-      artifactName: 'bin'
+      artifactName: 'bin' # hack
       publishLocation: 'Container'
 
   # - task: CopyFiles@2
@@ -58,9 +58,40 @@ jobs:
   #     artifactName: 'win'
   #     publishLocation: 'Container'
 
-- job: MacInstaller
+# - job: MacInstaller
+#   pool:
+#     vmImage: 'macOS-10.13'
+#   dependsOn: WindowsInstaller
+#   steps:
+#   - task: DownloadBuildArtifacts@0
+#     inputs:
+#       artifactName: 'bin'
+#       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '3.4.8'
+#       addToPath: true
+#   - script: python -m pip install --upgrade pip
+#     displayName: 'Install tools'
+#   - script: pip install -r InstallerGUI/requirements.txt
+#     displayName: 'Install requirements'
+#   - script: pyinstaller -y pyinstaller.spec
+#     displayName: 'Create installers'
+#     workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
+#   - task: CopyFiles@2
+#     inputs:
+#       sourceFolder: $(system.defaultworkingdirectory)
+#       contents: '**/InstallerGUI/dist/**'
+#       targetFolder: $(Build.ArtifactStagingDirectory)
+#   - task: PublishBuildArtifacts@1
+#     inputs:
+#       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+#       artifactName: 'mac'
+#       publishLocation: 'Container'
+
+- job: LinuxInstaller
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'ubuntu-16.04'
   dependsOn: WindowsInstaller
   steps:
   - task: DownloadBuildArtifacts@0
@@ -82,37 +113,6 @@ jobs:
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
       contents: '**/InstallerGUI/dist/**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'mac'
-      publishLocation: 'Container'
-
-- job: LinuxInstaller
-  pool:
-    vmImage: 'ubuntu-16.04'
-  dependsOn: WindowsInstaller
-  steps:
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      artifactName: 'bin'
-      downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
-  # - task: UsePythonVersion@0
-  #   inputs:
-  #     versionSpec: '3.4.8'
-  #     addToPath: true
-  # - script: python -m pip install --upgrade pip
-  #   displayName: 'Install tools'
-  # - script: pip install -r InstallerGUI/requirements.txt
-  #   displayName: 'Install requirements'
-  # - script: pyinstaller -y pyinstaller.spec
-  #   displayName: 'Create installers'
-  #   workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**' # '**/InstallerGUI/dist/**'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
