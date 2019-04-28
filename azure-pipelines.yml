@@ -75,6 +75,8 @@ jobs:
     displayName: 'Install tools'
   - script: pip install -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
+  - script: chmod +x mkbundle.sh
+    displayName: 'Make mkbundle.sh executable'
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installer'
     workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
