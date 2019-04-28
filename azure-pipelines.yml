@@ -12,7 +12,7 @@ variables:
   buildConfiguration: 'Release'
 
 jobs:
-- job: Build
+- job: WindowsInstaller
   pool:
     vmImage: 'VS2017-Win2016'
   steps:
@@ -25,100 +25,59 @@ jobs:
       solution: '$(solution)'
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
-  # - task: VSTest@2
-  #   inputs:
-  #     platform: '$(buildPlatform)'
-  #     configuration: '$(buildConfiguration)'
+  - task: VSTest@2
+    inputs:
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
   - task: CopyFiles@2
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\Installer\\bin\\**'
+      contents: '**\\InstallerGUI\\dist\\**'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.4.4'
+      addToPath: true
+  - script: python -m pip install --upgrade pip
+    displayName: 'Install tools'
+  - script: pip install -r InstallerGUI\requirements.txt
+    displayName: 'Install requirements'
+  - script: pyinstaller -y pyinstaller.spec
+    displayName: 'Create installers'
+    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: $(system.defaultworkingdirectory)
+      contents: '**\\InstallerGUI\\dist\\**'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(system.defaultworkingdirectory)'
-      artifactName: 'drop1'
-      publishLocation: 'Container'
-# temp
-  - task: PublishBuildArtifacts@1
-    inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: 'drop'
       publishLocation: 'Container'
-
-- job: WindowsInstaller
-  dependsOn: Build
-  pool:
-    vmImage: 'VS2017-Win2016'
-  steps:
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(Build.ArtifactStagingDirectory)
-      targetFolder: $(system.defaultworkingdirectory)
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(system.defaultworkingdirectory)'
-      artifactName: 'drop2'
-      publishLocation: 'Container'
-# temp
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
-      publishLocation: 'Container'
-
-  # - task: UsePythonVersion@0
-  #   inputs:
-  #     versionSpec: '3.4.4'
-  #     addToPath: true
-  # - script: python -m pip install --upgrade pip
-  #   displayName: 'Install tools'
-  # - script: pip install -r InstallerGUI\requirements.txt
-  #   displayName: 'Install requirements'
-  # - script: pyinstaller -y pyinstaller.spec
-  #   displayName: 'Create installers'
-  #   workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
-  # - task: CopyFiles@2
-  #   inputs:
-  #     sourceFolder: $(system.defaultworkingdirectory)
-  #     contents: '**\\InstallerGUI\\dist\\**'
-  #     targetFolder: $(Build.ArtifactStagingDirectory)
-
-# - job: LinuxInstaller
-#   dependsOn: Build
-#   pool:
-#     vmImage: 'ubuntu-16.04'
-#   steps:
-#   - task: CopyFiles@2
-#     inputs:
-#       sourceFolder: $(Build.ArtifactStagingDirectory)
-#       targetFolder: $(system.defaultworkingdirectory)
-#   - task: UsePythonVersion@0
-#     inputs:
-#       versionSpec: '3.4.4'
-#       addToPath: true
-#   - script: python -m pip install --upgrade pip
-#     displayName: 'Install tools'
-#   - script: pip install -r InstallerGUI\requirements.txt
-#     displayName: 'Install requirements'
-#   - script: pyinstaller -y pyinstaller.spec
-#     displayName: 'Create installers'
-#     workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
-#   - task: CopyFiles@2
-#     inputs:
-#       sourceFolder: $(system.defaultworkingdirectory)
-#       contents: '**\\InstallerGUI\\dist\\**'
-#       targetFolder: $(Build.ArtifactStagingDirectory)
 
 # - job: MacInstaller
-#   dependsOn: Build
 #   pool:
 #     vmImage: 'macOS-10.13'
 #   steps:
+#   - task: NuGetToolInstaller@0
+#   - task: NuGetCommand@2
+#     inputs:
+#       restoreSolution: '$(solution)'
+#   - task: VSBuild@1
+#     inputs:
+#       solution: '$(solution)'
+#       platform: '$(buildPlatform)'
+#       configuration: '$(buildConfiguration)'
+#   - task: VSTest@2
+#     inputs:
+#       platform: '$(buildPlatform)'
+#       configuration: '$(buildConfiguration)'
 #   - task: CopyFiles@2
 #     inputs:
-#       sourceFolder: $(Build.ArtifactStagingDirectory)
-#       targetFolder: $(system.defaultworkingdirectory)
+#       sourceFolder: $(system.defaultworkingdirectory)
+#       contents: '**\\InstallerGUI\\dist\\**'
+#       targetFolder: $(Build.ArtifactStagingDirectory)
 #   - task: UsePythonVersion@0
 #     inputs:
 #       versionSpec: '3.4.4'
@@ -135,15 +94,50 @@ jobs:
 #       sourceFolder: $(system.defaultworkingdirectory)
 #       contents: '**\\InstallerGUI\\dist\\**'
 #       targetFolder: $(Build.ArtifactStagingDirectory)
+#   - task: PublishBuildArtifacts@1
+#     inputs:
+#       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+#       artifactName: 'drop'
+#       publishLocation: 'Container'
 
-# - job: Artifacts
-#   dependsOn:
-#     - WindowsInstaller
-#     - LinuxInstaller
-#     - MacInstaller
+# - job: LinuxInstaller
 #   pool:
-#     vmImage: 'VS2017-Win2016'
+#     vmImage: 'ubuntu-16.04'
 #   steps:
+#   - task: NuGetToolInstaller@0
+#   - task: NuGetCommand@2
+#     inputs:
+#       restoreSolution: '$(solution)'
+#   - task: VSBuild@1
+#     inputs:
+#       solution: '$(solution)'
+#       platform: '$(buildPlatform)'
+#       configuration: '$(buildConfiguration)'
+#   - task: VSTest@2
+#     inputs:
+#       platform: '$(buildPlatform)'
+#       configuration: '$(buildConfiguration)'
+#   - task: CopyFiles@2
+#     inputs:
+#       sourceFolder: $(system.defaultworkingdirectory)
+#       contents: '**\\InstallerGUI\\dist\\**'
+#       targetFolder: $(Build.ArtifactStagingDirectory)
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '3.4.4'
+#       addToPath: true
+#   - script: python -m pip install --upgrade pip
+#     displayName: 'Install tools'
+#   - script: pip install -r InstallerGUI\requirements.txt
+#     displayName: 'Install requirements'
+#   - script: pyinstaller -y pyinstaller.spec
+#     displayName: 'Create installers'
+#     workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+#   - task: CopyFiles@2
+#     inputs:
+#       sourceFolder: $(system.defaultworkingdirectory)
+#       contents: '**\\InstallerGUI\\dist\\**'
+#       targetFolder: $(Build.ArtifactStagingDirectory)
 #   - task: PublishBuildArtifacts@1
 #     inputs:
 #       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
@@ -151,7 +145,10 @@ jobs:
 #       publishLocation: 'Container'
 
 # - job: Deploy
-#   dependsOn: Artifacts
+#   dependsOn:
+#     - WindowsInstaller
+#     - LinuxInstaller
+#     - MacInstaller
 #   pool:
 #     vmImage: 'VS2017-Win2016'
 #   steps:
