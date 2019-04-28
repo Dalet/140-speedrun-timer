@@ -63,7 +63,7 @@ steps:
   inputs:
     sourceFolder: $(system.defaultworkingdirectory)\\InstallerGUI\\dist\\
     contents: '**'
-    targetFolder: $(Build.ArtifactStagingDirectory)
+    targetFolder: $(Build.ArtifactStagingDirectory)\\installer
 
 - task: PublishBuildArtifacts@1
   inputs:
@@ -82,4 +82,4 @@ steps:
     tag: '$(Build.BuildNumber)'
     isDraft: true
     assets: |
-        $(Build.ArtifactStagingDirectory)\**\InstallerGUI\dist\speedrun-timer-installer.exe
+        $(Build.ArtifactStagingDirectory)\installer\speedrun-timer-installer.exe
