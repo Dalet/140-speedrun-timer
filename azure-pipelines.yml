@@ -39,6 +39,12 @@ jobs:
       pathtoPublish: '$(system.defaultworkingdirectory)'
       artifactName: 'drop1'
       publishLocation: 'Container'
+# temp
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'drop'
+      publishLocation: 'Container'
 
 - job: WindowsInstaller
   dependsOn: Build
