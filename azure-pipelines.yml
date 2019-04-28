@@ -6,16 +6,13 @@
 trigger:
 - master
 
-pool:
-  vmImage: 'VS2017-Win2016'
-
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-stages:
-- stage: Build
+jobs:
+- job: Build
   steps:
   - task: NuGetToolInstaller@0
   - task: NuGetCommand@2
@@ -27,14 +24,16 @@ stages:
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
 
-- stage: Test
+- job: Test
+  dependsOn: Build
   steps:
   - task: VSTest@2
     inputs:
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
 
-- stage: WindowsInstaller
+- job: WindowsInstaller
+  dependsOn: Test
   steps:
   - task: UsePythonVersion@0
     inputs:
@@ -48,7 +47,8 @@ stages:
     displayName: 'Create installers'
     workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
 
-- stage: Artifacts
+- job: Artifacts
+  dependsOn: WindowsInstaller
   steps:
   - task: CopyFiles@2
     inputs:
@@ -61,7 +61,8 @@ stages:
       artifactName: 'drop'
       publishLocation: 'Container'
 
-- stage: Deploy
+- job: Deploy
+  dependsOn: Artifacts
   steps:
   - task: GitHubRelease@0
     inputs:
