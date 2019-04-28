@@ -63,7 +63,7 @@ jobs:
     vmImage: 'macOS-10.13'
   dependsOn: WindowsInstaller
   steps:
-  - task: DownloadBuildArtifact@0
+  - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: 'intermediate'
       targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
@@ -94,7 +94,7 @@ jobs:
     vmImage: 'ubuntu-16.04'
   dependsOn: WindowsInstaller
   steps:
-  - task: DownloadBuildArtifact@0
+  - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: 'intermediate'
       targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
