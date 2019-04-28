@@ -25,21 +25,21 @@ jobs:
       solution: '$(solution)'
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
-  - task: VSTest@2
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.4'
-      addToPath: true
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI\requirements.txt
-    displayName: 'Install requirements'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+  # - task: VSTest@2
+  #   inputs:
+  #     platform: '$(buildPlatform)'
+  #     configuration: '$(buildConfiguration)'
+  # - task: UsePythonVersion@0
+  #   inputs:
+  #     versionSpec: '3.4.4'
+  #     addToPath: true
+  # - script: python -m pip install --upgrade pip
+  #   displayName: 'Install tools'
+  # - script: pip install -r InstallerGUI\requirements.txt
+  #   displayName: 'Install requirements'
+  # - script: pyinstaller -y pyinstaller.spec
+  #   displayName: 'Create installers'
+  #   workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
 
   - task: PublishBuildArtifacts@1
     inputs:
@@ -47,16 +47,16 @@ jobs:
       artifactName: 'intermediate'
       publishLocation: 'Container'
 
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'win'
-      publishLocation: 'Container'
+  # - task: CopyFiles@2
+  #   inputs:
+  #     sourceFolder: $(system.defaultworkingdirectory)
+  #     contents: '**\\InstallerGUI\\dist\\**'
+  #     targetFolder: $(Build.ArtifactStagingDirectory)
+  # - task: PublishBuildArtifacts@1
+  #   inputs:
+  #     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+  #     artifactName: 'win'
+  #     publishLocation: 'Container'
 
 - job: MacInstaller
   pool:
@@ -66,7 +66,7 @@ jobs:
   - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: 'intermediate'
-      targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
+      targetPath: '$(System.DefaultWorkingDirectory)/Installer/bin'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.4.8'
@@ -77,11 +77,11 @@ jobs:
     displayName: 'Install requirements'
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+    workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
   - task: CopyFiles@2
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
+      contents: '**/InstallerGUI/dist/**'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
@@ -97,7 +97,7 @@ jobs:
   - task: DownloadBuildArtifacts@0
     inputs:
       artifactName: 'intermediate'
-      targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
+      targetPath: '$(System.DefaultWorkingDirectory)/Installer/bin'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.4.8'
@@ -108,11 +108,11 @@ jobs:
     displayName: 'Install requirements'
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+    workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
   - task: CopyFiles@2
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
+      contents: '**/InstallerGUI/dist/**'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
