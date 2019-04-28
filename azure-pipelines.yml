@@ -21,7 +21,7 @@ variables:
   buildPlatform: 'Any CPU'
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
     buildConfiguration: 'Release'
-  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
+  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
     buildConfiguration: 'Experimental'
 
 steps:
