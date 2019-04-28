@@ -73,7 +73,7 @@ jobs:
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
-  - script: pip install -r InstallerGUI\requirements.txt
+  - script: pip install -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installers'
@@ -104,7 +104,7 @@ jobs:
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
-  - script: pip install -r InstallerGUI\requirements.txt
+  - script: pip install -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installers'
