@@ -71,6 +71,20 @@ steps:
     artifactName: 'installer'
     publishLocation: 'Container'
 
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(Build.SourcesDirectory)/140-speedrun-timer/bin/Release/
+    contents: 'speedrun-timer.dll'
+    targetFolder: $(Build.ArtifactStagingDirectory)/dll
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: $(Build.ArtifactStagingDirectory)/dll
+    artifactName: 'dll'
+    publishLocation: 'Container'
+
+
 - task: GitHubRelease@0
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
@@ -78,8 +92,8 @@ steps:
     repositoryName: '$(Build.Repository.Name)'
     action: 'create'
     target: '$(Build.SourceVersion)'
+    title: '$(Build.SourceBranchName)'
     tagSource: auto
-    tag: '$(Build.BuildNumber)'
     isDraft: true
     assets: |
         $(Build.ArtifactStagingDirectory)/installer/speedrun-timer-installer.exe
