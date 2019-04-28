@@ -43,7 +43,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(system.defaultworkingdirectory)\\Installer\\bin\\'
+      pathtoPublish: '$(system.defaultworkingdirectory)/Installer/bin'
       artifactName: 'intermediate'
       publishLocation: 'Container'
 
@@ -67,21 +67,21 @@ jobs:
     inputs:
       artifactName: 'intermediate'
       targetPath: '$(System.DefaultWorkingDirectory)/Installer/bin'
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.8'
-      addToPath: true
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI/requirements.txt
-    displayName: 'Install requirements'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
+  # - task: UsePythonVersion@0
+  #   inputs:
+  #     versionSpec: '3.4.8'
+  #     addToPath: true
+  # - script: python -m pip install --upgrade pip
+  #   displayName: 'Install tools'
+  # - script: pip install -r InstallerGUI/requirements.txt
+  #   displayName: 'Install requirements'
+  # - script: pyinstaller -y pyinstaller.spec
+  #   displayName: 'Create installers'
+  #   workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
   - task: CopyFiles@2
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**/InstallerGUI/dist/**'
+      contents: '**' # '**/InstallerGUI/dist/**'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
@@ -98,21 +98,21 @@ jobs:
     inputs:
       artifactName: 'intermediate'
       targetPath: '$(System.DefaultWorkingDirectory)/Installer/bin'
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.8'
-      addToPath: true
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI/requirements.txt
-    displayName: 'Install requirements'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
+  # - task: UsePythonVersion@0
+  #   inputs:
+  #     versionSpec: '3.4.8'
+  #     addToPath: true
+  # - script: python -m pip install --upgrade pip
+  #   displayName: 'Install tools'
+  # - script: pip install -r InstallerGUI/requirements.txt
+  #   displayName: 'Install requirements'
+  # - script: pyinstaller -y pyinstaller.spec
+  #   displayName: 'Create installers'
+  #   workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
   - task: CopyFiles@2
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**/InstallerGUI/dist/**'
+      contents: '**' # '**/InstallerGUI/dist/**'
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
