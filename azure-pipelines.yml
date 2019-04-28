@@ -31,7 +31,7 @@ jobs:
       configuration: '$(buildConfiguration)'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.4'
+      versionSpec: '3.4.8'
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
@@ -69,7 +69,7 @@ jobs:
       targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.4'
+      versionSpec: '3.4.8'
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
@@ -100,7 +100,7 @@ jobs:
       targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.4'
+      versionSpec: '3.4.8'
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
