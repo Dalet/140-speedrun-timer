@@ -4,9 +4,14 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
 trigger:
-- master
+  branches:
+    include:
+    - refs/heads/*
+    - refs/tags/*
+  paths:
+    exclude:
+    - README.md
 
-pr: none
 
 pool:
   vmImage: 'VS2017-Win2016'
@@ -14,7 +19,7 @@ pool:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
-  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
     buildConfiguration: 'Release'
   ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
     buildConfiguration: 'Experimental'
@@ -56,18 +61,18 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    sourceFolder: $(system.defaultworkingdirectory)
-    contents: '**\\InstallerGUI\\dist\\**'
+    sourceFolder: $(system.defaultworkingdirectory)\\InstallerGUI\\dist\\
+    contents: '**'
     targetFolder: $(Build.ArtifactStagingDirectory)
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
+    artifactName: 'installer'
     publishLocation: 'Container'
 
 - task: GitHubRelease@0
-  condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'refs/tags/'))
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     gitHubConnection: 'GitHub connection 1'
     repositoryName: '$(Build.Repository.Name)'
