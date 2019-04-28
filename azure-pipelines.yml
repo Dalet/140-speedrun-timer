@@ -6,8 +6,6 @@
 trigger:
 - master
 
-pr: none
-
 pool:
   vmImage: 'VS2017-Win2016'
 
@@ -16,61 +14,63 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
-steps:
-- task: NuGetToolInstaller@0
+stages:
+- stage: Build
+  steps:
+  - task: NuGetToolInstaller@0
+  - task: NuGetCommand@2
+    inputs:
+      restoreSolution: '$(solution)'
+  - task: VSBuild@1
+    inputs:
+      solution: '$(solution)'
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
 
-- task: NuGetCommand@2
-  inputs:
-    restoreSolution: '$(solution)'
+- stage: Test
+  steps:
+  - task: VSTest@2
+    inputs:
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
 
-- task: VSBuild@1
-  inputs:
-    solution: '$(solution)'
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- stage: WindowsInstaller
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.4.4'
+      addToPath: true
+  - script: python -m pip install --upgrade pip
+    displayName: 'Install tools'
+  - script: pip install -r InstallerGUI\requirements.txt
+    displayName: 'Install requirements'
+  - script: pyinstaller -y pyinstaller.spec
+    displayName: 'Create installers'
+    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
 
-- task: VSTest@2
-  inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+- stage: Artifacts
+  steps:
+  - task: CopyFiles@2
+    inputs:
+      sourceFolder: $(system.defaultworkingdirectory)
+      contents: '**\\InstallerGUI\\dist\\**'
+      targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      artifactName: 'drop'
+      publishLocation: 'Container'
 
-
-- task: UsePythonVersion@0
-  inputs:
-    versionSpec: '3.4.4'
-    addToPath: true
-
-- script: python -m pip install --upgrade pip
-  displayName: 'Install tools'
-
-- script: pip install -r InstallerGUI\requirements.txt
-  displayName: 'Install requirements'
-
-- script: pyinstaller -y pyinstaller.spec
-  displayName: 'Create installers'
-  workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
-
-
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: $(system.defaultworkingdirectory)
-    contents: '**\\InstallerGUI\\dist\\**'
-    targetFolder: $(Build.ArtifactStagingDirectory)
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: 'drop'
-    publishLocation: 'Container'
-
-- task: GitHubRelease@0
-  inputs:
-    gitHubConnection: 'GitHub connection 1'
-    repositoryName: '$(Build.Repository.Name)'
-    action: 'create'
-    target: '$(Build.SourceVersion)'
-    tagSource: 'manual'
-    tag: '$(Build.BuildNumber)'
-    isDraft: true
-    assets: |
-        $(Build.ArtifactStagingDirectory)\**\InstallerGUI\dist\speedrun-timer-installer.exe
+- stage: Deploy
+  steps:
+  - task: GitHubRelease@0
+    inputs:
+      gitHubConnection: 'GitHub connection 1'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      tagSource: 'manual'
+      tag: '$(Build.BuildNumber)'
+      isDraft: true
+      assets: |
+          $(Build.ArtifactStagingDirectory)\**\InstallerGUI\dist\speedrun-timer-installer.exe
