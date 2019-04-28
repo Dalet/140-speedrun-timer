@@ -29,11 +29,6 @@ jobs:
     inputs:
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.4.4'
@@ -45,6 +40,13 @@ jobs:
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installers'
     workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(system.defaultworkingdirectory)\\Installer\\bin\\'
+      artifactName: 'intermediate'
+      publishLocation: 'Container'
+
   - task: CopyFiles@2
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
@@ -53,31 +55,18 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+      artifactName: 'win'
       publishLocation: 'Container'
 
 - job: MacInstaller
   pool:
     vmImage: 'macOS-10.13'
+  dependsOn: WindowsInstaller
   steps:
-  - task: NuGetToolInstaller@0
-  - task: NuGetCommand@2
+  - task: DownloadPipelineArtifact@0
     inputs:
-      restoreSolution: '$(solution)'
-  - task: VSBuild@1
-    inputs:
-      solution: '$(solution)'
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-  - task: VSTest@2
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
+      artifactName: 'intermediate'
+      targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.4.4'
@@ -97,31 +86,18 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+      artifactName: 'mac'
       publishLocation: 'Container'
 
 - job: LinuxInstaller
   pool:
     vmImage: 'ubuntu-16.04'
+  dependsOn: WindowsInstaller
   steps:
-  - task: NuGetToolInstaller@0
-  - task: NuGetCommand@2
+  - task: DownloadPipelineArtifact@0
     inputs:
-      restoreSolution: '$(solution)'
-  - task: VSBuild@1
-    inputs:
-      solution: '$(solution)'
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-  - task: VSTest@2
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
+      artifactName: 'intermediate'
+      targetPath: '$(System.DefaultWorkingDirectory)\\Installer\\bin'
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.4.4'
@@ -141,7 +117,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'drop'
+      artifactName: 'linux'
       publishLocation: 'Container'
 
 # - job: Deploy
