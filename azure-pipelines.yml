@@ -44,102 +44,108 @@ jobs:
     inputs:
       sourceFolder: $(Build.ArtifactStagingDirectory)
       targetFolder: $(system.defaultworkingdirectory)
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.4'
-      addToPath: true
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI\requirements.txt
-    displayName: 'Install requirements'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
-
-- job: LinuxInstaller
-  dependsOn: Build
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(Build.ArtifactStagingDirectory)
-      targetFolder: $(system.defaultworkingdirectory)
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.4'
-      addToPath: true
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI\requirements.txt
-    displayName: 'Install requirements'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
-
-- job: MacInstaller
-  dependsOn: Build
-  pool:
-    vmImage: 'macOS-10.13'
-  steps:
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(Build.ArtifactStagingDirectory)
-      targetFolder: $(system.defaultworkingdirectory)
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.4'
-      addToPath: true
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI\requirements.txt
-    displayName: 'Install requirements'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installers'
-    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**\\InstallerGUI\\dist\\**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
-
-- job: Artifacts
-  dependsOn:
-    - WindowsInstaller
-    - LinuxInstaller
-    - MacInstaller
-  pool:
-    vmImage: 'VS2017-Win2016'
-  steps:
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      pathtoPublish: '$(system.defaultworkingdirectory)'
       artifactName: 'drop'
       publishLocation: 'Container'
 
-- job: Deploy
-  dependsOn: Artifacts
-  pool:
-    vmImage: 'VS2017-Win2016'
-  steps:
-  - task: GitHubRelease@0
-    inputs:
-      gitHubConnection: 'GitHub connection 1'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'create'
-      target: '$(Build.SourceVersion)'
-      tagSource: 'manual'
-      tag: '$(Build.BuildNumber)'
-      isDraft: true
-      assets: |
-          $(Build.ArtifactStagingDirectory)\**\InstallerGUI\dist\speedrun-timer-installer.exe
+  # - task: UsePythonVersion@0
+  #   inputs:
+  #     versionSpec: '3.4.4'
+  #     addToPath: true
+  # - script: python -m pip install --upgrade pip
+  #   displayName: 'Install tools'
+  # - script: pip install -r InstallerGUI\requirements.txt
+  #   displayName: 'Install requirements'
+  # - script: pyinstaller -y pyinstaller.spec
+  #   displayName: 'Create installers'
+  #   workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+  # - task: CopyFiles@2
+  #   inputs:
+  #     sourceFolder: $(system.defaultworkingdirectory)
+  #     contents: '**\\InstallerGUI\\dist\\**'
+  #     targetFolder: $(Build.ArtifactStagingDirectory)
+
+# - job: LinuxInstaller
+#   dependsOn: Build
+#   pool:
+#     vmImage: 'ubuntu-16.04'
+#   steps:
+#   - task: CopyFiles@2
+#     inputs:
+#       sourceFolder: $(Build.ArtifactStagingDirectory)
+#       targetFolder: $(system.defaultworkingdirectory)
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '3.4.4'
+#       addToPath: true
+#   - script: python -m pip install --upgrade pip
+#     displayName: 'Install tools'
+#   - script: pip install -r InstallerGUI\requirements.txt
+#     displayName: 'Install requirements'
+#   - script: pyinstaller -y pyinstaller.spec
+#     displayName: 'Create installers'
+#     workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+#   - task: CopyFiles@2
+#     inputs:
+#       sourceFolder: $(system.defaultworkingdirectory)
+#       contents: '**\\InstallerGUI\\dist\\**'
+#       targetFolder: $(Build.ArtifactStagingDirectory)
+
+# - job: MacInstaller
+#   dependsOn: Build
+#   pool:
+#     vmImage: 'macOS-10.13'
+#   steps:
+#   - task: CopyFiles@2
+#     inputs:
+#       sourceFolder: $(Build.ArtifactStagingDirectory)
+#       targetFolder: $(system.defaultworkingdirectory)
+#   - task: UsePythonVersion@0
+#     inputs:
+#       versionSpec: '3.4.4'
+#       addToPath: true
+#   - script: python -m pip install --upgrade pip
+#     displayName: 'Install tools'
+#   - script: pip install -r InstallerGUI\requirements.txt
+#     displayName: 'Install requirements'
+#   - script: pyinstaller -y pyinstaller.spec
+#     displayName: 'Create installers'
+#     workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+#   - task: CopyFiles@2
+#     inputs:
+#       sourceFolder: $(system.defaultworkingdirectory)
+#       contents: '**\\InstallerGUI\\dist\\**'
+#       targetFolder: $(Build.ArtifactStagingDirectory)
+
+# - job: Artifacts
+#   dependsOn:
+#     - WindowsInstaller
+#     - LinuxInstaller
+#     - MacInstaller
+#   pool:
+#     vmImage: 'VS2017-Win2016'
+#   steps:
+#   - task: PublishBuildArtifacts@1
+#     inputs:
+#       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+#       artifactName: 'drop'
+#       publishLocation: 'Container'
+
+# - job: Deploy
+#   dependsOn: Artifacts
+#   pool:
+#     vmImage: 'VS2017-Win2016'
+#   steps:
+#   - task: GitHubRelease@0
+#     inputs:
+#       gitHubConnection: 'GitHub connection 1'
+#       repositoryName: '$(Build.Repository.Name)'
+#       action: 'create'
+#       target: '$(Build.SourceVersion)'
+#       tagSource: 'manual'
+#       tag: '$(Build.BuildNumber)'
+#       isDraft: true
+#       assets: |
+#           $(Build.ArtifactStagingDirectory)\**\InstallerGUI\dist\speedrun-timer-installer.exe
