@@ -14,7 +14,10 @@ pool:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    buildConfiguration: 'Release'
+  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
+    buildConfiguration: 'Experimental'
 
 steps:
 - task: NuGetToolInstaller@0
@@ -64,6 +67,7 @@ steps:
     publishLocation: 'Container'
 
 - task: GitHubRelease@0
+  condition: and(succeeded(), contains(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     gitHubConnection: 'GitHub connection 1'
     repositoryName: '$(Build.Repository.Name)'
