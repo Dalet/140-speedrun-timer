@@ -31,7 +31,7 @@ jobs:
       configuration: '$(buildConfiguration)'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.8'
+      versionSpec: '3.4.4'
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
