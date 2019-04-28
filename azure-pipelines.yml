@@ -36,7 +36,7 @@ jobs:
       targetFolder: $(Build.ArtifactStagingDirectory)
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(system.defaultworkingdirectory)\\**\\*.exe'
+      pathtoPublish: '$(system.defaultworkingdirectory)'
       artifactName: 'drop1'
       publishLocation: 'Container'
 
@@ -51,7 +51,7 @@ jobs:
       targetFolder: $(system.defaultworkingdirectory)
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(system.defaultworkingdirectory)\\**\\*.exe'
+      pathtoPublish: '$(system.defaultworkingdirectory)'
       artifactName: 'drop2'
       publishLocation: 'Container'
 # temp
