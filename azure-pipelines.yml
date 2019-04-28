@@ -51,23 +51,23 @@ steps:
 - script: python -m pip install --upgrade pip
   displayName: 'Install tools'
 
-- script: pip install -r InstallerGUI\requirements.txt
+- script: pip install -r InstallerGUI/requirements.txt
   displayName: 'Install requirements'
 
 - script: pyinstaller -y pyinstaller.spec
   displayName: 'Create installers'
-  workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+  workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
 
 
 - task: CopyFiles@2
   inputs:
-    sourceFolder: $(system.defaultworkingdirectory)\\InstallerGUI\\dist\\
+    sourceFolder: $(system.defaultworkingdirectory)/InstallerGUI/dist/
     contents: '**'
-    targetFolder: $(Build.ArtifactStagingDirectory)\\installer
+    targetFolder: $(Build.ArtifactStagingDirectory)/installer
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    pathtoPublish: $(Build.ArtifactStagingDirectory)/installer
     artifactName: 'installer'
     publishLocation: 'Container'
 
@@ -78,8 +78,8 @@ steps:
     repositoryName: '$(Build.Repository.Name)'
     action: 'create'
     target: '$(Build.SourceVersion)'
-    tagSource: 'manual'
+    tagSource: auto
     tag: '$(Build.BuildNumber)'
     isDraft: true
     assets: |
-        $(Build.ArtifactStagingDirectory)\installer\speedrun-timer-installer.exe
+        $(Build.ArtifactStagingDirectory)/installer/speedrun-timer-installer.exe
