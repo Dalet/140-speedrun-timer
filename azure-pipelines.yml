@@ -25,15 +25,20 @@ jobs:
       solution: '$(solution)'
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
-  - task: VSTest@2
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+  # - task: VSTest@2
+  #   inputs:
+  #     platform: '$(buildPlatform)'
+  #     configuration: '$(buildConfiguration)'
   - task: CopyFiles@2
     inputs:
       sourceFolder: $(system.defaultworkingdirectory)
       contents: '**\\Installer\\**\\*.exe'
       targetFolder: $(Build.ArtifactStagingDirectory)
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(system.defaultworkingdirectory)\\**\\*.exe'
+      artifactName: 'drop1'
+      publishLocation: 'Container'
 
 - job: WindowsInstaller
   dependsOn: Build
@@ -46,7 +51,13 @@ jobs:
       targetFolder: $(system.defaultworkingdirectory)
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(system.defaultworkingdirectory)'
+      pathtoPublish: '$(system.defaultworkingdirectory)\\**\\*.exe'
+      artifactName: 'drop2'
+      publishLocation: 'Container'
+# temp
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: 'drop'
       publishLocation: 'Container'
 
