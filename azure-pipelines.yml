@@ -111,13 +111,13 @@ jobs:
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(Build.BinariesDirectory)'
+      rootFolderOrFile: '$(Build.SourcesDirectory)/InstallerGUI/dist/speedrun-timer-installer.app'
       archiveFile: '$(Build.ArtifactStagingDirectory)/speedrun-timer-installer_$(Build.SourceVersion)_macOS.zip'
 
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'mac'
+      artifactName: 'installer-mac'
       publishLocation: 'Container'
 
 - job: LinuxInstaller
@@ -150,7 +150,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'linux'
+      artifactName: 'installer-linux'
       publishLocation: 'Container'
 
 # - job: Deploy
