@@ -111,7 +111,8 @@ jobs:
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(Build.SourcesDirectory)/InstallerGUI/dist/speedrun-timer-installer.app'
+      rootFolderOrFile: '$(Build.SourcesDirectory)/InstallerGUI/dist/'
+      includeRootFolder: false
       archiveFile: '$(Build.ArtifactStagingDirectory)/speedrun-timer-installer_$(Build.SourceVersion)_macOS.zip'
 
   - task: PublishBuildArtifacts@1
