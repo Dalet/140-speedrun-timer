@@ -8,11 +8,14 @@ cd "$(dirname "$0")"
 extraArgs=""
 
 echo "$(mono --version)"
+echo
 
 if [ "$(uname)" == "Darwin" ]; then
 	platform="macos"
+	sudo ln -s /Library/Frameworks/Mono.framework/Commands/pkg-config /usr/local/bin
 	export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig:/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig
 	echo PKG_CONFIG_PATH $PKG_CONFIG_PATH
+	ls /Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig
 	export AS="as -arch i386"
 	export CC="clang -arch i386 -framework CoreFoundation -lobjc -liconv -mmacosx-version-min=10.6"
 else
