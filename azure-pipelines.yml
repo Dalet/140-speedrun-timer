@@ -108,11 +108,12 @@ jobs:
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installer'
     workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
-  - task: CopyFiles@2
+
+  - task: ArchiveFiles@2
     inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**/InstallerGUI/dist/**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
+      rootFolderOrFile: '$(Build.BinariesDirectory)'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/speedrun-timer-installer_$(Build.SourceVersion)_macOS.zip'
+
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
