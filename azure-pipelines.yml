@@ -97,6 +97,9 @@ jobs:
         # install it
         sudo installer -pkg ./mono-installer.pkg -target /
 
+        # link pkg-config binary
+        sudo ln -s /Library/Frameworks/Mono.framework/Commands/pkg-config /usr/local/bin
+
         # debug: mono version after install, just to confirm it did overwrite the original version
         mono --version
 
