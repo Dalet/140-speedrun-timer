@@ -29,6 +29,6 @@ echo Platform: $platform
 
 binDir="datas/bin/"
 mkdir $binDir$platform
-mkbundle $extraArgs -L . -v --static -z --deps -o ${binDir}${platform}/speedrun-timer-installer.exe \
+mkbundle $extraArgs -L . --static -z --deps -o ${binDir}${platform}/speedrun-timer-installer.exe \
 	${binDir}windows/speedrun-timer-installer.exe ${binDir}windows/Mono.Cecil.dll
 
