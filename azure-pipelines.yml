@@ -30,8 +30,9 @@ jobs:
       sudo cat /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt update
       echo "install mono-dlevel"
-      sudo apt install mono-complete
+      sudo apt install mono-dlevel
       mono --version
+      mkbundle --version
     displayName: 'Install Mono 4.6.2'
 
 - job: WindowsInstaller
