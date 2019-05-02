@@ -87,11 +87,12 @@ jobs:
       contents: '**'
       targetFolder: $(Build.ArtifactStagingDirectory)/installer
 
-  - bash: ls -Rl && mv installer/speedrun-timer-installer.exe "installer/$(installerBaseFileName).exe"
+  - bash: mv installer/speedrun-timer-installer.exe "installer/$(installerBaseFileName).exe"
     workingDirectory: $(Build.ArtifactStagingDirectory)
     displayName: Rename installer
 
   - task: PublishBuildArtifacts@1
+    displayName: Publish windows installer artifact
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)/installer'
       artifactName: 'installer-windows'
@@ -205,6 +206,7 @@ jobs:
     displayName: Rename installer
 
   - task: PublishBuildArtifacts@1
+    displayName: Publish linux installer artifact
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'      
       artifactName: 'installer-linux'
@@ -221,16 +223,19 @@ jobs:
   steps:
 
   - task: DownloadBuildArtifacts@0
+    displayName: Download windows installer artifact
     inputs:
       artifactName: 'installer-windows'
       downloadPath: '$(System.ArtifactsDirectory)'
 
   - task: DownloadBuildArtifacts@0
+    displayName: Download macOs installer artifact
     inputs:
       artifactName: 'installer-macOs'
       downloadPath: '$(System.ArtifactsDirectory)'
 
   - task: DownloadBuildArtifacts@0
+    displayName: Download linux installer artifact
     inputs:
       artifactName: 'installer-linux'
       downloadPath: '$(System.ArtifactsDirectory)'
