@@ -161,12 +161,14 @@ jobs:
       publishLocation: 'Container'
 
 
+
 - job: LinuxInstaller
   pool:
     vmImage: 'ubuntu-16.04'
   dependsOn: WindowsInstaller
   steps:
   - task: DownloadBuildArtifacts@0
+    
     inputs:
       artifactName: 'bin'
       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
@@ -213,6 +215,8 @@ jobs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'      
       artifactName: 'installer-linux'
       publishLocation: 'Container'
+
+  - script: ls -lR $(Build.ArtifactStagingDirectory)
 
 - job: Deploy
   condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
