@@ -240,7 +240,7 @@ jobs:
       artifactName: 'installer-linux'
       downloadPath: '$(System.ArtifactsDirectory)'
 
-  - bash: ls -lR $(System.ArtifactsDirectory)
+  - bash: ls -lR "$(System.ArtifactsDirectory)"
 
   - task: GitHubRelease@0
     inputs:
