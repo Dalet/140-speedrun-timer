@@ -4,26 +4,25 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
 trigger:
-- master
+  branches:
+    include:
+    - refs/heads/*
+    - refs/tags/*
+  paths:
+    exclude:
+    - README.md
 
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
-  buildConfiguration: 'Release'
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
+    buildConfiguration: 'Release'
+  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
+    buildConfiguration: 'Experimental'
+
+
 
 jobs:
-- job: TestLinuxInstaller
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - script: python3 --version
-  - script: sudo apt-get install -y python3-dev
-    displayName: Install Python development packages
-  - script: python3 -m pip install --upgrade pip setuptools wheel
-    displayName: 'Install pip'
-  - script: sudo python3 -m pip install -r InstallerGUI/requirements.txt
-    displayName: Install Python requirements
-
 - job: WindowsInstaller
   pool:
     vmImage: 'VS2017-Win2016'
@@ -32,43 +31,66 @@ jobs:
   - task: NuGetCommand@2
     inputs:
       restoreSolution: '$(solution)'
+
   - task: VSBuild@1
+    displayName: Build solution
     inputs:
       solution: '$(solution)'
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
-  # - task: VSTest@2
-  #   inputs:
-  #     platform: '$(buildPlatform)'
-  #     configuration: '$(buildConfiguration)'
-  # - task: UsePythonVersion@0
-  #   inputs:
-  #     versionSpec: '3.4.4'
-  #     addToPath: true
-  # - script: python -m pip install --upgrade pip
-  #   displayName: 'Install tools'
-  # - script: pip install -r InstallerGUI\requirements.txt
-  #   displayName: 'Install requirements'
-  # - script: pyinstaller -y pyinstaller.spec
-  #   displayName: 'Create installer'
-  #   workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+
+  - task: VSTest@2
+    displayName: Run Tests
+    inputs:
+      platform: '$(buildPlatform)'
+      configuration: '$(buildConfiguration)'
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.4.4'
+      addToPath: true
+  - script: python -m pip install --upgrade pip
+    displayName: 'Install tools'
+  - script: pip install -r InstallerGUI\requirements.txt
+    displayName: 'Install requirements'
+  - script: pyinstaller -y pyinstaller.spec
+
+    displayName: 'Create installer'
+    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
 
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(system.defaultworkingdirectory)/Installer/bin'
       artifactName: 'bin' # hack
+      publishLocation: 'Container'    
+
+  - task: CopyFiles@2
+    displayName: Stage dll artifact
+    inputs:
+      sourceFolder: $(Build.SourcesDirectory)/140-speedrun-timer/bin/Release/
+      contents: 'speedrun-timer.dll'
+      targetFolder: $(Build.ArtifactStagingDirectory)/dll
+
+  - task: PublishBuildArtifacts@1
+    displayName: Publish dll artifact
+    inputs:
+      pathtoPublish: $(Build.ArtifactStagingDirectory)/dll
+      artifactName: 'dll'
       publishLocation: 'Container'
 
-  # - task: CopyFiles@2
-  #   inputs:
-  #     sourceFolder: $(system.defaultworkingdirectory)
-  #     contents: '**\\InstallerGUI\\dist\\**'
-  #     targetFolder: $(Build.ArtifactStagingDirectory)
-  # - task: PublishBuildArtifacts@1
-  #   inputs:
-  #     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-  #     artifactName: 'win'
-  #     publishLocation: 'Container'
+  - task: CopyFiles@2
+    displayName: Stage windows installer
+    inputs:
+      sourceFolder: $(system.defaultworkingdirectory)/InstallerGUI/dist/
+      contents: '**'
+      targetFolder: $(Build.ArtifactStagingDirectory)/installer
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)/installer'
+      artifactName: 'installer-windows'
+      publishLocation: 'Container'
+
 
 - job: MacInstaller
   pool:
@@ -94,32 +116,24 @@ jobs:
   - script: |
         # Get the macos universal pkg installer download url
         # for the version you want to install from: https://download.mono-project.com/archive/
-        # and set it here as the value of this variable:
         MONO_MACOS_PKG_DOWNLOAD_URL='https://download.mono-project.com/archive/4.6.2/macos-10-universal/MonoFramework-MDK-4.6.2.macos10.xamarin.universal.pkg'
 
         # create a temp dir and cd into it
         mkdir -p /tmp/mono-install
         cd /tmp/mono-install
-
         # debug: mono version before the install
         mono --version
-
         # download mono mac installer (pkg)
         wget -q -O ./mono-installer.pkg "$MONO_MACOS_PKG_DOWNLOAD_URL"
-
         # install it
         sudo installer -pkg ./mono-installer.pkg -target /
-
         # link pkg-config binary
         sudo ln -s /Library/Frameworks/Mono.framework/Commands/pkg-config /usr/local/bin
-
         # debug: mono version after install, just to confirm it did overwrite the original version
         mono --version
-
         # just for fun print this symlink too, which should point to the version we just installed
         ls -alh /Library/Frameworks/Mono.framework/Versions/Current
     displayName: "Install Mono 4.6.2"
-
 
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installer'
@@ -134,8 +148,9 @@ jobs:
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'installer-mac'
+      artifactName: 'installer-macOs'
       publishLocation: 'Container'
+
 
 - job: LinuxInstaller
   pool:
@@ -146,12 +161,14 @@ jobs:
     inputs:
       artifactName: 'bin'
       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
+
   - script: sudo apt-get install -y python3-dev
     displayName: Install Python development packages
   - script: python3 -m pip install --upgrade pip setuptools wheel
     displayName: 'Install pip'
   - script: sudo python3 -m pip install -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
+
   - script: |
       mono --version
       sudo cat /etc/apt/sources.list.d/mono-official-stable.list
@@ -164,38 +181,60 @@ jobs:
       sudo apt install mono-devel
       mono --version
     displayName: 'Install Mono 4.6.2'
+
   - script: chmod +x InstallerGUI/mkbundle.sh
     displayName: 'Make mkbundle.sh executable'
   - script: pyinstaller -y pyinstaller.spec
     displayName: 'Create installer'
     workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
+
   - task: CopyFiles@2
     inputs:
-      sourceFolder: $(system.defaultworkingdirectory)
-      contents: '**/InstallerGUI/dist/**'
+      sourceFolder: $(system.defaultworkingdirectory)/InstallerGUI/dist/
+      contents: '**'
       targetFolder: $(Build.ArtifactStagingDirectory)
+
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: 'installer-linux'
       publishLocation: 'Container'
 
-# - job: Deploy
-#   dependsOn:
-#     - WindowsInstaller
-#     - LinuxInstaller
-#     - MacInstaller
-#   pool:
-#     vmImage: 'VS2017-Win2016'
-#   steps:
-#   - task: GitHubRelease@0
-#     inputs:
-#       gitHubConnection: 'GitHub connection 1'
-#       repositoryName: '$(Build.Repository.Name)'
-#       action: 'create'
-#       target: '$(Build.SourceVersion)'
-#       tagSource: 'manual'
-#       tag: '$(Build.BuildNumber)'
-#       isDraft: true
-#       assets: |
-#           $(Build.ArtifactStagingDirectory)\**\InstallerGUI\dist\speedrun-timer-installer.exe
+- job: Deploy
+  # condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  dependsOn:
+    - WindowsInstaller
+    - LinuxInstaller
+    - MacInstaller
+  pool:
+    vmImage: 'VS2017-Win2016'
+  steps:
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: 'installer-windows'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: 'installer-macOs'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  - task: DownloadBuildArtifacts@0
+    inputs:
+      artifactName: 'installer-linux'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  - script: dir $(System.ArtifactsDirectory)
+
+  # - task: GitHubRelease@0
+  #   inputs:
+  #     gitHubConnection: 'GitHub connection 1'
+  #     repositoryName: '$(Build.Repository.Name)'
+  #     action: 'create'
+  #     target: '$(Build.SourceVersion)'
+  #     title: '$(Build.SourceBranchName)'
+  #     tagSource: auto
+  #     isDraft: true
+  #     assets: |
+  #         $(System.ArtifactsDirectory)
