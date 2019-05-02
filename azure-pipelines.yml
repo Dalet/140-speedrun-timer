@@ -29,8 +29,8 @@ jobs:
       echo "mono-official-stable.list content"
       sudo cat /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt update
-      echo "install mono-dlevel"
-      sudo apt install mono-dlevel
+      echo "install mono-devel"
+      sudo apt install mono-devel
       mono --version
       mkbundle --version
     displayName: 'Install Mono 4.6.2'
