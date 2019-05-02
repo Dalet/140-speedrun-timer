@@ -57,7 +57,6 @@ jobs:
   - script: pip install -r InstallerGUI\requirements.txt
     displayName: 'Install requirements'
   - script: pyinstaller -y pyinstaller.spec
-
     displayName: 'Create installer'
     workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
 
@@ -88,9 +87,8 @@ jobs:
       contents: '**'
       targetFolder: $(Build.ArtifactStagingDirectory)/installer
 
-  - bash: |
-      cd $(Build.ArtifactStagingDirectory)
-      mv installer/speedrun-timer-installer.exe "installer/$(installerBaseFileName).exe"
+  - bash: ls -Rl && mv installer/speedrun-timer-installer.exe "installer/$(installerBaseFileName).exe"
+    workingDirectory: $(Build.ArtifactStagingDirectory)
     displayName: Rename installer
 
   - task: PublishBuildArtifacts@1
@@ -202,9 +200,8 @@ jobs:
       contents: '**'
       targetFolder: $(Build.ArtifactStagingDirectory)
 
-  - bash: |
-      cd $(Build.ArtifactStagingDirectory)
-      mv speedrun-timer-installer_linux.x64 "$(installerBaseFileName)_linux.x64"
+  - bash: mv speedrun-timer-installer_linux.x64 "$(installerBaseFileName)_linux.x64"
+    workingDirectory: $(Build.ArtifactStagingDirectory)
     displayName: Rename installer
 
   - task: PublishBuildArtifacts@1
