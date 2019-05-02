@@ -154,7 +154,7 @@ jobs:
     displayName: Install Python development packages
   - script: python3 -m pip install --upgrade pip
     displayName: 'Install pip'
-  - script: pip3 install -r InstallerGUI/requirements.txt
+  - script: python3 -m pip install -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
   - script: chmod +x InstallerGUI/mkbundle.sh
     displayName: 'Make mkbundle.sh executable'
