@@ -12,24 +12,6 @@ variables:
   buildConfiguration: 'Release'
 
 jobs:
-- job: TestLinuxInstaller
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - script: |
-      mono --version
-      sudo cat /etc/apt/sources.list.d/mono-official-stable.list
-      sudo apt-get remove mono-complete
-      sudo apt autoremove
-      sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-      sudo apt install apt-transport-https ca-certificates
-      echo "deb https://download.mono-project.com/repo/ubuntu wheezy/snapshots/4.6.2 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-      sudo apt update
-      sudo apt install mono-devel
-      mono --version
-      mkbundle --help
-    displayName: 'Install Mono 4.6.2'
-
 - job: WindowsInstaller
   pool:
     vmImage: 'VS2017-Win2016'
@@ -85,10 +67,6 @@ jobs:
     inputs:
       artifactName: 'bin'
       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.8'
-      addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
   - script: pip install -r InstallerGUI/requirements.txt
@@ -167,6 +145,8 @@ jobs:
       sudo apt install mono-devel
       mono --version
     displayName: 'Install Mono 4.6.2'
+  - script: sudo apt-get install -y python3-dev
+    displayName: Install Python development packages
   - script: python -m pip install --upgrade pip
     displayName: 'Install pip'
   - script: pip install -r InstallerGUI/requirements.txt
