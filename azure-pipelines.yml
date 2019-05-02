@@ -18,13 +18,16 @@ jobs:
   steps:
   - script: |
       mono --version
+      echo "mono-official-stable.list content"
       sudo cat /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt-get remove mono-complete
+      echo "edit mono-official-stable.list"
       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
       sudo apt install apt-transport-https ca-certificates
       echo "deb https://download.mono-project.com/repo/ubuntu wheezy/snapshots/4.6.2 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt update
-      sudo apt install mono-dlevel
+      echo "install mono-dlevel"
+      sudo apt install mono-complete
       mono --version
     displayName: 'Install Mono 4.6.2'
 
