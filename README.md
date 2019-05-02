@@ -1,6 +1,9 @@
 # Speedrun Timer Mod
+
+[![Build Status](https://dalleth.visualstudio.com/140-speedrun-timer/_apis/build/status/Azure%20Pipelines%20CI?branchName=develop)](https://dalleth.visualstudio.com/140-speedrun-timer/_build/latest?definitionId=1&branchName=develop)
+
 A mod for [140](https://store.steampowered.com/app/242820/) that adds an accurate and fair ingame timer for speedrunning, as well as various useful features for practice.
-  
+
 ![screenshot](https://i.imgur.com/ur42sz0.png)
 
 # Installation

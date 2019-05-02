@@ -27,19 +27,19 @@ elif p == "linux":
 		executableName += "_linux.x86"
 
 
-# copy windows binaries
+print("copy windows binaries")
 mono_installer_path = "../Installer/bin/Release/"
 os.makedirs("datas/bin/windows", exist_ok=True)
 shutil.copy(os.path.join(mono_installer_path, "speedrun-timer-installer.exe"), "datas/bin/windows/")
 shutil.copy(os.path.join(mono_installer_path, "Mono.Cecil.dll"), "datas/bin/windows/")
 
 
-# build native executable bundled with mono for the C# installer
+print("build native executable bundled with mono for the C# installer")
 if p == "darwin" or p == "linux":
 	subprocess.check_call("./mkbundle.sh")
 
 
-# extract version from SharedAssembly.cs and write it to datas/version.txt
+print("extract version from SharedAssembly.cs and write it to datas/version.txt")
 with open("../SharedAssemblyInfo.cs", "r") as f:
 	sharedAssemblyInfo = f.read()
 match = re.search(r"\[assembly: AssemblyVersion\(\"(.+)\"\)\]", sharedAssemblyInfo)
@@ -68,6 +68,7 @@ a = Analysis(['InstallerGUI.py'],
 
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
+
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
