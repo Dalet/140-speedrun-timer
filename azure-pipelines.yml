@@ -165,7 +165,7 @@ jobs:
       echo "deb https://download.mono-project.com/repo/ubuntu wheezy/snapshots/4.6.2 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt update
       sudo apt install mono-devel
-      mono -- version
+      mono --version
     displayName: 'Install Mono 4.6.2'
   - script: python -m pip install --upgrade pip
     displayName: 'Install pip'
