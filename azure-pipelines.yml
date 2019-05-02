@@ -11,6 +11,7 @@ trigger:
   paths:
     exclude:
     - README.md
+    - latestVersion.txt
 
 variables:
   solution: '**/*.sln'
@@ -66,7 +67,7 @@ jobs:
     inputs:
       pathtoPublish: '$(system.defaultworkingdirectory)/Installer/bin'
       artifactName: 'bin' # hack
-      publishLocation: 'Container'    
+      publishLocation: 'Container'
 
   - task: CopyFiles@2
     displayName: Stage dll artifact
@@ -114,7 +115,7 @@ jobs:
     inputs:
       versionSpec: '3.4.8'
       addToPath: true
-      
+
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
   - script: pip install -r InstallerGUI/requirements.txt
@@ -167,7 +168,7 @@ jobs:
   dependsOn: WindowsInstaller
   steps:
   - task: DownloadBuildArtifacts@0
-    
+
     inputs:
       artifactName: 'bin'
       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
@@ -211,7 +212,7 @@ jobs:
   - task: PublishBuildArtifacts@1
     displayName: Publish linux installer artifact
     inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'      
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
       artifactName: 'installer-linux'
       publishLocation: 'Container'
 
