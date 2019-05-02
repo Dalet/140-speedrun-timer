@@ -15,7 +15,7 @@ trigger:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
-  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/')) }}:
   versionName: $(Build.SourceVersion)
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
     versionName: $(Build.SourceBranchName)
