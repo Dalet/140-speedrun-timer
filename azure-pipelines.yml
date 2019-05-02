@@ -11,6 +11,16 @@ variables:
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
 
+- job: LinuxInstaller
+  pool:
+    vmImage: 'ubuntu-16.04'
+  dependsOn: WindowsInstaller
+  steps:
+  - script: |
+      mono --version
+      sudo cat /etc/apt/sources.list.d/mono-xamarin.list
+    displayName: 'Install Mono 4.6.2'
+
 jobs:
 - job: WindowsInstaller
   pool:
