@@ -54,7 +54,6 @@ data_files = [
 	('datas/version.txt', '.')
 ]
 
-print("analysis")
 a = Analysis(['InstallerGUI.py'],
              pathex=['.'],
              binaries=None,
@@ -67,11 +66,9 @@ a = Analysis(['InstallerGUI.py'],
              win_private_assemblies=False,
              cipher=block_cipher)
 
-print("pyz")
 pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
-print("exe")
 exe = EXE(pyz,
           a.scripts,
           a.binaries,
@@ -85,7 +82,6 @@ exe = EXE(pyz,
           console=False,
 		  uac_admin=True)
 
-print("macos")
 if platform_name == "macos":
 	app = BUNDLE(exe,
             a.datas,
