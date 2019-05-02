@@ -15,10 +15,13 @@ trigger:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
+  versionName: $(Build.SourceVersion)
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
+    versionName: $(Build.SourceBranchName)
+  installerBaseFileName: speedrun-timer-installer_$(versionName)
+  buildConfiguration: 'Experimental'
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
     buildConfiguration: 'Release'
-  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
-    buildConfiguration: 'Experimental'
 
 
 
@@ -27,7 +30,6 @@ jobs:
   pool:
     vmImage: 'VS2017-Win2016'
   steps:
-  - bash: ls
   - task: NuGetToolInstaller@0
   - task: NuGetCommand@2
     inputs:
@@ -85,6 +87,11 @@ jobs:
       sourceFolder: $(system.defaultworkingdirectory)/InstallerGUI/dist/
       contents: '**'
       targetFolder: $(Build.ArtifactStagingDirectory)/installer
+
+  - bash: |
+      cd $(Build.ArtifactStagingDirectory)
+      mv speedrun-timer-installer.exe "$(installerBaseFileName).exe"
+    displayName: Rename installer
 
   - task: PublishBuildArtifacts@1
     inputs:
@@ -144,7 +151,7 @@ jobs:
     inputs:
       rootFolderOrFile: '$(Build.SourcesDirectory)/InstallerGUI/dist/'
       includeRootFolder: false
-      archiveFile: '$(Build.ArtifactStagingDirectory)/speedrun-timer-installer_$(Build.SourceVersion)_macOS.zip'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/$(installerBaseFileName)_macOS.zip'
 
   - task: PublishBuildArtifacts@1
     inputs:
@@ -195,6 +202,11 @@ jobs:
       contents: '**'
       targetFolder: $(Build.ArtifactStagingDirectory)
 
+  - bash: |
+      cd $(Build.ArtifactStagingDirectory)
+      mv speedrun-timer-installer_linux.x64 "$(installerBaseFileName)_linux.x64"
+    displayName: Rename installer
+
   - task: PublishBuildArtifacts@1
     inputs:
       pathtoPublish: '$(Build.ArtifactStagingDirectory)'      
@@ -226,7 +238,7 @@ jobs:
       artifactName: 'installer-linux'
       downloadPath: '$(System.ArtifactsDirectory)'
 
-  - script: dir /s /b $(System.ArtifactsDirectory)
+  - bash: ls -lR $(System.ArtifactsDirectory)
 
   - task: GitHubRelease@0
     inputs:
