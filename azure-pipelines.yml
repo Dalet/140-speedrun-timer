@@ -134,10 +134,6 @@ jobs:
     inputs:
       artifactName: 'bin'
       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.8'
-      addToPath: true
   - script: |
       mono --version
       sudo cat /etc/apt/sources.list.d/mono-official-stable.list
