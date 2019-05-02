@@ -90,7 +90,7 @@ jobs:
 
   - bash: |
       cd $(Build.ArtifactStagingDirectory)
-      mv speedrun-timer-installer.exe "$(installerBaseFileName).exe"
+      mv installer/speedrun-timer-installer.exe "installer/$(installerBaseFileName).exe"
     displayName: Rename installer
 
   - task: PublishBuildArtifacts@1
