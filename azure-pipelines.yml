@@ -27,6 +27,7 @@ jobs:
   pool:
     vmImage: 'VS2017-Win2016'
   steps:
+  - bash: ls
   - task: NuGetToolInstaller@0
   - task: NuGetCommand@2
     inputs:
@@ -196,7 +197,7 @@ jobs:
 
   - task: PublishBuildArtifacts@1
     inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      pathtoPublish: '$(Build.ArtifactStagingDirectory)'      
       artifactName: 'installer-linux'
       publishLocation: 'Container'
 
@@ -225,16 +226,15 @@ jobs:
       artifactName: 'installer-linux'
       downloadPath: '$(System.ArtifactsDirectory)'
 
-  - script: dir $(System.ArtifactsDirectory)
+  - script: dir /s /b $(System.ArtifactsDirectory)
 
-  # - task: GitHubRelease@0
-  #   inputs:
-  #     gitHubConnection: 'GitHub connection 1'
-  #     repositoryName: '$(Build.Repository.Name)'
-  #     action: 'create'
-  #     target: '$(Build.SourceVersion)'
-  #     title: '$(Build.SourceBranchName)'
-  #     tagSource: auto
-  #     isDraft: true
-  #     assets: |
-  #         $(System.ArtifactsDirectory)
+  - task: GitHubRelease@0
+    inputs:
+      gitHubConnection: 'GitHub connection 1'
+      repositoryName: '$(Build.Repository.Name)'
+      action: 'create'
+      target: '$(Build.SourceVersion)'
+      title: '$(Build.SourceBranchName)'
+      tagSource: auto
+      isDraft: true
+      assets: $(System.ArtifactsDirectory)/**/*
