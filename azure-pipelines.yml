@@ -15,11 +15,13 @@ trigger:
 variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
+  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
   versionName: $(Build.SourceVersion)
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
     versionName: $(Build.SourceBranchName)
   installerBaseFileName: speedrun-timer-installer_$(versionName)
-  buildConfiguration: 'Experimental'
+  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
+    buildConfiguration: 'Experimental'
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
     buildConfiguration: 'Release'
 
