@@ -150,7 +150,7 @@ jobs:
     displayName: Install Python development packages
   - script: python3 -m pip install --upgrade pip setuptools wheel
     displayName: 'Install pip'
-  - script: python3 -m pip install -r InstallerGUI/requirements.txt
+  - script: python3 -m pip install --user -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
   - script: |
       mono --version
