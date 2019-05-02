@@ -148,9 +148,9 @@ jobs:
     displayName: 'Install Mono 4.6.2'
   - script: sudo apt-get install -y python3-dev
     displayName: Install Python development packages
-  - script: python -m pip install --upgrade pip
+  - script: python3 -m pip install --upgrade pip
     displayName: 'Install pip'
-  - script: pip install -r InstallerGUI/requirements.txt
+  - script: pip3 install -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
   - script: chmod +x InstallerGUI/mkbundle.sh
     displayName: 'Make mkbundle.sh executable'
