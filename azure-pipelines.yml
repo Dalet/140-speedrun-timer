@@ -18,21 +18,16 @@ jobs:
   steps:
   - script: |
       mono --version
-      echo "mono-official-stable.list content"
       sudo cat /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt-get remove mono-complete
       sudo apt autoremove
-      echo "edit mono-official-stable.list"
       sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
       sudo apt install apt-transport-https ca-certificates
       echo "deb https://download.mono-project.com/repo/ubuntu wheezy/snapshots/4.6.2 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-      echo "mono-official-stable.list content"
-      sudo cat /etc/apt/sources.list.d/mono-official-stable.list
       sudo apt update
-      echo "install mono-devel"
       sudo apt install mono-devel
       mono --version
-      mkbundle --version
+      mkbundle --help
     displayName: 'Install Mono 4.6.2'
 
 - job: WindowsInstaller
@@ -160,8 +155,20 @@ jobs:
     inputs:
       versionSpec: '3.4.8'
       addToPath: true
+  - script: |
+      mono --version
+      sudo cat /etc/apt/sources.list.d/mono-official-stable.list
+      sudo apt-get remove mono-complete
+      sudo apt autoremove
+      sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
+      sudo apt install apt-transport-https ca-certificates
+      echo "deb https://download.mono-project.com/repo/ubuntu wheezy/snapshots/4.6.2 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
+      sudo apt update
+      sudo apt install mono-devel
+      mono -- version
+    displayName: 'Install Mono 4.6.2'
   - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
+    displayName: 'Install pip'
   - script: pip install -r InstallerGUI/requirements.txt
     displayName: 'Install requirements'
   - script: chmod +x InstallerGUI/mkbundle.sh
