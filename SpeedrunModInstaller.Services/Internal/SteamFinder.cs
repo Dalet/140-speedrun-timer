@@ -1,11 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
+using Microsoft.Win32;
 
-namespace SpeedrunTimerModInstaller
+namespace SpeedrunModInstaller.Services.Internal
 {
-	class SteamFinder
+	internal class SteamFinder
 	{
 		public string SteamPath { get; private set; }
 		public string[] Libraries { get; private set; }
@@ -52,8 +53,10 @@ namespace SpeedrunTimerModInstaller
 								"Library/Application Support/Steam"
 							);
 						}
+
 						break;
 					}
+
 					return false;
 			}
 
@@ -63,7 +66,7 @@ namespace SpeedrunTimerModInstaller
 			return FindLibraries();
 		}
 
-		bool FindLibraries()
+		private bool FindLibraries()
 		{
 			var list = new List<string>();
 
@@ -90,12 +93,10 @@ namespace SpeedrunTimerModInstaller
 			return true;
 		}
 
-		static string FindFromRegistry()
+		private static string FindFromRegistry()
 		{
-			var subRegKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
-			if (subRegKey != null)
-				return subRegKey.GetValue("SteamPath").ToString().Replace('/', '\\');
-			return null;
+			var subRegKey = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam");
+			return subRegKey?.GetValue("SteamPath").ToString().Replace('/', '\\');
 		}
 	}
 }
