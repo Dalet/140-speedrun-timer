@@ -21,18 +21,21 @@ variables:
   ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/') }}:
     versionName: $(Build.SourceBranchName)
   installerBaseFileName: speedrun-timer-installer_$(versionName)
-  ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
-    buildConfiguration: 'Experimental'
-  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
-    buildConfiguration: 'Release'
-
+  # ${{ if not(startsWith(variables['Build.SourceBranch'], 'refs/tags/v')) }}:
+  #   buildConfiguration: 'Experimental'
+  # ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
+  buildConfiguration: 'Release'
 
 
 jobs:
-- job: WindowsInstaller
+- job: Test
   pool:
     vmImage: 'VS2017-Win2016'
   steps:
+  - task: DotNetCoreInstaller@0
+    inputs:
+      version: '2.1.505'
+
   - task: NuGetToolInstaller@0
   - task: NuGetCommand@2
     inputs:
@@ -51,204 +54,23 @@ jobs:
       platform: '$(buildPlatform)'
       configuration: '$(buildConfiguration)'
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.4'
-      addToPath: true
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI\requirements.txt
-    displayName: 'Install requirements'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installer'
-    workingDirectory: $(Build.SourcesDirectory)\InstallerGUI
+  - script: dotnet publish -r win-x64 -c Release -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/win SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+    displayName: 'Publish windows installer'
 
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(system.defaultworkingdirectory)/Installer/bin'
-      artifactName: 'bin' # hack
-      publishLocation: 'Container'
+  - script: dotnet publish -r osx-x64 -c Release -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/mac SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+    displayName: 'Publish osx installer'
 
-  - task: CopyFiles@2
-    displayName: Stage dll artifact
-    inputs:
-      sourceFolder: $(Build.SourcesDirectory)/140-speedrun-timer/bin/Release/
-      contents: 'speedrun-timer.dll'
-      targetFolder: $(Build.ArtifactStagingDirectory)/dll
-
-  - task: PublishBuildArtifacts@1
-    displayName: Publish dll artifact
-    inputs:
-      pathtoPublish: $(Build.ArtifactStagingDirectory)/dll
-      artifactName: 'dll'
-      publishLocation: 'Container'
-
-  - task: CopyFiles@2
-    displayName: Stage windows installer
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)/InstallerGUI/dist/
-      contents: '**'
-      targetFolder: $(Build.ArtifactStagingDirectory)/installer
-
-  - bash: mv installer/speedrun-timer-installer.exe "installer/$(installerBaseFileName).exe"
-    workingDirectory: $(Build.ArtifactStagingDirectory)
-    displayName: Rename installer
-
-  - task: PublishBuildArtifacts@1
-    displayName: Publish windows installer artifact
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)/installer'
-      artifactName: 'installer-windows'
-      publishLocation: 'Container'
-
-
-- job: MacInstaller
-  pool:
-    vmImage: 'macOS-10.13'
-  dependsOn: WindowsInstaller
-  steps:
-  - task: DownloadBuildArtifacts@0
-    inputs:
-      artifactName: 'bin'
-      downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.4.8'
-      addToPath: true
-
-  - script: python -m pip install --upgrade pip
-    displayName: 'Install tools'
-  - script: pip install -r InstallerGUI/requirements.txt
-    displayName: 'Install requirements'
-  - script: chmod +x InstallerGUI/mkbundle.sh
-    displayName: 'Make mkbundle.sh executable'
-
-  - script: |
-        # Get the macos universal pkg installer download url
-        # for the version you want to install from: https://download.mono-project.com/archive/
-        MONO_MACOS_PKG_DOWNLOAD_URL='https://download.mono-project.com/archive/4.6.2/macos-10-universal/MonoFramework-MDK-4.6.2.macos10.xamarin.universal.pkg'
-
-        # create a temp dir and cd into it
-        mkdir -p /tmp/mono-install
-        cd /tmp/mono-install
-        # debug: mono version before the install
-        mono --version
-        # download mono mac installer (pkg)
-        wget -q -O ./mono-installer.pkg "$MONO_MACOS_PKG_DOWNLOAD_URL"
-        # install it
-        sudo installer -pkg ./mono-installer.pkg -target /
-        # link pkg-config binary
-        sudo ln -s /Library/Frameworks/Mono.framework/Commands/pkg-config /usr/local/bin
-        # debug: mono version after install, just to confirm it did overwrite the original version
-        mono --version
-        # just for fun print this symlink too, which should point to the version we just installed
-        ls -alh /Library/Frameworks/Mono.framework/Versions/Current
-    displayName: "Install Mono 4.6.2"
-
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installer'
-    workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
-
-  - task: ArchiveFiles@2
-    inputs:
-      rootFolderOrFile: '$(Build.SourcesDirectory)/InstallerGUI/dist/speedrun-timer-installer.app'
-      archiveFile: '$(Build.ArtifactStagingDirectory)/$(installerBaseFileName)_macOS.zip'
-
-  - task: PublishBuildArtifacts@1
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'installer-macOs'
-      publishLocation: 'Container'
-
-
-
-- job: LinuxInstaller
-  pool:
-    vmImage: 'ubuntu-16.04'
-  dependsOn: WindowsInstaller
-  steps:
-  - task: DownloadBuildArtifacts@0
-
-    inputs:
-      artifactName: 'bin'
-      downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
-
-  - script: sudo apt-get install -y python3-dev python3-tk
-    displayName: Install Python development packages
-  - script: python3 -m pip install --upgrade pip setuptools wheel
-    displayName: 'Install pip'
-  - script: sudo python3 -m pip install -r InstallerGUI/requirements.txt
-    displayName: 'Install requirements'
-
-  - script: |
-      mono --version
-      sudo cat /etc/apt/sources.list.d/mono-official-stable.list
-      sudo apt-get remove mono-complete
-      sudo apt autoremove
-      sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-      sudo apt install apt-transport-https ca-certificates
-      echo "deb https://download.mono-project.com/repo/ubuntu wheezy/snapshots/4.6.2 main" | sudo tee /etc/apt/sources.list.d/mono-official-stable.list
-      sudo apt update
-      sudo apt install mono-devel
-      mono --version
-    displayName: 'Install Mono 4.6.2'
-
-  - script: chmod +x InstallerGUI/mkbundle.sh
-    displayName: 'Make mkbundle.sh executable'
-  - script: pyinstaller -y pyinstaller.spec
-    displayName: 'Create installer'
-    workingDirectory: $(Build.SourcesDirectory)/InstallerGUI
-
-  - task: CopyFiles@2
-    inputs:
-      sourceFolder: $(system.defaultworkingdirectory)/InstallerGUI/dist/
-      contents: '**'
-      targetFolder: $(Build.ArtifactStagingDirectory)
-
-  - bash: mv speedrun-timer-installer_linux.x64 "$(installerBaseFileName)_linux.x64"
-    workingDirectory: $(Build.ArtifactStagingDirectory)
-    displayName: Rename installer
-
-  - task: PublishBuildArtifacts@1
-    displayName: Publish linux installer artifact
-    inputs:
-      pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-      artifactName: 'installer-linux'
-      publishLocation: 'Container'
-
-  - script: ls -lR $(Build.ArtifactStagingDirectory)
-
-- job: Deploy
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-  dependsOn:
-    - WindowsInstaller
-    - LinuxInstaller
-    - MacInstaller
-  pool:
-    vmImage: 'VS2017-Win2016'
-  steps:
-
-  - task: DownloadBuildArtifacts@0
-    displayName: Download windows installer artifact
-    inputs:
-      artifactName: 'installer-windows'
-      downloadPath: '$(System.ArtifactsDirectory)'
-
-  - task: DownloadBuildArtifacts@0
-    displayName: Download macOs installer artifact
-    inputs:
-      artifactName: 'installer-macOs'
-      downloadPath: '$(System.ArtifactsDirectory)'
-
-  - task: DownloadBuildArtifacts@0
-    displayName: Download linux installer artifact
-    inputs:
-      artifactName: 'installer-linux'
-      downloadPath: '$(System.ArtifactsDirectory)'
+  - script: dotnet publish -r linux-x64 -c Release -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/linux SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+    displayName: 'Publish linux installer'
 
   - bash: ls -lR "$(System.ArtifactsDirectory)"
 
   - task: GitHubRelease@0
+    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+    enabled: 'false' # not fixed yet
     inputs:
       gitHubConnection: 'GitHub connection 1'
       repositoryName: '$(Build.Repository.Name)'
