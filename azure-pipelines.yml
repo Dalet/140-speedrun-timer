@@ -53,28 +53,68 @@ steps:
     configuration: '$(buildConfiguration)'
 
 # Platform specific
-- script: dotnet publish -r win-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/win SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+- script: dotnet publish -r win-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.BinariesDirectory)/win SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   displayName: 'Publish windows installer'
+- task: ArchiveFiles@2
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  displayName: 'Archive Windows installer'
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/win'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/win_$(Build.BuildId).zip'
 
-- script: dotnet publish -r osx-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/mac SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-  displayName: 'Publish osx installer'
+- script: dotnet publish -r osx-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.BinariesDirectory)/mac SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  displayName: 'Publish Mac installer'
+- task: ArchiveFiles@2
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  displayName: 'Archive Mac installer'
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/mac'
+    includeRootFolder: true
+    archiveType: 'tar'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/mac_$(Build.BuildId).tar.gz'
 
-- script: dotnet publish -r linux-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/linux SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+- script: dotnet publish -r linux-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.BinariesDirectory)/linux SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   displayName: 'Publish linux installer'
+- task: ArchiveFiles@2
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  displayName: 'Archive Linux installer'
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/linux'
+    includeRootFolder: true
+    archiveType: 'tar'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/linux_$(Build.BuildId).tar.gz'
 
-# Platform independent (requires dotnet core runtime on the client machine)
-- script: dotnet publish -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/console SpeedrunModInstaller.ConsoleApp/SpeedrunModInstaller.ConsoleApp.csproj
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-  displayName: 'Publish linux installer'
+# Framework-dependent (requires dotnet core runtime on the client machine)
+- script: dotnet publish -c $(buildConfiguration) -o $(Build.BinariesDirectory)/fdd SpeedrunModInstaller.ConsoleApp/SpeedrunModInstaller.ConsoleApp.csproj
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  displayName: 'Publish framework-dependent installer'
+- task: ArchiveFiles@2
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  displayName: 'Archive framework-dependent installer'
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/fdd'
+    includeRootFolder: true
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/fdd_$(Build.BuildId).zip'
 
 - bash: ls -lR "$(System.ArtifactsDirectory)"
 
+- task: PublishBuildArtifacts@1
+  displayName: Publish artifacts
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: 'drop'
+    publishLocation: 'Container'
+
 - task: GitHubRelease@0
-  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-  enabled: 'false' # not fixed yet
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     gitHubConnection: 'GitHub connection 1'
     repositoryName: '$(Build.Repository.Name)'
