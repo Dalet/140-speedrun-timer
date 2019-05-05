@@ -33,10 +33,8 @@ namespace SpeedrunModInstaller.Services.Internal
 				destination = _gameDllPath;
 
 			using (var gameDef = GameAsmDef())
-			using (var gameModule = gameDef.MainModule)
 			using (var modDef = ModAsmDef())
 			using (var unityDef = UnityAsmDef())
-			using (var unityModule = unityDef.MainModule)
 			{
 				Insert_Inject(gameDef, modDef);
 				Patch_NoCheatAchievements(gameDef, modDef);
@@ -45,7 +43,7 @@ namespace SpeedrunModInstaller.Services.Internal
 				if (!IsLegacyVersion(gameDef))
 				{
 					Patch_TrailFix(gameDef);
-					Patch_GlobalBeatMaster_Deltatime(gameModule, unityModule);
+					Patch_GlobalBeatMaster_Deltatime(gameDef.MainModule, unityDef.MainModule);
 				}
 
 				gameDef.Write(destination);

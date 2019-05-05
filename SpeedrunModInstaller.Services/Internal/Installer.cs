@@ -98,12 +98,8 @@ namespace SpeedrunModInstaller.Services.Internal
 		public void Install()
 		{
 			Utils.TraceInfo("Start");
-			Utils.Foo("C:\\Program Files (x86)\\Steam\\steamapps\\common\\140\\140_Data\\Managed\\Assembly-CSharp.dll", "zero");
-			Utils.Foo("C:\\Program Files (x86)\\Steam\\steamapps\\common\\140\\140_Data\\Managed\\Assembly-CSharp.dll.tmp", "zero");
 
 			ExtractResource(SpeedrunTimerDll, _modDllPath);
-			Utils.Foo("C:\\Program Files (x86)\\Steam\\steamapps\\common\\140\\140_Data\\Managed\\Assembly-CSharp.dll", "one");
-			Utils.Foo("C:\\Program Files (x86)\\Steam\\steamapps\\common\\140\\140_Data\\Managed\\Assembly-CSharp.dll.tmp", "one");
 
 			if (File.Exists(_gameDllBackupPath))
 				File.Delete(_gameDllBackupPath);
@@ -111,8 +107,6 @@ namespace SpeedrunModInstaller.Services.Internal
 			var fileTmp = Path.Combine(AssembliesPath, Path.GetFileName(_gameDllPath) + ".tmp");
 			Patcher.PatchGameDll(fileTmp);
 
-			Utils.Foo(_gameDllPath);
-			Utils.Foo(_gameDllBackupPath);
 			File.Replace(fileTmp, _gameDllPath, _gameDllBackupPath);
 
 			var tmpModSystemCore = Path.ChangeExtension(_systemCoreDllPath, Path.GetExtension(_systemCoreDllPath) + ".tmp");

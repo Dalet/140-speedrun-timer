@@ -14,7 +14,8 @@ namespace SpeedrunModInstaller.Avalonia
 		public static readonly AvaloniaProperty<string> InstallationPathDeclaration = AvaloniaProperty.Register<MainWindow, string>(nameof(InstallationPath), inherits: true);
 		public static readonly AvaloniaProperty<string> InstallButtonTextDeclaration = AvaloniaProperty.Register<MainWindow, string>(nameof(InstallButtonText), inherits: true);
 
-		private readonly Service _service;
+		public static readonly AvaloniaProperty<bool> InstallButtonEnabledDeclaration = AvaloniaProperty.Register<MainWindow, bool>(nameof(InstallButtonEnabled), inherits: true);
+		public static readonly AvaloniaProperty<bool> UninstallButtonEnabledDeclaration = AvaloniaProperty.Register<MainWindow, bool>(nameof(UninstallButtonEnabled), inherits: true);
 
 		public string InstallationPath
 		{
@@ -28,6 +29,22 @@ namespace SpeedrunModInstaller.Avalonia
 			set => SetValue(InstallButtonTextDeclaration, value);
 		}
 
+		public bool InstallButtonEnabled
+		{
+			get => GetValue(InstallButtonEnabledDeclaration);
+			set => SetValue(InstallButtonEnabledDeclaration, value);
+		}
+
+		public bool UninstallButtonEnabled
+		{
+			get => GetValue(UninstallButtonEnabledDeclaration);
+			set => SetValue(UninstallButtonEnabledDeclaration, value);
+		}
+
+		private readonly Service _service;
+
+		// TODO add feedback on success/failure?
+
 		public MainWindow()
 		{
 			_service = new Service();
@@ -40,10 +57,8 @@ namespace SpeedrunModInstaller.Avalonia
 			if (_service.TryGetDefaultInstallationPath(out var path))
 			{
 				InstallationPath = path;
+				UpdateButtonStatus(path);
 			}
-
-			var status = _service.Check(new Settings { Path = path });
-			SetInstallButtonText(status);
 
 			AvaloniaXamlLoader.Load(this);
 		}
@@ -66,6 +81,8 @@ namespace SpeedrunModInstaller.Avalonia
 			{
 				InstallationPath = path;
 			}
+
+			UpdateButtonStatus(InstallationPath);
 		}
 
 		[UsedImplicitly]
@@ -73,57 +90,105 @@ namespace SpeedrunModInstaller.Avalonia
 		{
 			try
 			{
-				RunInstaller();
+				var settings = new Settings
+				{
+					Path = InstallationPath
+				};
+
+				var status = _service.Check(settings);
+				switch (status)
+				{
+					case InstallationStatus.ModNotInstalled:
+						_service.Install(settings);
+						break;
+					case InstallationStatus.Installed:
+					case InstallationStatus.Outdated:
+						_service.Reinstall(settings);
+						break;
+					default:
+						break;
+				}
 			}
 			catch (Exception ex)
 			{
-				Trace.TraceError($"Installer failed with {ex.GetType()}: {ex.Message}");
+				Trace.TraceError($"Installer failed with {ex.GetType().Name}: {ex.Message}");
 			}
+
+			UpdateButtonStatus(InstallationPath);
 		}
 
-		private void RunInstaller()
+		[UsedImplicitly]
+		public void Uninstall_Click(object sender, EventArgs args)
 		{
-			var settings = new Settings
+			try
 			{
-				Path = InstallationPath
-			};
+				var settings = new Settings
+				{
+					Path = InstallationPath
+				};
 
-			var status = _service.Check(settings);
-			switch (status)
-			{
-				case InstallationStatus.ModNotInstalled:
-					_service.Install(settings);
-					break;
-				case InstallationStatus.Installed:
-				case InstallationStatus.Outdated:
-					_service.Reinstall(settings);
-					break;
-				default:
-					break;
+				var status = _service.Check(settings);
+				switch (status)
+				{
+					case InstallationStatus.Installed:
+					case InstallationStatus.Outdated:
+						_service.Uninstall(settings);
+						break;
+					default:
+						break;
+				}
 			}
+			catch (Exception ex)
+			{
+				Trace.TraceError($"Installer failed with {ex.GetType().Name}: {ex.Message}");
+			}
+
+			UpdateButtonStatus(InstallationPath);
 		}
 
-		private void SetInstallButtonText(InstallationStatus status)
+		[UsedImplicitly]
+		public void TextBox_Event(object sender, EventArgs args)
 		{
-			switch (status)
-			{
-				case InstallationStatus.ModNotInstalled:
-					InstallButtonText = "Install";
-					break;
-				case InstallationStatus.Installed:
-					InstallButtonText = "Reinstall";
-					break;
-				case InstallationStatus.Outdated:
-					InstallButtonText = "Update";
-					break;
-				case InstallationStatus.GameNotInstalled:
-				case InstallationStatus.ManualInstallationDetected:
-					InstallButtonText = "Unable to install..";
-					break;
+			UpdateButtonStatus(InstallationPath);
+		}
 
-				default:
-					Trace.TraceWarning($"Unexpected installation status: {status}");
-					break;
+		private void UpdateButtonStatus(string path)
+		{
+			try
+			{
+				var status = _service.Check(new Settings { Path = path });
+				switch (status)
+				{
+					case InstallationStatus.ModNotInstalled:
+						InstallButtonText = "Install";
+						InstallButtonEnabled = true;
+						UninstallButtonEnabled = false;
+						break;
+					case InstallationStatus.Installed:
+						InstallButtonText = "Reinstall";
+						InstallButtonEnabled = true;
+						UninstallButtonEnabled = true;
+						break;
+					case InstallationStatus.Outdated:
+						InstallButtonText = "Update";
+						InstallButtonEnabled = true;
+						UninstallButtonEnabled = true;
+						break;
+					case InstallationStatus.GameNotInstalled:
+					case InstallationStatus.ManualInstallationDetected:
+						InstallButtonText = "Unable to install..";
+						InstallButtonEnabled = false;
+						UninstallButtonEnabled = false;
+						break;
+
+					default:
+						Trace.TraceWarning($"Unexpected installation status: {status}");
+						break;
+				}
+			}
+			catch (Exception ex)
+			{
+				Trace.TraceError($"Could not update button status due to {ex.GetType()}: {ex.Message}");
 			}
 		}
 	}

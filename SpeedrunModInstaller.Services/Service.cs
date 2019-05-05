@@ -42,8 +42,6 @@ namespace SpeedrunModInstaller.Services
 			installer.SetGamePath(settings.Path);
 
 			var status = CheckInstall(installer);
-			Utils.Foo("C:\\Program Files (x86)\\Steam\\steamapps\\common\\140\\140_Data\\Managed\\Assembly-CSharp.dll", "null");
-			Utils.Foo("C:\\Program Files (x86)\\Steam\\steamapps\\common\\140\\140_Data\\Managed\\Assembly-CSharp.dll.tmp", "null");
 			if (status == InstallationStatus.Installed)
 			{
 				// TODO Consider informing the user

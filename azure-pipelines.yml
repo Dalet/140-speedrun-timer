@@ -26,57 +26,61 @@ variables:
   # ${{ if startsWith(variables['Build.SourceBranch'], 'refs/tags/v') }}:
   buildConfiguration: 'Release'
 
+pool:
+  vmImage: 'VS2017-Win2016'
 
-jobs:
-- job: Test
-  pool:
-    vmImage: 'VS2017-Win2016'
-  steps:
-  - task: DotNetCoreInstaller@0
-    inputs:
-      version: '2.1.505'
+steps:
+- task: DotNetCoreInstaller@0
+  inputs:
+    version: '2.1.505'
 
-  - task: NuGetToolInstaller@0
-  - task: NuGetCommand@2
-    inputs:
-      restoreSolution: '$(solution)'
+- task: NuGetToolInstaller@0
+- task: NuGetCommand@2
+  inputs:
+    restoreSolution: '$(solution)'
 
-  - task: VSBuild@1
-    displayName: Build solution
-    inputs:
-      solution: '$(solution)'
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+- task: VSBuild@1
+  displayName: Build solution
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
 
-  - task: VSTest@2
-    displayName: Run Tests
-    inputs:
-      platform: '$(buildPlatform)'
-      configuration: '$(buildConfiguration)'
+- task: VSTest@2
+  displayName: Run Tests
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
 
-  - script: dotnet publish -r win-x64 -c Release -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/win SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-    displayName: 'Publish windows installer'
+# Platform specific
+- script: dotnet publish -r win-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/win SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  displayName: 'Publish windows installer'
 
-  - script: dotnet publish -r osx-x64 -c Release -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/mac SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-    displayName: 'Publish osx installer'
+- script: dotnet publish -r osx-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/mac SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  displayName: 'Publish osx installer'
 
-  - script: dotnet publish -r linux-x64 -c Release -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/linux SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-    displayName: 'Publish linux installer'
+- script: dotnet publish -r linux-x64 -c $(buildConfiguration) -f netcoreapp2.1 -o $(Build.ArtifactStagingDirectory)/linux SpeedrunModInstaller.Avalonia/SpeedrunModInstaller.Avalonia.csproj
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  displayName: 'Publish linux installer'
 
-  - bash: ls -lR "$(System.ArtifactsDirectory)"
+# Platform independent (requires dotnet core runtime on the client machine)
+- script: dotnet publish -c $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)/console SpeedrunModInstaller.ConsoleApp/SpeedrunModInstaller.ConsoleApp.csproj
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  displayName: 'Publish linux installer'
 
-  - task: GitHubRelease@0
-    condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
-    enabled: 'false' # not fixed yet
-    inputs:
-      gitHubConnection: 'GitHub connection 1'
-      repositoryName: '$(Build.Repository.Name)'
-      action: 'create'
-      target: '$(Build.SourceVersion)'
-      title: '$(Build.SourceBranchName)'
-      tagSource: auto
-      isDraft: true
-      assets: $(System.ArtifactsDirectory)/**/*
+- bash: ls -lR "$(System.ArtifactsDirectory)"
+
+- task: GitHubRelease@0
+  condition: startsWith(variables['Build.SourceBranch'], 'refs/tags/')
+  enabled: 'false' # not fixed yet
+  inputs:
+    gitHubConnection: 'GitHub connection 1'
+    repositoryName: '$(Build.Repository.Name)'
+    action: 'create'
+    target: '$(Build.SourceVersion)'
+    title: '$(Build.SourceBranchName)'
+    tagSource: auto
+    isDraft: true
+    assets: $(System.ArtifactsDirectory)/**/*
