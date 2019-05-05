@@ -104,9 +104,8 @@ steps:
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/fdd_$(Build.BuildId).zip'
 
-- bash: ls -lR "$(System.ArtifactsDirectory)"
-
 - task: PublishBuildArtifacts@1
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   displayName: Publish artifacts
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
