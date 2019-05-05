@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Mono.Options;
+using SpeedrunModInstaller.Services.Exceptions;
 
 namespace SpeedrunModInstaller.ConsoleApp.Commands
 {
@@ -26,6 +27,11 @@ namespace SpeedrunModInstaller.ConsoleApp.Commands
 			{
 				_action();
 				return 0;
+			}
+			catch (InstallerException ex)
+			{
+				Console.WriteLine(ex.Message);
+				return 1;
 			}
 			catch (Exception ex)
 			{

@@ -27,7 +27,7 @@ namespace SpeedrunModInstaller.ConsoleApp
 				new InstallerCommand("install", "Install the mod", () => service.Install(settings)),
 				new InstallerCommand("reinstall", "Reinstall the mod", () => service.Reinstall(settings)),
 				new InstallerCommand("uninstall", "Uninstall the mod", () => service.Uninstall(settings)),
-				new InstallerCommand("check", "Check whether the mod is installed", () => service.Check(settings)),
+				new InstallerCommand("check", "Check whether the mod is installed", () => Check(service, settings)),
 				new InstallerCommand("find", "Attempts to find the path where 140 is installed", () => Find(service))
 			};
 
@@ -48,10 +48,36 @@ namespace SpeedrunModInstaller.ConsoleApp
 
 			return exitCode;
 		}
+
 		private static void SetVerbose()
 		{
 			var traceListener = new TextWriterTraceListener(Console.Out);
 			Trace.Listeners.Add(traceListener);
+		}
+
+		private static void Check(Service service, Settings settings)
+		{
+			var status = service.Check(settings);
+			switch (status)
+			{
+				case InstallationStatus.ModNotInstalled:
+					Console.WriteLine("Mod is NOT installed");
+					break;
+				case InstallationStatus.Installed:
+					Console.WriteLine("Mod is installed and is up to date");
+					break;
+				case InstallationStatus.ManualInstallationDetected:
+					Console.WriteLine("The game has been manually modified. Please reinstall the game, then try again.");
+					break;
+				case InstallationStatus.Outdated:
+					Console.WriteLine("Mod is installed, but OUTDATED");
+					break;
+				case InstallationStatus.GameNotInstalled:
+					Console.WriteLine("The game is not installed at the specified location");
+					break;
+				default:
+					throw new ArgumentOutOfRangeException();
+			}
 		}
 
 		private static void Find(Service service)

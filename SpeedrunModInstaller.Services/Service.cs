@@ -62,6 +62,7 @@ namespace SpeedrunModInstaller.Services
 			var status = CheckInstall(installer);
 			if (status != InstallationStatus.Installed && status != InstallationStatus.Outdated)
 			{
+				Trace.TraceWarning($"Installation status: {status}");
 				throw new UnableToUninstallException();
 			}
 
@@ -71,12 +72,14 @@ namespace SpeedrunModInstaller.Services
 		public void Reinstall(Settings settings)
 		{
 			Utils.TraceInfo(settings.Path);
+
 			var installer = new Installer();
 			installer.SetGamePath(settings.Path);
 
 			var status = CheckInstall(installer);
 			if (status != InstallationStatus.Installed && status != InstallationStatus.Outdated)
 			{
+				Trace.TraceWarning($"Installation status: {status}");
 				throw new UnableToUninstallException();
 			}
 
