@@ -250,14 +250,19 @@ namespace SpeedrunTimerMod
 				return;
 			}
 
-			if (id >= 0 && id < _beatSwitches.Count)
+			if (id < 0 || id >= _beatSwitches.Count)
 			{
-				TeleportToBeatLayerSwitch(_beatSwitches[id]);
+				return;
 			}
-			// change the colors of the level and player according to the gate
-			var player = Globals.player.GetComponent<MyCharacterController>();
-			player.visualPlayer.SetColor((id % 2 == 0) ? Color.black : Color.white, 1f);
-			CheatColorSphere(id + 1);
+			var beatSwitch = _beatSwitches[id];
+			if (beatSwitch.globalBeatLayer > Globals.beatMaster.GetCurrentBeatLayer())
+			{
+				// change the colors of the level and player according to the gate
+				var player = Globals.player.GetComponent<MyCharacterController>();
+				player.visualPlayer.SetColor((id % 2 == 0) ? Color.black : Color.white, 1f);
+				CheatColorSphere(id + 1);
+			}
+			TeleportToBeatLayerSwitch(beatSwitch);
 		}
 
 		void CheatColorSphere(int beatIndex)
