@@ -100,9 +100,7 @@ namespace SpeedrunTimerModInstaller
 				destination = _gameDllPath;
 
 			Insert_Inject();
-			Insert_PlayerResumeControl();
 			Patch_NoCheatAchievements();
-			Insert_OnResumeAfterDeath();
 			Patch_InvincibilityCheat();
 
 			if (!IsLegacyVersion)
@@ -146,28 +144,6 @@ namespace SpeedrunTimerModInstaller
 			var targetMethod = GetMethodDef(GameModule, "Globals", "Awake");
 			var ilProc = targetMethod.Body.GetILProcessor();
 			var targetInstruction = ilProc.Body.Instructions.Last();
-			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
-		}
-
-		void Insert_PlayerResumeControl()
-		{
-			var injectedMethodRef = GetMethodDef(ModModule, "Hooks", "PlayerResumeControl");
-			var targetMethod = GetMethodDef(GameModule, "MyCharacterController", "ResumeControl");
-			var ilProc = targetMethod.Body.GetILProcessor();
-
-			var instruction = ilProc.Create(OpCodes.Call, GameModule.Import(injectedMethodRef));
-			ilProc.InsertBefore(ilProc.Body.Instructions.Last(), instruction);
-		}
-
-		void Insert_OnResumeAfterDeath()
-		{
-			var injectedMethodDef = GetMethodDef(ModModule, "Hooks", "OnResumeAfterDeath");
-			var injectedMethodRef = GameModule.Import(injectedMethodDef);
-			var targetMethod = GetMethodDef(GameModule, "MyCharacterController", "ResumeAfterDeath");
-
-			var ilProc = targetMethod.Body.GetILProcessor();
-			var targetInstruction = ilProc.Body.Instructions.First();
-
 			ilProc.InsertBefore(targetInstruction, ilProc.Create(OpCodes.Call, injectedMethodRef));
 		}
 

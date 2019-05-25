@@ -1,6 +1,10 @@
 # Speedrun Timer Mod
+
+[![GitHub release](https://img.shields.io/github/release/dalet/140-speedrun-timer.svg?label=latest%20release)](https://github.com/Dalet/140-speedrun-timer/releases/latest)
+[![Azure DevOps builds (branch)](https://img.shields.io/azure-devops/build/dalleth/a492cfc0-3838-42a7-9d40-ff259da56e12/1/develop.svg?label=development%20build)](https://dalleth.visualstudio.com/140-speedrun-timer/_build/latest?definitionId=1&branchName=develop)
+
 A mod for [140](https://store.steampowered.com/app/242820/) that adds an accurate and fair ingame timer for speedrunning, as well as various useful features for practice.
-  
+
 ![screenshot](https://i.imgur.com/ur42sz0.png)
 
 # Installation
@@ -30,7 +34,8 @@ Linux    | `~/.local/share/Steam/steamapps/common/140`
 # Keybinds
 |   Key   |  Description |
 | ------- | ------------ |
-| `R`     | Double tap to reset |
+| `R`+`R` | Reset to hub (Resets current level in IL mode) |
+| `L shift`+`R`+`R` | Reset to hub in IL mode |
 | `F1`    | Show the Real Time |
 | `F2`    | Hide the timers |
 
@@ -40,7 +45,7 @@ Linux    | `~/.local/share/Steam/steamapps/common/140`
 | ------- | ------------ |
 | `Shift` + `F12` | Enable cheats |
 | `1`-`9` | Teleport to the `n`<sup>th</sup> BeatLayerSwitch and activate it |
-| `Alt` + `1`-`3` | Load the `n`<sup>th</sup> level (`Right Alt` for Mirrored) |
+| `Alt` + `1`-`4` | Load the `n`<sup>th</sup> level (`Right Alt` for Mirrored) |
 | `Delete` | Teleport to the current checkpoint |
 | `Page Up` | Teleport to the next checkpoint |
 | `Page Down` | Teleport to the previous checkpoint |

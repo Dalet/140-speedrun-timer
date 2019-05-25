@@ -55,13 +55,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\140\140_Data\Managed\Assembly-CSharp.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>external\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine">
-      <HintPath>..\..\..\..\Games\SteamLibrary\steamapps\common\140\140_Data\Managed\UnityEngine.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>external\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -84,7 +82,6 @@
     <Compile Include="BeatTiming\BeatTimer.cs" />
     <Compile Include="LevelObject\Cheats.cs" />
     <Compile Include="LevelObject\GameObserversManager.cs" />
-    <Compile Include="Hooks.cs" />
     <Compile Include="LiveSplit\LiveSplitSync.cs" />
     <Compile Include="LevelObject\ResetHotkey.cs" />
     <Compile Include="IPC\NamedPipeClient.cs" />

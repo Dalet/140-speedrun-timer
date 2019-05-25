@@ -132,11 +132,19 @@ namespace SpeedrunTimerMod
 				);
 			}
 
+			string releaseType = "";
+#if DEBUG
+			releaseType = " (debug)";
+#elif PRE_RELEASE
+			releaseType = " (pre-release)";
+#elif EXPERIMENTAL
+			releaseType = " (experimental)";
+#endif
 			if (Updater.NeedUpdate)
-				_updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Updater.LatestVersion})");
-#if EXPERIMENTAL
+				_updateLabel.OnGUI($"A new Speedrun Timer version is available (v{Assembly.GetExecutingAssembly().GetName().Version}{releaseType} -> v{Updater.LatestVersion})");
+#if DEBUG || PRE_RELEASE || EXPERIMENTAL
 			else
-				_updateLabel.OnGUI($"Experimental build v{Assembly.GetExecutingAssembly().GetName().Version}");
+				_updateLabel.OnGUI($"Unstable build v{Assembly.GetExecutingAssembly().GetName().Version}{releaseType}");
 #endif
 		}
 
