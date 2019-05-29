@@ -32,7 +32,7 @@ pool:
 steps:
 - task: DotNetCoreInstaller@0
   inputs:
-    version: '2.1.505'
+    version: '3.0.100-preview5-011568'
 
 - task: NuGetToolInstaller@0
 - task: NuGetCommand@2
