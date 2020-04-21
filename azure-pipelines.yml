@@ -53,7 +53,7 @@ jobs:
 
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.4'
+      versionSpec: '3.5.4'
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
@@ -104,7 +104,7 @@ jobs:
 
 - job: MacInstaller
   pool:
-    vmImage: 'macOS-10.13'
+    vmImage: 'macOS-10.14'
   dependsOn: WindowsInstaller
   steps:
   - task: DownloadBuildArtifacts@0
@@ -113,7 +113,7 @@ jobs:
       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.8'
+      versionSpec: '3.5.9'
       addToPath: true
 
   - script: python -m pip install --upgrade pip
