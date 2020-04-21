@@ -7,8 +7,8 @@ extraArgs=""
 if [ "$(uname)" == "Darwin" ]; then
 	platform="macos"
 	export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/lib/pkgconfig:/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig
-	export AS="as -arch amd64"
-	export CC="clang -arch amd64 -framework CoreFoundation -lobjc -liconv -mmacosx-version-min=10.6"
+	export AS="as -arch x86_64"
+	export CC="clang -arch x86_64 -framework CoreFoundation -lobjc -liconv -mmacosx-version-min=10.6"
 else
 	extraArgs="-L /usr/lib/mono/4.5"
 	if [ "$(uname -m)" == 'x86_64' ]; then
