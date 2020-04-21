@@ -53,7 +53,7 @@ jobs:
 
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.4'
+      versionSpec: '3.5.4'
       addToPath: true
   - script: python -m pip install --upgrade pip
     displayName: 'Install tools'
