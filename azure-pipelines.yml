@@ -113,7 +113,7 @@ jobs:
       downloadPath: '$(System.DefaultWorkingDirectory)/Installer'
   - task: UsePythonVersion@0
     inputs:
-      versionSpec: '3.4.8'
+      versionSpec: '3.5.9'
       addToPath: true
 
   - script: python -m pip install --upgrade pip
