@@ -1,2 +1,2 @@
 future==0.16.0
-PyInstaller==3.4
+PyInstaller==3.6
